@@ -1,6 +1,5 @@
 import { RasterVideo, AnimationTimer, ControllerPoller } from "./emu";
 import { hex, printFlags, invertMap, byteToASCII } from "./util";
-import { CodeAnalyzer } from "./analysis";
 import { Segment, FileData } from "./workertypes";
 import { disassembleZ80 } from "./cpu/disasmz80";
 import { Z80 } from "./cpu/ZilogZ80";
@@ -116,7 +115,6 @@ export interface Platform {
   getSP?() : number;
   getPC?() : number;
   getOriginPC?() : number;
-  newCodeAnalyzer?() : CodeAnalyzer;
 
   getPlatformName?() : string;
   getMemoryMap?() : MemoryMap;

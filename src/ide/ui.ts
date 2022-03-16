@@ -26,7 +26,7 @@ declare var Tour, GIF, Octokat;
 declare var ga;
 declare var $ : JQueryStatic; // use browser jquery
 
-// query string 
+// query string
 
 interface UIQueryString {
   platform? : string;
@@ -124,7 +124,7 @@ const TOOL_TO_HELPURL = {
   'ca65': 'https://cc65.github.io/doc/ca65.html',
   'sdcc': 'http://sdcc.sourceforge.net/doc/sdccman.pdf',
   'verilator': 'https://www.veripool.org/ftp/verilator_doc.pdf',
-  'fastbasic': 'https://github.com/dmsc/fastbasic/blob/master/manual.md'  
+  'fastbasic': 'https://github.com/dmsc/fastbasic/blob/master/manual.md'
 }
 
 function gaEvent(category:string, action:string, label?:string, value?:string) {
@@ -576,7 +576,7 @@ async function promptUser(message: string) : Promise<string> {
   });
 }
 
-async function getLocalFilesystem(repoid: string) : Promise<ProjectFilesystem> { 
+async function getLocalFilesystem(repoid: string) : Promise<ProjectFilesystem> {
   const options = {mode:'readwrite'};
   var storekey = '__localfs__' + repoid;
   var lstore = localforage.createInstance({
@@ -1073,7 +1073,7 @@ function _renameFile(e) {
   if (wnd && wnd.getPath && current_project.getFile(wnd.getPath())) {
     var fn = projectWindows.getActiveID();
     bootbox.prompt({
-      title: "Rename '" + fn + "' to?", 
+      title: "Rename '" + fn + "' to?",
       value: fn,
       callback: (newfn) => {
         var data = current_project.getFile(wnd.getPath());
@@ -1108,7 +1108,7 @@ function _downloadROMImage(e) {
     saveAs(dl.blob, prefix + dl.extension);
   } else if (current_output instanceof Uint8Array) {
     var blob = new Blob([current_output], {type: "application/octet-stream"});
-    var suffix = (platform.getROMExtension && platform.getROMExtension(current_output)) 
+    var suffix = (platform.getROMExtension && platform.getROMExtension(current_output))
       || "-" + getBasePlatform(platform_id) + ".bin";
     saveAs(blob, prefix + suffix);
   } else {
@@ -1740,16 +1740,6 @@ function _fastestFrameRate() {
   setFrameRateUI(60);
 }
 
-function traceTiming() {
-  projectWindows.refresh(false);
-  var wnd = projectWindows.getActive();
-  if (wnd.getSourceFile && wnd.setTimingResult) { // is editor active?
-    var analyzer = platform.newCodeAnalyzer();
-    analyzer.showLoopTimingForPC(0);
-    wnd.setTimingResult(analyzer);
-  }
-}
-
 function _disableRecording() {
   if (recorderActive) {
     platform.setRecorder(null);
@@ -1847,40 +1837,52 @@ function _addLinkFile() {
 }
 
 function setupDebugControls() {
+
   // create toolbar buttons
   uitoolbar = new Toolbar($("#toolbar")[0], null);
   uitoolbar.grp.prop('id','run_bar');
   uitoolbar.add('ctrl+alt+r', 'Reset', 'glyphicon-refresh', resetAndRun).prop('id','dbg_reset');
   uitoolbar.add('ctrl+alt+,', 'Pause', 'glyphicon-pause', pause).prop('id','dbg_pause');
   uitoolbar.add('ctrl+alt+.', 'Resume', 'glyphicon-play', resume).prop('id','dbg_go');
+
   if (platform.restartAtPC) {
     uitoolbar.add('ctrl+alt+/', 'Restart at Cursor', 'glyphicon-play-circle', restartAtCursor).prop('id','dbg_restartatline');
   }
+
   uitoolbar.newGroup();
   uitoolbar.grp.prop('id','debug_bar');
+
   if (platform.runEval) {
     uitoolbar.add('ctrl+alt+e', 'Reset and Debug', 'glyphicon-fast-backward', resetAndDebug).prop('id','dbg_restart');
   }
+
   if (platform.stepBack) {
     uitoolbar.add('ctrl+alt+b', 'Step Backwards', 'glyphicon-step-backward', runStepBackwards).prop('id','dbg_stepback');
   }
+
   if (platform.step) {
     uitoolbar.add('ctrl+alt+s', 'Single Step', 'glyphicon-step-forward', singleStep).prop('id','dbg_step');
   }
+
   if (platform.stepOver) {
     uitoolbar.add('ctrl+alt+t', 'Step Over', 'glyphicon-hand-right', stepOver).prop('id','dbg_stepover');
   }
+
   if (platform.runUntilReturn) {
     uitoolbar.add('ctrl+alt+o', 'Step Out of Subroutine', 'glyphicon-hand-up', runUntilReturn).prop('id','dbg_stepout');
   }
+
   if (platform.runToVsync) {
     uitoolbar.add('ctrl+alt+n', 'Next Frame/Interrupt', 'glyphicon-forward', singleFrameStep).prop('id','dbg_tovsync');
   }
+
   if ((platform.runEval || platform.runToPC) && !platform_id.startsWith('verilog')) {
     uitoolbar.add('ctrl+alt+l', 'Run To Line', 'glyphicon-save', runToCursor).prop('id','dbg_toline');
   }
+
   uitoolbar.newGroup();
   uitoolbar.grp.prop('id','xtra_bar');
+
   // add menu clicks
   $(".dropdown-menu").collapse({toggle: false});
   $("#item_new_file").click(_createNewFile);
@@ -1897,36 +1899,41 @@ function setupDebugControls() {
   $("#item_reset_file").click(_revertFile);
   $("#item_rename_file").click(_renameFile);
   $("#item_delete_file").click(_deleteFile);
+
   if (platform.runEval)
     $("#item_debug_expr").click(_breakExpression).show();
   else
     $("#item_debug_expr").hide();
+
   $("#item_download_rom").click(_downloadROMImage);
   $("#item_download_file").click(_downloadSourceFile);
   $("#item_download_zip").click(_downloadProjectZipFile);
   $("#item_download_allzip").click(_downloadAllFilesZipFile);
   $("#item_record_video").click(_recordVideo);
+
   if (platform_id.startsWith('apple2') || platform_id.startsWith('vcs')) // TODO: look for function
     $("#item_export_cassette").click(_downloadCassetteFile);
   else
     $("#item_export_cassette").hide();
+
   if (platform.setFrameRate && platform.getFrameRate) {
     $("#dbg_slower").click(_slowerFrameRate);
     $("#dbg_faster").click(_fasterFrameRate);
     $("#dbg_slowest").click(_slowestFrameRate);
     $("#dbg_fastest").click(_fastestFrameRate);
   }
+
   $("#item_addfile_include").click(_addIncludeFile);
   $("#item_addfile_link").click(_addLinkFile);
   $("#item_request_persist").click(() => requestPersistPermission(true, false));
+
   updateDebugWindows();
+
   // show help button?
   if (platform.showHelp) {
     uitoolbar.add('ctrl+alt+?', 'Show Help', 'glyphicon-question-sign', _lookupHelp);
   }
-  if (platform.newCodeAnalyzer) {
-    uitoolbar.add(null, 'Analyze CPU Timing', 'glyphicon-time', traceTiming);
-  }
+
   // setup replay slider
   if (platform.setRecorder && platform.advance) {
     setupReplaySlider();
@@ -2134,7 +2141,7 @@ function installErrorHandler() {
   window.addEventListener('error', globalErrorHandler);
   window.addEventListener('unhandledrejection', globalErrorHandler);
 }
-  
+
 function uninstallErrorHandler() {
   window.removeEventListener('error', globalErrorHandler);
   window.removeEventListener('unhandledrejection', globalErrorHandler);
@@ -2528,7 +2535,7 @@ export async function reloadWorkspaceFile(path: string) {
 function writeOutputROMFile() {
   if (isElectron && current_output instanceof Uint8Array) {
     var prefix = getFilenamePrefix(getCurrentMainFilename());
-    var suffix = (platform.getROMExtension && platform.getROMExtension(current_output)) 
+    var suffix = (platform.getROMExtension && platform.getROMExtension(current_output))
       || "-" + getBasePlatform(platform_id) + ".bin";
     alternateLocalFilesystem.setFileData(`bin/${prefix}${suffix}`, current_output);
   }

@@ -1,5 +1,4 @@
 
-import { CodeAnalyzer } from "../../common/analysis";
 import { SourceFile, WorkerError } from "../../common/workertypes";
 
 export interface ProjectView {
@@ -16,7 +15,6 @@ export interface ProjectView {
     setGutterBytes?(line: number, s: string): void;
     markErrors?(errors: WorkerError[]): void;
     clearErrors?(): void;
-    setTimingResult?(result: CodeAnalyzer): void;
     recreateOnResize?: boolean;
     undoStep?(): void;
 };

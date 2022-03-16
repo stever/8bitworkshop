@@ -1,7 +1,6 @@
 
 import { isMobileDevice, ProjectView } from "./baseviews";
 import { SourceFile, WorkerError, SourceLocation } from "../../common/workertypes";
-import { CodeAnalyzer } from "../../common/analysis";
 import { platform, current_project, lastDebugState, runToPC, qs } from "../ui";
 import { hex, rpad } from "../../common/util";
 
@@ -315,27 +314,6 @@ export class SourceEditor implements ProjectView {
     this.setGutter("gutter-bytes", line-1, s);
   }
 
-  setTimingResult(result:CodeAnalyzer) : void {
-    this.editor.clearGutter("gutter-bytes");
-    if (this.sourcefile == null) return;
-    // show the lines
-    for (const line of Object.keys(this.sourcefile.line2offset)) {
-      var pc = this.sourcefile.line2offset[line];
-      var minclocks = result.pc2minclocks[pc];
-      var maxclocks = result.pc2maxclocks[pc];
-      if (minclocks>=0 && maxclocks>=0) {
-        var s;
-        if (maxclocks == minclocks)
-          s = minclocks + "";
-        else
-          s = minclocks + "-" + maxclocks;
-        if (maxclocks == result.MAX_CLOCKS)
-          s += "+";
-        this.setGutterBytes(parseInt(line), s);
-      }
-    }
-  }
-
   setCurrentLine(line:SourceLocation, moveCursor:boolean) {
     var blocked = platform.isBlocked && platform.isBlocked();
 
@@ -414,7 +392,7 @@ export class SourceEditor implements ProjectView {
     this.refreshListing();
     this.refreshDebugState(moveCursor);
   }
-  
+
   tick() {
     this.refreshDebugState(false);
   }
@@ -546,7 +524,7 @@ export class DisassemblerView implements ProjectView {
     var startpc = pc < 0 ? pc-disasmWindow : Math.max(0, pc-disasmWindow); // for 32-bit PCs w/ hi bit set
     let text = disassemble(startpc, pc-startpc) + disassemble(pc, disasmWindow);
     this.disasmview.setValue(text);
-    if (moveCursor) { 
+    if (moveCursor) {
       this.disasmview.setCursor(selline, 0);
     }
     jumpToLine(this.disasmview, selline);
