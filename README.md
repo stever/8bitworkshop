@@ -1,13 +1,5 @@
 # 8bitworkshop
 
-![Build Status](https://github.com/sehugg/8bitworkshop/actions/workflows/node.js.yml/badge.svg)
-
-
-## Use Online
-
-* Latest release: https://8bitworkshop.com/
-* Latest Github build: https://sehugg.github.io/8bitworkshop/
-
 ## Install Locally
 
 To build the 8bitworkshop IDE:
@@ -15,25 +7,9 @@ To build the 8bitworkshop IDE:
 ```sh
 git submodule init
 git submodule update
-npm i
+npm install
 npm run build
 ```
-
-### Start Server
-
-Start a web server on http://localhost:8000/ while TypeScript compiles in the background:
-
-```sh
-make tsweb
-```
-
-### Run Tests
-
-```sh
-npm test
-```
-
-Note: Github tests may fail due to lack of API key.
 
 ## License
 

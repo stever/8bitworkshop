@@ -1,18 +1,6 @@
-[submodule "javatari.js"]
-	path = javatari.js
-	url = https://github.com/sehugg/javatari.js
 [submodule "codemirror"]
 	path = codemirror
 	url = https://github.com/codemirror/CodeMirror
-[submodule "tss"]
-	path = tss
-	url = https://github.com/sehugg/tss
 [submodule "gif.js"]
 	path = gif.js
 	url = https://github.com/sehugg/gif.js
-[submodule "jsnes"]
-	path = jsnes
-	url = https://github.com/sehugg/jsnes
-[submodule "nanoasm"]
-	path = nanoasm
-	url = https://github.com/sehugg/nanoasm
