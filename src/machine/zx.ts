@@ -1,8 +1,5 @@
 
-import { MOS6502, MOS6502State } from "../common/cpu/MOS6502";
-import { BasicMachine, RasterFrameBased, Bus, ProbeAll } from "../common/devices";
-import { KeyFlags, newAddressDecoder, padBytes, Keys, makeKeycodeMap, newKeyboardHandler, EmuHalt, dumpRAM } from "../common/emu";
-import { lzgmini, stringToByteArray, hex, rgb2bgr } from "../common/util";
+import { KeyFlags } from "../common/emu";
 
 //// WASM Machine
 
@@ -55,7 +52,7 @@ export class ZX_WASMMachine extends BaseWASMMachine implements Machine {
     void* user_data;
     z80_trap_t trap_cb;
     void* trap_user_data;
-    int trap_id;           
+    int trap_id;
   */
   getCPUState() {
     this.exports.machine_save_cpu_state(this.sys, this.cpustateptr);

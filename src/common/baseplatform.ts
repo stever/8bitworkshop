@@ -3,7 +3,6 @@ import { RasterVideo, dumpRAM, AnimationTimer, ControllerPoller } from "./emu";
 import { hex, printFlags, invertMap, byteToASCII } from "./util";
 import { CodeAnalyzer } from "./analysis";
 import { Segment, FileData } from "./workertypes";
-import { disassemble6502 } from "./cpu/disasm6502";
 import { disassembleZ80 } from "./cpu/disasmz80";
 import { Z80 } from "./cpu/ZilogZ80";
 
@@ -12,8 +11,6 @@ import { Probeable, RasterFrameBased, AcceptsPaddleInput } from "./devices";
 import { SampledAudio } from "./audio";
 import { ProbeRecorder } from "./recorder";
 import { BaseWASMMachine } from "./wasmplatform";
-import { CPU6809 } from "./cpu/6809";
-import { _MOS6502 } from "./cpu/MOS6502";
 
 ///
 
@@ -101,7 +98,7 @@ export interface Platform {
   disassemble?(addr:number, readfn:(addr:number)=>number) : DisasmLine;
   readAddress?(addr:number) : number;
   readVRAMAddress?(addr:number) : number;
-  
+
   setFrameRate?(fps:number) : void;
   getFrameRate?() : number;
 
@@ -122,7 +119,7 @@ export interface Platform {
   getPC?() : number;
   getOriginPC?() : number;
   newCodeAnalyzer?() : CodeAnalyzer;
-  
+
   getPlatformName?() : string;
   getMemoryMap?() : MemoryMap;
 
@@ -140,7 +137,7 @@ export interface Platform {
 
   debugSymbols? : DebugSymbols;
   getDebugTree?() : {};
-  
+
   startProbing?() : ProbeRecorder;
   stopProbing?() : void;
 
@@ -435,51 +432,6 @@ export function getToolForFilename_6502(fn:string) : string {
   return "dasm"; // .a
 }
 
-// TODO: can merge w/ Z80?
-export abstract class Base6502Platform extends BaseDebugPlatform {
-
-  // some platforms store their PC one byte before or after the first opcode
-  // so we correct when saving and loading from state
-  debugPCDelta = -1;
-  fixPC(c)   { c.PC = (c.PC + this.debugPCDelta) & 0xffff; return c; }
-  unfixPC(c) { c.PC = (c.PC - this.debugPCDelta) & 0xffff; return c;}
-  getSP()    { return this.getCPUState().SP };
-  getPC()    { return this.getCPUState().PC };
-  isStable() { return !this.getCPUState()['T']; }
-  abstract readAddress(addr:number) : number;
-
-  newCPU(membus : MemoryBus) {
-    var cpu = new _MOS6502();
-    cpu.connectBus(membus);
-    return cpu;
-  }
-
-  getOpcodeMetadata(opcode, offset) {
-    return getOpcodeMetadata_6502(opcode, offset);
-  }
-
-  getOriginPC() : number {
-    return (this.readAddress(0xfffc) | (this.readAddress(0xfffd) << 8)) & 0xffff;
-  }
-
-  disassemble(pc:number, read:(addr:number)=>number) : DisasmLine {
-    return disassemble6502(pc, read(pc), read(pc+1), read(pc+2));
-  }
-  getToolForFilename = getToolForFilename_6502;
-  getDefaultExtension() { return ".a"; };
-
-  getDebugCategories() {
-    return ['CPU','ZPRAM','Stack'];
-  }
-  getDebugInfo(category:string, state:EmuState) : string {
-    switch (category) {
-      case 'CPU':   return cpuStateToLongString_6502(state.c);
-      case 'ZPRAM': return dumpRAM(state.b||state.ram, 0x0, 0x100);
-      case 'Stack': return dumpStackToString(<Platform><any>this, state.b||state.ram, 0x100, 0x1ff, 0x100+state.c.SP, 0x20);
-    }
-  }
-}
-
 export function cpuStateToLongString_6502(c) : string {
   function decodeFlags(c) {
     var s = "";
@@ -635,35 +587,6 @@ export function getToolForFilename_6809(fn:string) : string {
   return "lwasm";
 }
 
-export abstract class Base6809Platform extends BaseZ80Platform {
-
-  newCPU(membus : MemoryBus) {
-    var cpu = Object.create(CPU6809());
-    cpu.init(membus.write, membus.read, 0);
-    return cpu;
-  }
-
-  cpuStateToLongString(c:CpuState) {
-    return cpuStateToLongString_6809(c);
-  }
-  disassemble(pc:number, read:(addr:number)=>number) : DisasmLine {
-    // TODO: don't create new CPU
-    return Object.create(CPU6809()).disasm(read(pc), read(pc+1), read(pc+2), read(pc+3), read(pc+4), pc);
-  }
-  getDefaultExtension() : string { return ".asm"; };
-  //this.getOpcodeMetadata = function() { }
-  getToolForFilename = getToolForFilename_6809;
-  getDebugCategories() {
-    return ['CPU','Stack'];
-  }
-  getDebugInfo(category:string, state:EmuState) : string {
-    switch (category) {
-      case 'CPU':   return cpuStateToLongString_6809(state.c);
-      default:      return super.getDebugInfo(category, state);
-    }
-  }
-}
-
 
 //TODO: how to get stack_end?
 export function dumpStackToString(platform:Platform, mem:Uint8Array|number[], start:number, end:number, sp:number, jsrop:number) : string {
@@ -763,7 +686,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
   abstract getToolForFilename(s:string) : string;
   abstract getDefaultExtension() : string;
   abstract getPresets() : Preset[];
-  
+
   constructor(mainElement : HTMLElement) {
     super();
     this.mainElement = mainElement;
@@ -781,7 +704,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
   getCPUState()  { return this.machine.cpu.saveState(); }
   loadControlsState(s)   { this.machine.loadControlsState(s); }
   saveControlsState()    { return this.machine.saveControlsState(); }
-  
+
   async start() {
     this.machine = this.newMachine();
     const m = this.machine;
@@ -792,7 +715,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
     var videoFrequency;
     if (hasVideo(m)) {
       var vp = m.getVideoParams();
-      this.video = new RasterVideo(this.mainElement, vp.width, vp.height, 
+      this.video = new RasterVideo(this.mainElement, vp.width, vp.height,
         {overscan: !!vp.overscan,
            rotate: vp.rotate|0,
            aspect: vp.aspect});
@@ -838,7 +761,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
       }
     }
   }
-  
+
   loadROM(title, data) {
     this.machine.loadROM(data);
     this.reset();
@@ -921,30 +844,6 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
 }
 
 // TODO: move debug info into CPU?
-
-export abstract class Base6502MachinePlatform<T extends Machine> extends BaseMachinePlatform<T> {
-
-  getOpcodeMetadata     = getOpcodeMetadata_6502;
-  getToolForFilename    = getToolForFilename_6502;
-
-  disassemble(pc:number, read:(addr:number)=>number) : DisasmLine {
-    return disassemble6502(pc, read(pc), read(pc+1), read(pc+2));
-  }
-  getDebugCategories() {
-    if (isDebuggable(this.machine))
-      return this.machine.getDebugCategories();
-    else
-      return ['CPU','ZPRAM','Stack'];
-  }
-  getDebugInfo(category:string, state:EmuState) : string {
-    switch (category) {
-      case 'CPU':   return cpuStateToLongString_6502(state.c);
-      case 'ZPRAM': return dumpRAM(state.b||state.ram, 0x0, 0x100);
-      case 'Stack': return dumpStackToString(<Platform><any>this, state.b||state.ram, 0x100, 0x1ff, 0x100+state.c.SP, 0x20);
-      default: return isDebuggable(this.machine) && this.machine.getDebugInfo(category, state);
-    }
-  }
-}
 
 export abstract class BaseZ80MachinePlatform<T extends Machine> extends BaseMachinePlatform<T> {
 

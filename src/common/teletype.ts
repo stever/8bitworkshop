@@ -1,6 +1,4 @@
 
-import { InputResponse } from "./basic/runtime";
-
 export class TeleType {
     page: HTMLElement;
     fixed: boolean;
@@ -128,7 +126,7 @@ export class TeleType {
             this.flushline();
             allrows.slice(size).remove();
             this.lines = this.lines.slice(0, size);
-            //this.move_cursor(0,0); 
+            //this.move_cursor(0,0);
         }
     }
     formfeed() {
