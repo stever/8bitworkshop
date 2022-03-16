@@ -1,5 +1,4 @@
-
-import { RasterVideo, dumpRAM, AnimationTimer, ControllerPoller } from "./emu";
+import { RasterVideo, AnimationTimer, ControllerPoller } from "./emu";
 import { hex, printFlags, invertMap, byteToASCII } from "./util";
 import { CodeAnalyzer } from "./analysis";
 import { Segment, FileData } from "./workertypes";
@@ -11,10 +10,6 @@ import { Probeable, RasterFrameBased, AcceptsPaddleInput } from "./devices";
 import { SampledAudio } from "./audio";
 import { ProbeRecorder } from "./recorder";
 import { BaseWASMMachine } from "./wasmplatform";
-
-///
-
-declare var jt;
 
 export interface OpcodeMetadata {
   minCycles: number;
@@ -31,15 +26,19 @@ export interface CpuState {
   /*
   A:number, X:number, Y:number, SP:number, R:boolean,
   N,V,D,Z,C:boolean*/
-};
+}
+
 export interface EmuState {
   c?:CpuState,	// CPU state
   b?:Uint8Array|number[], 	// RAM (TODO: not for vcs, support Uint8Array)
   ram?:Uint8Array,
   o?:{},				// verilog
-};
-export interface EmuControlsState {
 }
+
+export interface EmuControlsState {
+
+}
+
 export type DisasmLine = {
   line:string,
   nbytes:number,
@@ -64,7 +63,6 @@ export class DebugSymbols {
   }
 }
 
-type MemoryMapType = "main" | "vram";
 type MemoryMap = { [type:string] : Segment[] };
 
 export function isDebuggable(arg:any): arg is Debuggable {
@@ -167,6 +165,7 @@ export interface MemoryBus {
 export type DebugCondition = () => boolean;
 export type DebugEvalCondition = (c:CpuState) => boolean;
 export type BreakpointCallback = (s:EmuState, msg?:string) => void;
+
 // for composite breakpoints w/ single debug function
 export class BreakpointList {
   id2bp : {[id:string] : Breakpoint} = {};
@@ -210,21 +209,26 @@ export abstract class BasePlatform {
   setRecorder(recorder : EmuRecorder) : void {
     this.recorder = recorder;
   }
+
   updateRecorder() {
     // are we recording and do we need to save a frame?
     if (this.recorder && (<Platform><any>this).isRunning() && this.recorder.frameRequested()) {
       this.recorder.recordFrame(this.saveState());
     }
   }
+
   inspect(sym: string) : string {
     return inspectSymbol((this as any) as Platform, sym);
   }
+
   getDebugTree() : {} {
     return this.saveState();
   }
+
   readFile(path: string) : FileData {
     return this.internalFiles[path];
   }
+
   writeFile(path: string, data: FileData) : boolean {
     this.internalFiles[path] = data;
     return true;
@@ -251,18 +255,23 @@ export abstract class BaseDebugPlatform extends BasePlatform {
       this.clearBreakpoint(id);
     }
   }
+
   clearBreakpoint(id : string) {
     delete this.breakpoints.id2bp[id];
   }
+
   hasBreakpoint(id : string) {
     return this.breakpoints.id2bp[id] != null;
   }
+
   getDebugCallback() : DebugCondition {
     return this.breakpoints.getDebugCondition();
   }
+
   setupDebug(callback : BreakpointCallback) : void {
     this.onBreakpointHit = callback;
   }
+
   clearDebug() {
     this.debugSavedState = null;
     this.debugBreakState = null;
@@ -272,9 +281,11 @@ export abstract class BaseDebugPlatform extends BasePlatform {
     this.clearBreakpoint('debug');
     this.frameCount = 0;
   }
+
   setDebugCondition(debugCond : DebugCondition) {
     this.setBreakpoint('debug', debugCond);
   }
+
   restartDebugging() {
     if (this.debugSavedState) {
       this.loadState(this.debugSavedState);
@@ -286,6 +297,7 @@ export abstract class BaseDebugPlatform extends BasePlatform {
     this.debugBreakState = null;
     this.resume();
   }
+
   preFrame() {
     // save state before frame, to record any inputs that happened pre-frame
     if (this.debugCallback && !this.debugBreakState) {
@@ -295,6 +307,7 @@ export abstract class BaseDebugPlatform extends BasePlatform {
       this.debugClock = 0;
     }
   }
+
   postFrame() {
     // reload debug state at end of frame after breakpoint
     if (this.debugCallback && this.debugBreakState) {
@@ -302,8 +315,11 @@ export abstract class BaseDebugPlatform extends BasePlatform {
     }
     this.frameCount++;
   }
+
   pollControls() {
+
   }
+
   nextFrame(novideo : boolean) : number {
     this.pollControls();
     this.updateRecorder();
@@ -312,19 +328,16 @@ export abstract class BaseDebugPlatform extends BasePlatform {
     this.postFrame();
     return steps;
   }
+
   // default debugging
   abstract getSP() : number;
   abstract getPC() : number;
   abstract isStable() : boolean;
 
-  evalDebugCondition() {
-    if (this.debugCallback && !this.debugBreakState) {
-      this.debugCallback();
-    }
-  }
   wasBreakpointHit() : boolean {
     return this.debugBreakState != null;
   }
+
   breakpointHit(targetClock : number, reason? : string) {
     console.log(this.debugTargetClock, targetClock, this.debugClock, this.isStable());
     this.debugTargetClock = targetClock;
@@ -335,9 +348,7 @@ export abstract class BaseDebugPlatform extends BasePlatform {
       this.onBreakpointHit(this.debugBreakState, reason);
     }
   }
-  haltAndCatchFire(reason : string) {
-    this.breakpointHit(this.debugClock, reason);
-  }
+
   runEval(evalfunc : DebugEvalCondition) {
     this.setDebugCondition( () => {
       if (++this.debugClock >= this.debugTargetClock && this.isStable()) {
@@ -351,26 +362,31 @@ export abstract class BaseDebugPlatform extends BasePlatform {
       }
     });
   }
+
   runToPC(pc: number) {
     this.debugTargetClock++;
     this.runEval((c) => {
       return c.PC == pc;
     });
   }
+
   runUntilReturn() {
     var SP0 = this.getSP();
     this.runEval( (c:CpuState) : boolean => {
       return c.SP > SP0; // TODO: check for RTS/RET opcode
     });
   }
+
   runToFrameClock(clock : number) : void {
     this.restartDebugging();
     this.debugTargetClock = clock;
     this.runEval(() : boolean => { return true; });
   }
+
   step() {
     this.runToFrameClock(this.debugClock+1);
   }
+
   stepBack() {
     var prevState;
     var prevClock;
@@ -391,6 +407,7 @@ export abstract class BaseDebugPlatform extends BasePlatform {
       }
     });
   }
+
   runToVsync() {
     this.restartDebugging();
     var frame0 = this.frameCount;
@@ -408,6 +425,7 @@ export function inspectSymbol(platform : Platform, sym : string) : string {
   var addr = symmap["_"+sym] || symmap[sym]; // look for C or asm symbol
   if (!(typeof addr == 'number')) return null;
   var b = platform.readAddress(addr);
+
   // don't show 2 bytes if there's a symbol at the next address
   if (addr2sym && addr2sym[addr+1] != null) {
     return "$"+hex(addr,4) + " = $"+hex(b,2)+" ("+b+" decimal)"; // unsigned
@@ -416,63 +434,6 @@ export function inspectSymbol(platform : Platform, sym : string) : string {
     let w = b | (b2<<8);
     return "$"+hex(addr,4) + " = $"+hex(b,2)+" $"+hex(b2,2)+" ("+((w<<16)>>16)+" decimal)"; // signed
   }
-}
-
-////// 6502
-
-export function getToolForFilename_6502(fn:string) : string {
-  if (fn.endsWith(".pla")) return "plasm";
-  if (fn.endsWith(".c")) return "cc65";
-  if (fn.endsWith(".h")) return "cc65";
-  if (fn.endsWith(".s")) return "ca65";
-  if (fn.endsWith(".ca65")) return "ca65";
-  if (fn.endsWith(".dasm")) return "dasm";
-  if (fn.endsWith(".acme")) return "acme";
-  if (fn.endsWith(".wiz")) return "wiz";
-  return "dasm"; // .a
-}
-
-export function cpuStateToLongString_6502(c) : string {
-  function decodeFlags(c) {
-    var s = "";
-    s += c.N ? " N" : " -";
-    s += c.V ? " V" : " -";
-    s += c.D ? " D" : " -";
-    s += c.Z ? " Z" : " -";
-    s += c.C ? " C" : " -";
-    s += c.I ? " I" : " -";
-    return s;
-  }
-  return "PC " + hex(c.PC,4) + "  " + decodeFlags(c) + "\n"
-       + " A " + hex(c.A)    + "     " + (c.R ? "" : "BUSY") + "\n"
-       + " X " + hex(c.X)    + "\n"
-       + " Y " + hex(c.Y)    + "     " + "SP " + hex(c.SP) + "\n";
-}
-
-var OPMETA_6502 = {
-  cycletime: [
-  7, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 0, 7, 4, 4, 7, 7,    6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 2, 4, 4, 6, 6,    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 0, 7, 4, 4, 7, 7,    6, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 2, 3, 4, 6, 6,    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 0, 7, 4, 4, 7, 7,    6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 2, 5, 4, 6, 6,    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 0, 7, 4, 4, 7, 7,    0, 6, 0, 6, 3, 3, 3, 3, 2, 0, 2, 0, 4, 4, 4, 4,    2, 6, 0, 0, 4, 4, 4, 4, 2, 5, 2, 0, 0, 5, 0, 0,    2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 0, 4, 4, 4, 4,    2, 5, 0, 5, 4, 4, 4, 4, 2, 4, 2, 0, 4, 4, 4, 4,    2, 6, 0, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 3, 6,    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 0, 7, 4, 4, 7, 7,    2, 6, 0, 8, 3, 3, 5, 5, 2, 2, 2, 0, 4, 4, 6, 6,    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 0, 7, 4, 4, 7, 7
-  ],
-  extracycles: [
-  0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    2, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1,    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    2, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1,    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    2, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1,    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    2, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1,    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    2, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1,    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    2, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1,    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    2, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1
-  ],
-  insnlengths: [
-  1, 2, 0, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 3, 3, 3,    2, 2, 0, 2, 2, 2, 2, 2, 1, 3, 0, 3, 3, 3, 3, 3,    3, 2, 0, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 3, 3, 3,    2, 2, 0, 2, 2, 2, 2, 2, 1, 3, 0, 3, 3, 3, 3, 3,    1, 2, 0, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 3, 3, 3,    2, 2, 0, 2, 2, 2, 2, 2, 1, 3, 0, 3, 3, 3, 3, 3,    1, 2, 0, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 3, 3, 3,    2, 2, 0, 2, 2, 2, 2, 2, 1, 3, 0, 3, 3, 3, 3, 3,    0, 2, 0, 2, 2, 2, 2, 2, 1, 0, 1, 0, 3, 3, 3, 3,    2, 2, 0, 0, 2, 2, 2, 3, 1, 3, 1, 0, 0, 3, 0, 0,    2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 0, 3, 3, 3, 3,    2, 2, 0, 2, 2, 2, 2, 2, 1, 3, 1, 0, 3, 3, 3, 3,    2, 2, 0, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 3, 3, 3,    2, 2, 0, 2, 2, 2, 2, 2, 1, 3, 0, 3, 3, 3, 3, 3,    2, 2, 0, 2, 2, 2, 2, 2, 1, 2, 1, 0, 3, 3, 3, 3,    2, 2, 0, 2, 2, 2, 2, 2, 1, 3, 0, 3, 3, 3, 3, 3
-  ],
-  validinsns: [
-  1, 2, 0, 0, 0, 2, 2, 0, 1, 2, 1, 0, 0, 3, 3, 0,    2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0,    3, 2, 0, 0, 2, 2, 2, 0, 1, 2, 1, 0, 3, 3, 3, 0,    2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0,    1, 2, 0, 0, 0, 2, 2, 0, 1, 2, 1, 0, 3, 3, 3, 0,    2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0,    1, 2, 0, 0, 0, 2, 2, 0, 1, 2, 1, 0, 3, 3, 3, 0,    2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0,    0, 2, 0, 0, 2, 2, 2, 0, 1, 0, 1, 0, 3, 3, 3, 0,    2, 2, 0, 0, 2, 2, 2, 0, 1, 3, 1, 0, 0, 3, 0, 0,    2, 2, 2, 0, 2, 2, 2, 0, 1, 2, 1, 0, 3, 3, 3, 0,    2, 2, 0, 0, 2, 2, 2, 0, 1, 3, 1, 0, 3, 3, 3, 0,    2, 2, 0, 0, 2, 2, 2, 0, 1, 2, 1, 0, 3, 3, 3, 0,    2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0,    2, 2, 0, 0, 2, 2, 2, 0, 1, 2, 1, 0, 3, 3, 3, 0,    2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0
-  ],
-}
-
-export function getOpcodeMetadata_6502(opcode, address) {
-  // TODO: more intelligent maximum cycles
-  // TODO: must always be new object, b/c we might modify it
-  return {
-    opcode:opcode,
-    minCycles:OPMETA_6502.cycletime[opcode],
-    maxCycles:OPMETA_6502.cycletime[opcode] + OPMETA_6502.extracycles[opcode],
-    insnlength:OPMETA_6502.insnlengths[opcode]
-  };
 }
 
 ////// Z80
@@ -527,13 +488,16 @@ export abstract class BaseZ80Platform extends BaseDebugPlatform {
   }
 
   getToolForFilename = getToolForFilename_z80;
+
   getDefaultExtension() { return ".c"; };
+
   // TODO: Z80 opcode metadata
   //this.getOpcodeMetadata = function() { }
 
   getDebugCategories() {
     return ['CPU','Stack'];
   }
+
   getDebugInfo(category:string, state:EmuState) : string {
     switch (category) {
       case 'CPU':   return cpuStateToLongString_Z80(state.c);
@@ -561,30 +525,6 @@ export function getToolForFilename_z80(fn:string) : string {
   if (fn.endsWith(".z")) return "zmac";
   if (fn.endsWith(".wiz")) return "wiz";
   return "zmac";
-}
-
-////// 6809
-
-export function cpuStateToLongString_6809(c) {
-  function decodeFlags(flags) {
-    return printFlags(flags, ["E","F","H","I", "N","Z","V","C"], true);
-  }
-  return "PC " + hex(c.PC,4) + "  " + decodeFlags(c.CC) + "\n"
-       + "SP " + hex(c.SP,4) + "\n"
-       + "DP " + hex(c.DP,2) + "\n"
-       + " A " + hex(c.A,2) + "\n"
-       + " B " + hex(c.B,2) + "\n"
-       + " X " + hex(c.X,4) + "\n"
-       + " Y " + hex(c.Y,4) + "\n"
-       + " U " + hex(c.U,4) + "\n"
-       ;
-}
-
-export function getToolForFilename_6809(fn:string) : string {
-  if (fn.endsWith(".c")) return "cmoc";
-  if (fn.endsWith(".h")) return "cmoc";
-  if (fn.endsWith(".xasm")) return "xasm6809";
-  return "lwasm";
 }
 
 
@@ -638,32 +578,41 @@ export function lookupSymbol(platform:Platform, addr:number, extra:boolean) {
 /// new Machine platform adapters
 
 export interface Machine extends Bus, Resettable, FrameBased, AcceptsROM, HasCPU, SavesState<EmuState>, SavesInputState<any> {
+
 }
 
 export function hasVideo(arg:any): arg is VideoSource {
     return typeof arg.connectVideo === 'function';
 }
+
 export function hasAudio(arg:any): arg is SampledAudioSource {
     return typeof arg.connectAudio === 'function';
 }
+
 export function hasKeyInput(arg:any): arg is AcceptsKeyInput {
     return typeof arg.setKeyInput === 'function';
 }
+
 export function hasJoyInput(arg:any): arg is AcceptsJoyInput {
   return typeof arg.setJoyInput === 'function';
 }
+
 export function hasPaddleInput(arg:any): arg is AcceptsPaddleInput {
     return typeof arg.setPaddleInput === 'function';
 }
+
 export function isRaster(arg:any): arg is RasterFrameBased {
     return typeof arg.getRasterY === 'function';
 }
+
 export function hasProbe(arg:any): arg is Probeable {
     return typeof arg.connectProbe == 'function';
 }
+
 export function hasBIOS(arg:any): arg is AcceptsBIOS {
   return typeof arg.loadBIOS == 'function';
 }
+
 export function hasSerialIO(arg:any): arg is HasSerialIO {
   return typeof arg.connectSerialIO === 'function';
 }
@@ -696,22 +645,32 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
     this.machine.reset();
     if (this.serialVisualizer != null) this.serialVisualizer.reset();
   }
+
   loadState(s)   { this.machine.loadState(s); }
+
   saveState()    { return this.machine.saveState(); }
+
   getSP()        { return this.machine.cpu.getSP(); }
+
   getPC()        { return this.machine.cpu.getPC(); }
+
   isStable() 	 { return this.machine.cpu.isStable(); }
+
   getCPUState()  { return this.machine.cpu.saveState(); }
+
   loadControlsState(s)   { this.machine.loadControlsState(s); }
+
   saveControlsState()    { return this.machine.saveControlsState(); }
 
   async start() {
     this.machine = this.newMachine();
     const m = this.machine;
     // block on WASM loading
+
     if (m instanceof BaseWASMMachine) {
       await m.loadWASM();
     }
+
     var videoFrequency;
     if (hasVideo(m)) {
       var vp = m.getVideoParams();
@@ -728,16 +687,20 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
       }
       videoFrequency = vp.videoFrequency;
     }
+
     this.timer = new AnimationTimer(videoFrequency || 60, this.nextFrame.bind(this));
+
     if (hasAudio(m)) {
       var ap = m.getAudioParams();
       this.audio = new SampledAudio(ap.sampleRate);
       this.audio.start();
       m.connectAudio(this.audio);
     }
+
     if (hasPaddleInput(m)) {
       this.video.setupMouseEvents();
     }
+
     if (hasProbe(m)) {
       this.probeRecorder = new ProbeRecorder(m);
       this.startProbing = () => {
@@ -748,11 +711,13 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
         m.connectProbe(null);
       };
     }
+
     if (hasBIOS(m)) {
       this.loadBIOS = (title, data) => {
         m.loadBIOS(data, title);
       };
     }
+
     if (hasSerialIO(m)) {
       if (this.serialIOInterface == null) {
         this.serialVisualizer = new SerialIOVisualizer(this.mainElement, m);
@@ -816,6 +781,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
       this.probeRecorder.singleFrame = true;
     }
   }
+
   // so probe views stick around TODO: must be a better way?
   runToVsync() {
     if (this.probeRecorder) {
@@ -825,7 +791,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
     super.runToVsync();
   }
 
-// TODO: reset target clock counter
+  // TODO: reset target clock counter
   getRasterScanline() {
     return isRaster(this.machine) && this.machine.getRasterY();
   }
@@ -847,8 +813,8 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
 
 export abstract class BaseZ80MachinePlatform<T extends Machine> extends BaseMachinePlatform<T> {
 
-  //getOpcodeMetadata     = getOpcodeMetadata_z80;
-  getToolForFilename    = getToolForFilename_z80;
+  //getOpcodeMetadata = getOpcodeMetadata_z80;
+  getToolForFilename = getToolForFilename_z80;
 
   getDebugCategories() {
     if (isDebuggable(this.machine))
@@ -856,6 +822,7 @@ export abstract class BaseZ80MachinePlatform<T extends Machine> extends BaseMach
     else
       return ['CPU','Stack'];
   }
+
   getDebugInfo(category:string, state:EmuState) : string {
     switch (category) {
       case 'CPU':   return cpuStateToLongString_Z80(state.c);
@@ -870,10 +837,10 @@ export abstract class BaseZ80MachinePlatform<T extends Machine> extends BaseMach
       default: return isDebuggable(this.machine) && this.machine.getDebugInfo(category, state);
     }
   }
+
   disassemble(pc:number, read:(addr:number)=>number) : DisasmLine {
     return disassembleZ80(pc, read(pc), read(pc+1), read(pc+2), read(pc+3));
   }
-
 }
 
 ///
@@ -900,11 +867,13 @@ class SerialIOVisualizer {
     this.vlist.maindiv.style.overflow = 'clip';
     */
   }
+
   reset() {
     this.lastOutCount = 0;
     this.lastInCount = 0;
     this.textarea.style.display = 'none';
   }
+
   refresh() {
     var lastop = '';
     if (this.device.serialOut.length != this.lastOutCount) {
