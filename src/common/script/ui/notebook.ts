@@ -1,9 +1,9 @@
-
-import { Component, render, h, createRef, VNode } from 'preact';
-import { Cell, PROP_CONSTRUCTOR_NAME } from "../env";
+import { Component, h, createRef, VNode } from 'preact';
+import { PROP_CONSTRUCTOR_NAME } from "../env";
 import { findIntegerFactors, hex, isArray, rgb2bgr } from "../../util";
 import { dumpRAM } from "../../emu";
 import { current_project } from "../../../ide/ui";
+
 // TODO: can't call methods from this end (e.g. Palette, Bitmap)
 import * as bitmap from "../lib/bitmap";
 import * as color from "../lib/color";
@@ -15,6 +15,7 @@ const DEFAULT_ASPECT = 1;
 function sendInteraction(iobj: scriptui.Interactive, type: string, event: Event, xtraprops: {}) {
     let irec = iobj.$$interact;
     let ievent : scriptui.InteractEvent = {interactid: irec.interactid, type, ...xtraprops};
+
     if (event instanceof PointerEvent) {
         const canvas = event.target as HTMLCanvasElement;
         const rect = canvas.getBoundingClientRect();
@@ -28,6 +29,7 @@ function sendInteraction(iobj: scriptui.Interactive, type: string, event: Event,
     } else {
         console.log("Unknown event type", event);
     }
+
     // TODO: add events to queue?
     current_project.updateDataItems([{
         key: scriptui.EVENT_KEY,
@@ -45,14 +47,11 @@ class ColorComponent extends Component<ColorComponentProps> {
         let bgr = rgb2bgr(rgb);
         var htmlcolor = `#${hex(bgr,6)}`;
         var textcolor = (rgb & 0x008000) ? '#222' : '#ddd';
-        var printcolor = hex(rgb & 0xffffff, 6); // TODO: show index instead?
         return h('div', {
             class: 'scripting-item scripting-color',
             style: `background-color: ${htmlcolor}; color: ${textcolor}`,
             alt: htmlcolor, // TODO
-        }, [
-            //h('span', { }, printcolor )
-        ]);
+        }, []);
     }
 }
 
@@ -73,6 +72,7 @@ class BitmapComponent extends Component<BitmapComponentProps> {
     constructor(props: BitmapComponentProps) {
         super(props);
     }
+
     render(virtualDom, containerNode, replaceNode) {
         let props = {
             class: 'scripting-item',
@@ -81,6 +81,7 @@ class BitmapComponent extends Component<BitmapComponentProps> {
             height: this.props.height,
             style: this.props.bitmap.style
         }
+
         let obj : any = this.props.bitmap;
         if (scriptui.isInteractive(obj)) {
             return h('canvas', {
@@ -106,23 +107,28 @@ class BitmapComponent extends Component<BitmapComponentProps> {
             return h('canvas', props);
         }
     }
+
     componentDidMount() {
         this.refresh();
     }
+
     componentWillUnmount() {
         this.canvas = null;
         this.imageData = null;
         this.datau32 = null;
     }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
         this.refresh();
     }
+
     prepare() {
         this.canvas = this.base as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d');
         this.imageData = this.ctx.createImageData(this.canvas.width, this.canvas.height);
         this.datau32 = new Uint32Array(this.imageData.data.buffer);
     }
+
     refresh() {
         // preact can reuse this component but it can change shape :^P
         if (this.canvas !== this.base
@@ -133,6 +139,7 @@ class BitmapComponent extends Component<BitmapComponentProps> {
         this.updateCanvas(this.datau32, this.props.bitmap);
         this.ctx.putImageData(this.imageData, 0, 0);
     }
+
     updateCanvas(vdata: Uint32Array, bmp: bitmap.BitmapType) {
         if (bmp['palette']) {
             this.updateCanvasIndexed(vdata, bmp as bitmap.IndexedBitmap);
@@ -141,9 +148,11 @@ class BitmapComponent extends Component<BitmapComponentProps> {
             this.updateCanvasRGBA(vdata, bmp as bitmap.RGBABitmap);
         }
     }
+
     updateCanvasRGBA(vdata: Uint32Array, bmp: bitmap.RGBABitmap) {
         vdata.set(bmp.rgba);
     }
+
     updateCanvasIndexed(vdata: Uint32Array, bmp: bitmap.IndexedBitmap) {
         let pal = bmp.palette.colors;
         for (var i = 0; i < bmp.pixels.length; i++) {
@@ -184,6 +193,7 @@ class ObjectKeyValueComponent extends Component<ObjectTreeComponentProps, Object
             this.state.expanded ? objectToContentsDiv(this.props.object, this.props.objpath) : null
         ]);
     }
+
     toggleExpand() {
         this.setState({ expanded: !this.state.expanded });
     }
@@ -208,6 +218,7 @@ function getShortName(object: any) {
 
 function primitiveToString(obj) {
     var text = "";
+
     // is it a function? call it first, if we are expanded
     // TODO: only call functions w/ signature
     if (obj && obj.$$ && typeof obj.$$ == 'function' && this._content != null) {
@@ -233,6 +244,7 @@ function primitiveToString(obj) {
 function isIndexedBitmap(object): object is bitmap.IndexedBitmap {
     return object['bpp'] && object['pixels'] && object['palette'];
 }
+
 function isRGBABitmap(object): object is bitmap.RGBABitmap {
     return object['rgba'] instanceof Uint32Array;
 }
@@ -271,6 +283,7 @@ function objectToDiv(object: any, name: string, objpath: string): VNode<any> {
         // don't print key in any case
         name = null;
     }
+
     // TODO: limit # of items
     // TODO: detect table
     if (object == null) {
@@ -367,6 +380,7 @@ class UISelectComponent extends Component<UIComponentProps, ObjectTreeComponentS
         this.props.dropdown = children.length > 16;
         let showselections = !this.props.dropdown || this.state.expanded;
         let seldiv = null;
+
         if (showselections) {
             seldiv = h('div', {
                 class: 'scripting-select scripting-flex',
@@ -395,6 +409,7 @@ class UISelectComponent extends Component<UIComponentProps, ObjectTreeComponentS
                 return h('div', { class: selected ? 'scripting-selected' : '' }, [ div ]);
             }));
         }
+
         if (this.props.dropdown) {
             let selectedDiv = objectToDiv(objectToChild(select.options, select.index), null, `${this.props.iokey}__selected`);
             return h('div', {
@@ -417,6 +432,7 @@ class UISelectComponent extends Component<UIComponentProps, ObjectTreeComponentS
             return seldiv;
         }
     }
+
     toggleExpand() {
         this.setState({ expanded: !this.state.expanded });
     }
@@ -430,8 +446,8 @@ class UIButtonComponent extends Component<UIComponentProps> {
             onClick: (e: MouseEvent) => {
                 sendInteraction(button, 'click', e, { });
             },
-        }, [ 
-            button.label 
+        }, [
+            button.label
         ])
     }
 }
@@ -453,26 +469,4 @@ const UI_COMPONENTS = {
     'select': UISelectComponent,
     'button': UIButtonComponent,
     'shortcut': UIShortcutComponent,
-}
-
-///
-
-export class Notebook {
-    constructor(
-        public readonly maindoc: HTMLDocument,
-        public readonly maindiv: HTMLElement
-    ) {
-        maindiv.classList.add('vertical-scroll');
-    }
-    updateCells(cells: Cell[]) {
-        let hTree = cells.map(cell => {
-            return h('div', {
-                class: 'scripting-cell',
-                key: `${cell.id}__cell`
-            }, [
-                objectToDiv(cell.object, cell.id, cell.id)
-            ])
-        });
-        render(hTree, this.maindiv);
-    }
 }

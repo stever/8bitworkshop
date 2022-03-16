@@ -1,4 +1,3 @@
-
 import { WorkerError } from "../workertypes";
 import ErrorStackParser = require("error-stack-parser");
 import yufka from 'yufka';
@@ -82,16 +81,19 @@ export class Environment {
         this.preamble += '{\n';
         this.postamble = '\n}';
     }
+
     error(varname: string, msg: string) {
         let obj = this.declvars && this.declvars[varname];
         console.log('ERROR', varname, obj, this);
         throw new RuntimeError(obj && obj.loc, msg);
     }
+
     print(args: any[]) {
         if (args && args.length > 0 && args[0] != null) {
             this.obj[`$print__${this.seq++}`] = args.length == 1 ? args[0] : args;
         }
     }
+
     preprocess(code: string): string {
         this.declvars = {};
         this.seq = 0;
@@ -112,6 +114,7 @@ export class Environment {
                 allowReserved: true,
             }
         };
+
         const result = yufka(code, options, (node, { update, source, parent }) => {
             const isTopLevel = () => {
                 return parent() && parent().type === 'ExpressionStatement' && parent(2) && parent(2).type === 'Program';
@@ -169,6 +172,7 @@ export class Environment {
         });
         return result.toString();
     }
+
     async run(code: string): Promise<void> {
         // TODO: split into cells based on "--" linebreaks?
         code = this.preprocess(code);
@@ -178,43 +182,59 @@ export class Environment {
         await fn.call(this);
         this.checkResult(this.obj, new Set(), []);
     }
+
     // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
     // TODO: return initial location of thingie
     checkResult(o, checked: Set<object>, fullkey: string[]) {
         if (o == null) return;
+
         if (checked.has(o)) return;
+
         if (typeof o === 'object') {
             setConstructorName(o);
+
             delete o.$$callback; // clear callbacks (TODO? put somewhere else?)
+
             if (o.length > 100) return; // big array, don't bother
+
             if (o.BYTES_PER_ELEMENT > 0) return; // typed array, don't bother
+
             checked.add(o); // so we don't recurse if cycle
+
             function prkey() { return fullkey.join('.') }
+
             // go through all object properties recursively
             for (var [key, value] of Object.entries(o)) {
                 if (value == null && fullkey.length == 0 && !key.startsWith("$")) {
                     this.error(key, `"${key}" has no value.`)
                 }
+
                 fullkey.push(key);
+
                 if (typeof value === 'function') {
                     if (fullkey.length == 1)
                         this.error(fullkey[0], `"${prkey()}" is a function. Did you forget to pass parameters?`); // TODO? did you mean (needs to see entire expr)
                     else
                         this.error(fullkey[0], `This expression may be incomplete, or it contains a function object: ${prkey()}`); // TODO? did you mean (needs to see entire expr)
                 }
+
                 if (typeof value === 'symbol') {
                     this.error(fullkey[0], `"${prkey()}" is a Symbol, and can't be used.`) // TODO?
                 }
+
                 if (value instanceof Promise) {
                     this.error(fullkey[0], `"${prkey()}" is unresolved. Use "await" before expression.`) // TODO?
                 }
+
                 this.checkResult(value, checked, fullkey);
                 fullkey.pop();
             }
         }
     }
+
     render(): Cell[] {
         var cells = [];
+
         for (var [key, value] of Object.entries(this.obj)) {
             if (typeof value === 'function') {
                 // TODO: find other values, functions embedded in objects?
@@ -223,8 +243,10 @@ export class Environment {
                 cells.push(cell);
             }
         }
+
         return cells;
     }
+
     extractErrors(e: Error): WorkerError[] {
         let loc = e['loc'];
         if (loc && loc.start && loc.end) {
@@ -236,6 +258,7 @@ export class Environment {
                 end: loc.end.line,
             }]
         }
+
         if (loc && loc.line != null) {
             return [{
                 path: this.path,
@@ -244,10 +267,12 @@ export class Environment {
                 start: loc.column,
             }]
         }
+
         // TODO: Cannot parse given Error object?
         let frames = ErrorStackParser.parse(e);
         let frame = frames.findIndex(f => f.functionName === 'anonymous');
         let errors = [];
+
         // if ErrorStackParser fails, resort to regex
         if (frame < 0 && e.stack != null) {
             let m = /.anonymous.:(\d+):(\d+)/g.exec(e.stack);
@@ -259,6 +284,7 @@ export class Environment {
                 });
             }
         }
+
         // otherwise iterate thru all the frames
         while (frame >= 0) {
             console.log(frames[frame]);
@@ -273,6 +299,7 @@ export class Environment {
             }
             --frame;
         }
+
         // if no stack frames parsed, last resort error msg
         if (errors.length == 0) {
             errors.push( {
@@ -281,8 +308,10 @@ export class Environment {
                 line: 0
             } );
         }
+
         return errors;
     }
+
     commitLoadableState() {
         // TODO: visit children?
         for (let [key, value] of Object.entries(this.obj)) {
