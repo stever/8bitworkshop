@@ -77,274 +77,6 @@ export function moduleInstFn(module_id:string) {
 //
 
 var PLATFORM_PARAMS = {
-  'vcs': {
-    arch: '6502',
-    code_start: 0x1000,
-    code_size: 0xf000,
-    data_start: 0x80,
-    data_size: 0x80,
-    wiz_rom_ext: '.a26',
-    wiz_inc_dir: '2600',
-    extra_link_files: ['atari2600.cfg'],
-    cfgfile: 'atari2600.cfg',
-  },
-  'mw8080bw': {
-    arch: 'z80',
-    code_start: 0x0,
-    rom_size: 0x2000,
-    data_start: 0x2000,
-    data_size: 0x400,
-    stack_end: 0x2400,
-  },
-  'vicdual': {
-    arch: 'z80',
-    code_start: 0x0,
-    rom_size: 0x4020,
-    data_start: 0xe400,
-    data_size: 0x400,
-    stack_end: 0xe800,
-  },
-  'galaxian': {
-    arch: 'z80',
-    code_start: 0x0,
-    rom_size: 0x4000,
-    data_start: 0x4000,
-    data_size: 0x400,
-    stack_end: 0x4800,
-  },
-  'galaxian-scramble': {
-    arch: 'z80',
-    code_start: 0x0,
-    rom_size: 0x5020,
-    data_start: 0x4000,
-    data_size: 0x400,
-    stack_end: 0x4800,
-  },
-  'williams': {
-    arch: '6809',
-    code_start: 0x0,
-    rom_size: 0xc000,
-    data_start: 0x9800,
-    data_size: 0x2800,
-    stack_end: 0xc000,
-    set_stack_end: 0xc000,
-    extra_link_files: ['williams.scr', 'libcmoc-crt-vec.a', 'libcmoc-std-vec.a'],
-    extra_link_args: ['-swilliams.scr', '-lcmoc-crt-vec', '-lcmoc-std-vec'],
-    extra_compile_files: ['assert.h','cmoc.h','stdarg.h','stdlib.h'],
-    //extra_compile_args: ['--vectrex'],
-  },
-  'williams-defender': {
-    arch: '6809',
-    code_start: 0x0,
-    rom_size: 0xc000,
-    data_start: 0x9800,
-    data_size: 0x2800,
-    stack_end: 0xc000,
-  },
-  'williams-z80': {
-    arch: 'z80',
-    code_start: 0x0,
-    rom_size: 0x9800,
-    data_start: 0x9800,
-    data_size: 0x2800,
-    stack_end: 0xc000,
-  },
-  'vector-z80color': {
-    arch: 'z80',
-    code_start: 0x0,
-    rom_size: 0x8000,
-    data_start: 0xe000,
-    data_size: 0x2000,
-    stack_end: 0x0,
-  },
-  'vector-ataricolor': { //TODO
-    arch: '6502',
-    define: ['__VECTOR__'],
-    cfgfile: 'vector-color.cfg',
-    libargs: ['crt0.o', 'none.lib'],
-    extra_link_files: ['crt0.o', 'vector-color.cfg'],
-  },
-  'sound_williams-z80': {
-    arch: 'z80',
-    code_start: 0x0,
-    rom_size: 0x4000,
-    data_start: 0x4000,
-    data_size: 0x400,
-    stack_end: 0x8000,
-  },
-  'base_z80': {
-    arch: 'z80',
-    code_start: 0x0,
-    rom_size: 0x8000,
-    data_start: 0x8000,
-    data_size: 0x8000,
-    stack_end: 0x0,
-  },
-  'coleco': {
-    arch: 'z80',
-    rom_start: 0x8000,
-    code_start: 0x8100,
-    rom_size: 0x8000,
-    data_start: 0x7000,
-    data_size: 0x400,
-    stack_end: 0x8000,
-    extra_preproc_args: ['-I', '/share/include/coleco', '-D', 'CV_CV'],
-    extra_link_args: ['-k', '/share/lib/coleco', '-l', 'libcv', '-l', 'libcvu', 'crt0.rel'],
-  },
-  'msx': {
-    arch: 'z80',
-    rom_start: 0x4000,
-    code_start: 0x4000,
-    rom_size: 0x8000,
-    data_start: 0xc000,
-    data_size: 0x3000,
-    stack_end: 0xffff,
-    extra_link_args: ['crt0-msx.rel'],
-    extra_link_files: ['crt0-msx.rel', 'crt0-msx.lst'],
-    wiz_sys_type: 'z80',
-    wiz_inc_dir: 'msx',
-  },
-  'msx-libcv': {
-    arch: 'z80',
-    rom_start: 0x4000,
-    code_start: 0x4000,
-    rom_size: 0x8000,
-    data_start: 0xc000,
-    data_size: 0x3000,
-    stack_end: 0xffff,
-    extra_preproc_args: ['-I', '.', '-D', 'CV_MSX'],
-    extra_link_args: ['-k', '.', '-l', 'libcv-msx', '-l', 'libcvu-msx', 'crt0-msx.rel'],
-    extra_link_files: ['libcv-msx.lib', 'libcvu-msx.lib', 'crt0-msx.rel', 'crt0-msx.lst'],
-    extra_compile_files: ['cv.h','cv_graphics.h','cv_input.h','cv_sound.h','cv_support.h','cvu.h','cvu_c.h','cvu_compression.h','cvu_f.h','cvu_graphics.h','cvu_input.h','cvu_sound.h'],
-  },
-  'sms-sg1000-libcv': {
-    arch: 'z80',
-    rom_start: 0x0000,
-    code_start: 0x0100,
-    rom_size: 0xc000,
-    data_start: 0xc000,
-    data_size: 0x400,
-    stack_end: 0xe000,
-    extra_preproc_args: ['-I', '.', '-D', 'CV_SMS'],
-    extra_link_args: ['-k', '.', '-l', 'libcv-sms', '-l', 'libcvu-sms', 'crt0-sms.rel'],
-    extra_link_files: ['libcv-sms.lib', 'libcvu-sms.lib', 'crt0-sms.rel', 'crt0-sms.lst'],
-    extra_compile_files: ['cv.h','cv_graphics.h','cv_input.h','cv_sound.h','cv_support.h','cvu.h','cvu_c.h','cvu_compression.h','cvu_f.h','cvu_graphics.h','cvu_input.h','cvu_sound.h'],
-  },
-  'nes': { //TODO
-    arch: '6502',
-    define: ['__NES__'],
-    cfgfile: 'neslib2.cfg',
-    libargs: ['crt0.o', 'nes.lib', 'neslib2.lib',
-      '-D', 'NES_MAPPER=0', // NROM
-      '-D', 'NES_PRG_BANKS=2', // 2 16K PRG banks
-      '-D', 'NES_CHR_BANKS=1', // 1 CHR bank
-      '-D', 'NES_MIRRORING=0', // horizontal mirroring
-      ],
-    extra_link_files: ['crt0.o', 'neslib2.lib', 'neslib2.cfg', 'nesbanked.cfg'],
-    wiz_rom_ext: '.nes',
-  },
-  'apple2': {
-    arch: '6502',
-    define: ['__APPLE2__'],
-    cfgfile: 'apple2.cfg',
-    libargs: [ '--lib-path', '/share/target/apple2/drv', '-D', '__EXEHDR__=0', 'apple2.lib'],
-    __CODE_RUN__: 16384,
-    code_start: 0x803,
-  },
-  'apple2-e': {
-    arch: '6502',
-    define: ['__APPLE2__'],
-    cfgfile: 'apple2.cfg',
-    libargs: ['apple2.lib'],
-  },
-  'atari8-800xl.disk': {
-    arch: '6502',
-    define: ['__ATARI__'],
-    cfgfile: 'atari.cfg',
-    libargs: ['atari.lib'],
-    fastbasic_cfgfile: 'fastbasic-cart.cfg',
-  },
-  'atari8-800xl': {
-    arch: '6502',
-    define: ['__ATARI__'],
-    cfgfile: 'atari-cart.cfg',
-    libargs: ['atari.lib', '-D', '__CARTFLAGS__=4'],
-    fastbasic_cfgfile: 'fastbasic-cart.cfg',
-  },
-  'atari8-5200': {
-    arch: '6502',
-    define: ['__ATARI5200__'],
-    cfgfile: 'atari5200.cfg',
-    libargs: ['atari5200.lib', '-D', '__CARTFLAGS__=255'],
-    fastbasic_cfgfile: 'fastbasic-cart.cfg',
-  },
-  'verilog': {
-    arch: 'verilog',
-    extra_compile_files: ['8bitworkshop.v'],
-  },
-  'astrocade': {
-    arch: 'z80',
-    code_start: 0x2000,
-      rom_size: 0x2000,
-    data_start: 0x4e10,
-     data_size: 0x1f0,
-     stack_end: 0x5000,
-  },
-  'astrocade-arcade': {
-    arch: 'z80',
-    code_start: 0x0000,
-      rom_size: 0x4000,
-    data_start: 0x7de0,
-     data_size: 0x220,
-     stack_end: 0x8000,
-  },
-  'astrocade-bios': {
-    arch: 'z80',
-    code_start: 0x0000,
-      rom_size: 0x2000,
-    data_start: 0x4fce,
-     data_size: 50,
-     stack_end: 0x4fce,
-  },
-  'atari7800': {
-    arch: '6502',
-    define: ['__ATARI7800__'],
-    cfgfile: 'atari7800.cfg',
-    libargs: ['crt0.o', 'none.lib'],
-    extra_link_files: ['crt0.o', 'atari7800.cfg'],
-  },
-  'c64': {
-    arch: '6502',
-    define: ['__CBM__', '__C64__'],
-    cfgfile: 'c64.cfg', // SYS 2061
-    libargs: ['c64.lib'],
-    //extra_link_files: ['c64-cart.cfg'],
-  },
-  'vic20': {
-    arch: '6502',
-    define: ['__CBM__', '__VIC20__'],
-    cfgfile: 'vic20.cfg',
-    libargs: ['vic20.lib'],
-    //extra_link_files: ['c64-cart.cfg'],
-  },
-  'kim1': {
-    arch: '6502',
-  },
-  'vectrex': {
-    arch: '6809',
-    code_start: 0x0,
-    rom_size: 0x8000,
-    data_start: 0xc880,
-    data_size: 0x380,
-    stack_end: 0xcc00,
-    extra_compile_files: ['assert.h','cmoc.h','stdarg.h','vectrex.h','stdlib.h','bios.h'],
-    extra_link_files: ['vectrex.scr', 'libcmoc-crt-vec.a', 'libcmoc-std-vec.a'],
-    extra_compile_args: ['--vectrex'],
-    extra_link_args: ['-svectrex.scr', '-lcmoc-crt-vec', '-lcmoc-std-vec'],
-  },
-  'x86': {    
-    arch: 'x86',
-  },
   'zx': {
     arch: 'z80',
     code_start: 0x5ccb,
@@ -354,36 +86,6 @@ var PLATFORM_PARAMS = {
     stack_end: 0xff58,
     extra_link_args: ['crt0-zx.rel'],
     extra_link_files: ['crt0-zx.rel', 'crt0-zx.lst'],
-  },
-  'devel-6502': {
-    arch: '6502',
-    cfgfile: 'devel-6502.cfg',
-    libargs: ['crt0.o', 'none.lib'],
-    extra_link_files: ['crt0.o', 'devel-6502.cfg'],
-  },
-  // https://github.com/cpcitor/cpc-dev-tool-chain
-  'cpc.rslib': {
-    arch: 'z80',
-    code_start: 0x4000,
-    rom_size: 0xb100-0x4000,
-    data_start: 0xb100,
-    data_size: 0xb100-0xc000,
-    stack_end: 0xc000,
-    extra_compile_files: ['cpcrslib.h'],
-    extra_link_args: ['crt0-cpc.rel', 'cpcrslib.lib'],
-    extra_link_files: ['crt0-cpc.rel', 'crt0-cpc.lst', 'cpcrslib.lib', 'cpcrslib.lst'],
-  },
-  // https://lronaldo.github.io/cpctelera/ (TODO)
-  'cpc': {
-    arch: 'z80',
-    code_start: 0x4000,
-    rom_size: 0xb100-0x4000,
-    data_start: 0xb100,
-    data_size: 0xb100-0xc000,
-    stack_end: 0xc000,
-    extra_compile_files: ['cpctelera.h'],
-    extra_link_args: ['crt0-cpc.rel', 'cpctelera.lib'],
-    extra_link_files: ['crt0-cpc.rel', 'crt0-cpc.lst', 'cpctelera.lib', 'cpctelera.lst'],
   },
 };
 
@@ -470,7 +172,7 @@ export class FileWorkingStore implements WorkingStore {
   }
   getFileData(path:string) : FileData {
     return this.workfs[path] && this.workfs[path].data;
-  }  
+  }
   getFileAsString(path:string) : string {
     let data = this.getFileData(path);
     if (data != null && typeof data !== 'string')
@@ -947,7 +649,7 @@ export function parseSourceLines(code:string, lineMatch, offsetMatch, funcMatch?
     if (segm) { segment = segm[1]; }
     let funcm = funcMatch && funcMatch.exec(line);
     if (funcm) { funcbase = parseInt(funcm[1],16); func = funcm[2]; }
-    
+
     var linem = lineMatch.exec(line);
     if (linem && linem[1]) {
       lastlinenum = parseInt(linem[1]);
@@ -1091,81 +793,21 @@ export function setupRequireFunction() {
 
 ////////////////////////////
 
-import * as misc from './tools/misc'
-import * as cc65 from './tools/cc65'
-import * as dasm from './tools/dasm'
 import * as sdcc from './tools/sdcc'
-import * as verilog from './tools/verilog'
-import * as m6809 from './tools/m6809'
-import * as m6502 from './tools/m6502'
 import * as z80 from './tools/z80'
-import * as x86 from './tools/x86'
-import * as arm from './tools/arm'
-import * as script from './tools/script'
+// import * as script from './tools/script'
 
 var TOOLS = {
-  'dasm': dasm.assembleDASM,
-  //'acme': assembleACME,
-  //'plasm': compilePLASMA,
-  'cc65': cc65.compileCC65,
-  'ca65': cc65.assembleCA65,
-  'ld65': cc65.linkLD65,
-  //'z80asm': assembleZ80ASM,
-  //'sccz80': compileSCCZ80,
   'sdasz80': sdcc.assembleSDASZ80,
   'sdldz80': sdcc.linkSDLDZ80,
   'sdcc': sdcc.compileSDCC,
-  'xasm6809': m6809.assembleXASM6809,
-  'cmoc': m6809.compileCMOC,
-  'lwasm': m6809.assembleLWASM,
-  'lwlink': m6809.linkLWLINK,
-  //'naken': assembleNAKEN,
-  'verilator': verilog.compileVerilator,
-  'yosys': verilog.compileYosys,
-  'jsasm': verilog.compileJSASMStep,
   'zmac': z80.assembleZMAC,
-  'nesasm': m6502.assembleNESASM,
-  'smlrc': x86.compileSmallerC,
-  'yasm': x86.assembleYASM,
-  'bataribasic': dasm.compileBatariBasic,
-  'markdown': misc.translateShowdown,
-  'inform6': misc.compileInform6,
-  'merlin32': m6502.assembleMerlin32,
-  'fastbasic': m6502.compileFastBasic,
-  'basic': misc.compileBASIC,
-  'silice': verilog.compileSilice,
-  'wiz': misc.compileWiz,
-  'armips': arm.assembleARMIPS,
-  'vasmarm': arm.assembleVASMARM,
-  'js': script.runJavascript,
 }
 
 var TOOL_PRELOADFS = {
-  'cc65-apple2': '65-apple2',
-  'ca65-apple2': '65-apple2',
-  'cc65-c64': '65-c64',
-  'ca65-c64': '65-c64',
-  'cc65-vic20': '65-vic20',
-  'ca65-vic20': '65-vic20',
-  'cc65-nes': '65-nes',
-  'ca65-nes': '65-nes',
-  'cc65-atari8': '65-atari8',
-  'ca65-atari8': '65-atari8',
-  'cc65-vector': '65-none',
-  'ca65-vector': '65-none',
-  'cc65-atari7800': '65-none',
-  'ca65-atari7800': '65-none',
-  'cc65-devel': '65-none',
-  'ca65-devel': '65-none',
-  'ca65-vcs': '65-none',
   'sdasz80': 'sdcc',
   'sdcc': 'sdcc',
   'sccz80': 'sccz80',
-  'bataribasic': '2600basic',
-  'inform6': 'inform',
-  'fastbasic': '65-atari8',
-  'silice': 'Silice',
-  'wiz': 'wiz',
 }
 
 //const waitFor = delay => new Promise(resolve => setTimeout(resolve, delay)); // for testing
