@@ -1,4 +1,3 @@
-
 import { WasmFs } from "@wasmer/wasmfs";
 import { CpuState, EmuState } from "./baseplatform";
 import { CPU, SampledAudioSink, ProbeAll, NullProbe } from "./devices";
@@ -54,9 +53,11 @@ export abstract class BaseWASMMachine {
       },
     }
   }
+
   getImports(wmod: WebAssembly.Module) {
     return {};
   }
+
   async fetchWASM() {
     var wasmResponse = await fetch('res/'+this.prefix+'.wasm');
     if (wasmResponse.status == 200 || (wasmResponse as any as Blob).size) {
@@ -67,6 +68,7 @@ export abstract class BaseWASMMachine {
       this.exports = wasmResult.exports;
     } else throw new Error('could not load WASM file');
   }
+
   async fetchBIOS() {
     var biosResponse = await fetch('res/'+this.prefix+'.bios');
     if (biosResponse.status == 200 || (biosResponse as any as Blob).size) {
@@ -76,6 +78,7 @@ export abstract class BaseWASMMachine {
       this.loadBIOS(new Uint8Array(biosBinary));
     } else throw new Error('could not load BIOS file');
   }
+
   async initWASM() {
     // init machine instance
     this.sys = this.exports.machine_init(this.biosptr);
@@ -100,21 +103,26 @@ export abstract class BaseWASMMachine {
     //this.exports.c64_set_joystick_type(this.sys, 1);
     console.log('machine_init', this.sys, statesize, ctrlstatesize, cpustatesize, sampbufsize);
   }
+
   async loadWASM() {
     await this.fetchWASM();
     this.exports.memory.grow(96); // TODO: need more when probing?
     await this.fetchBIOS();
     await this.initWASM();
   }
+
   getPC() : number {
     return this.exports.machine_cpu_get_pc(this.sys);
   }
+
   getSP() : number {
     return this.exports.machine_cpu_get_sp(this.sys);
   }
+
   isStable() : boolean {
     return this.exports.machine_cpu_is_stable(this.sys);
   }
+
   loadROM(rom: Uint8Array) {
     if (rom.length > this.maxROMSize) throw new EmuHalt(`Rom size too big: ${rom.length} bytes`);
     this.romarr.set(rom);
@@ -122,37 +130,47 @@ export abstract class BaseWASMMachine {
     console.log('load rom', rom.length, 'bytes');
     this.reset(); // TODO?
   }
+
   // TODO: can't load after machine_init
   loadBIOS(srcArray: Uint8Array) {
     this.biosarr.set(srcArray);
   }
+
   reset() {
     this.exports.machine_reset(this.sys);
   }
+
   /* TODO: we don't need this because c64_exec does this?
   pollControls() {
     this.exports.machine_start_frame(this.sys);
   }
   */
+
   read(address: number) : number {
     return this.exports.machine_mem_read(this.sys, address & 0xffff);
   }
+
   readConst(address: number) : number {
     return this.exports.machine_mem_read(this.sys, address & 0xffff);
   }
+
   write(address: number, value: number) : void {
     this.exports.machine_mem_write(this.sys, address & 0xffff, value & 0xff);
   }
+
   getAudioParams() {
     return {sampleRate:44100, stereo:false};
   }
+
   videoOffsetBytes = 0;
+
   connectVideo(pixels:Uint32Array) : void {
     this.pixel_dest = pixels;
     var pixbuf = this.exports.machine_get_pixel_buffer(this.sys); // save video pointer
     console.log('connectVideo', pixbuf, pixels.length);
     this.pixel_src = new Uint32Array(this.exports.memory.buffer, pixbuf+this.videoOffsetBytes, pixels.length);
   }
+
   syncVideo() {
     if (this.exports.machine_update_video) {
       this.exports.machine_update_video(this.sys);
@@ -161,6 +179,7 @@ export abstract class BaseWASMMachine {
       this.pixel_dest.set(this.pixel_src);
     }
   }
+
   // assume controls buffer is smaller than cpu buffer
   saveControlsState() : any {
     //console.log(1, this.romptr, this.romlen, this.ctrlstateptr, this.romarr.slice(0,4), this.ctrlstatearr.slice(0,4));
@@ -168,13 +187,16 @@ export abstract class BaseWASMMachine {
     //console.log(2, this.romptr, this.romlen, this.ctrlstateptr, this.romarr.slice(0,4), this.ctrlstatearr.slice(0,4));
     return { controls:this.ctrlstatearr.slice(0) }
   }
+
   loadControlsState(state) : void {
     this.ctrlstatearr.set(state.controls);
     this.exports.machine_load_controls_state(this.sys, this.ctrlstateptr);
   }
+
   connectAudio(audio : SampledAudioSink) : void {
     this.audio = audio;
   }
+
   syncAudio() {
     if (this.audio != null) {
       var n = this.exports.machine_get_sample_count();
@@ -183,6 +205,7 @@ export abstract class BaseWASMMachine {
       }
     }
   }
+
   // TODO: tick might advance 1 instruction
   advanceFrameClock(trap, cpf:number) : number {
     var i : number;
@@ -201,6 +224,7 @@ export abstract class BaseWASMMachine {
     this.syncAudio();
     return i;
   }
+
   copyProbeData() {
     if (this.probe && !(this.probe instanceof NullProbe)) {
       var datalen = this.exports.machine_get_probe_buffer_size();
@@ -211,9 +235,11 @@ export abstract class BaseWASMMachine {
       this.probe.addLogBuffer(databuf);
     }
   }
+
   connectProbe(probe: ProbeAll): void {
     this.probe = probe;
   }
+
   getDebugTree() {
     return this.saveState();
   }
@@ -225,10 +251,11 @@ export abstract class BaseWASIMachine extends BaseWASMMachine {
   m_wasi;
   wasiInstance;
   wasmFs : WasmFs;
-  
+
   constructor(prefix: string) {
     super(prefix);
   }
+
   getImports(wmod: WebAssembly.Module) {
     var imports = this.wasiInstance.getImports(wmod);
     // TODO: eliminate these imports
@@ -246,10 +273,12 @@ export abstract class BaseWASIMachine extends BaseWASMMachine {
     }
     return imports;
   }
+
   stdoutWrite(buffer) {
     console.log('>>>', buffer.toString());
     return buffer.length;
   }
+
   async loadWASM() {
     let WASI = await import('@wasmer/wasi');
     let WasmFs = await import('@wasmer/wasmfs');
