@@ -795,7 +795,6 @@ export function setupRequireFunction() {
 
 import * as sdcc from './tools/sdcc'
 import * as z80 from './tools/z80'
-// import * as script from './tools/script'
 
 var TOOLS = {
   'sdasz80': sdcc.assembleSDASZ80,
