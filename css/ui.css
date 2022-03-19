@@ -270,11 +270,6 @@ div.emulator {
   display:flex;
   flex-direction:column;
 }
-div.emuoverlay {
-  display:flex;
-  flex-direction:column;
-  height:100%;
-}
 div.emuscope {
   background-color:#333;
   color:#ccc;
