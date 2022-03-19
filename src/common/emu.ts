@@ -1,10 +1,6 @@
-
-import { hex, clamp, lpad } from "./util";
+import { hex, clamp } from "./util";
 import { SourceLocation } from "./workertypes";
 import { VirtualList } from "./vlist"
-
-// external modules
-declare var jt, Javatari;
 
 // Emulator classes
 
@@ -80,16 +76,16 @@ export class RasterVideo {
     this.height = height;
     this.options = options;
   }
-  
+
   canvas : HTMLCanvasElement;
   ctx : CanvasRenderingContext2D;
   imageData : ImageData;
   datau32 : Uint32Array;
   vcanvas : JQuery;
-  
+
   paddle_x = 255;
   paddle_y = 255;
-  
+
   setRotate(rotate:number) {
     var canvas = this.canvas;
     if (rotate) {
@@ -155,70 +151,6 @@ export class RasterVideo {
   };
 }
 
-export class VectorVideo extends RasterVideo {
-
-  persistenceAlpha = 0.5;
-  jitter = 1.0;
-  gamma = 0.8;
-  sx : number;
-  sy : number;
-  
-  create() {
-    super.create();
-    this.sx = this.width/1024.0;
-    this.sy = this.height/1024.0;
-  }
-
-  clear() {
-    var ctx = this.ctx;
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = this.persistenceAlpha;
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, this.width, this.height);
-    ctx.globalAlpha = 1.0;
-    ctx.globalCompositeOperation = 'lighter';
-  }
-
-  COLORS = [
-    '#111111',
-    '#1111ff',
-    '#11ff11',
-    '#11ffff',
-    '#ff1111',
-    '#ff11ff',
-    '#ffff11',
-    '#ffffff'
-  ];
-
-  drawLine(x1:number, y1:number, x2:number, y2:number, intensity:number, color:number) {
-    var ctx = this.ctx;
-    var sx = this.sx;
-    var sy = this.sy;
-    //console.log(x1,y1,x2,y2,intensity,color);
-    if (intensity > 0) {
-      // TODO: landscape vs portrait
-      var alpha = Math.pow(intensity / 255.0, this.gamma);
-      ctx.globalAlpha = alpha;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      // TODO: bright dots
-      var jx = this.jitter * (Math.random() - 0.5);
-      var jy = this.jitter * (Math.random() - 0.5);
-      x1 += jx;
-      x2 += jx;
-      y1 += jy;
-      y2 += jy;
-      ctx.moveTo(x1*sx, this.height-y1*sy);
-      if (x1 == x2 && y1 == y2)
-        ctx.lineTo(x2*sx+1, this.height-y2*sy);
-      else
-        ctx.lineTo(x2*sx, this.height-y2*sy);
-      ctx.strokeStyle = this.COLORS[color & 7];
-      ctx.stroke();
-    }
-  }
-}
-
 export class RAM {
   mem : Uint8Array;
   constructor(size:number) {
@@ -239,7 +171,7 @@ export var useRequestAnimationFrame : boolean = false;
 
 export class AnimationTimer {
 
-  callback;  
+  callback;
   running : boolean = false;
   pulsing : boolean = false;
   nextts = 0;
@@ -248,7 +180,7 @@ export class AnimationTimer {
   frameRate;
   intervalMsec;
   useReqAnimFrame = useRequestAnimationFrame && typeof window.requestAnimationFrame === 'function'; // need for unit test
-  
+
   constructor(frequencyHz:number, callback:() => void) {
     this.frameRate = frequencyHz;
     this.intervalMsec = 1000.0 / frequencyHz;
@@ -270,7 +202,7 @@ export class AnimationTimer {
     else
       setTimeout(fn, msec);
   }
-  
+
   nextFrame(ts:number) {
     if (ts > this.nextts) {
       if (this.running) {
@@ -344,14 +276,6 @@ export interface KeyDef {
   yaxis?:number,
   button?:number
   };
-
-export interface KeyMapEntry {
-  index:number;
-  mask:number;
-  def:KeyDef;
-}
-
-type KeyCodeMap = Map<number,KeyMapEntry>;
 
 export const Keys = {
     ANYKEY:   {c: 0,   n: "?"},
@@ -487,55 +411,9 @@ export const Keys = {
 
 function _metakeyflags(e) {
   return (e.shiftKey?KeyFlags.Shift:0) |
-        (e.ctrlKey?KeyFlags.Ctrl:0) | 
-        (e.altKey?KeyFlags.Alt:0) | 
+        (e.ctrlKey?KeyFlags.Ctrl:0) |
+        (e.altKey?KeyFlags.Alt:0) |
         (e.metaKey?KeyFlags.Meta:0);
-}
-
-type KeyMapFunction = (o:KeyMapEntry, key:number, code:number, flags:number) => void;
-
-export function newKeyboardHandler(switches:number[]|Uint8Array, map:KeyCodeMap, func?:KeyMapFunction, alwaysfunc?:boolean) {
-  return (key:number,code:number,flags:number) => {
-    if (!map) {
-      func(null, key, code, flags);
-      return;
-    }
-    var o : KeyMapEntry = map[key];
-    if (!o) o = map[0];
-    if (func && (o || alwaysfunc)) {
-      func(o, key, code, flags);
-    }
-    if (o) {
-      //console.log(key,code,flags,o);
-      var mask = o.mask;
-      if (mask < 0) { // negative mask == active low
-        mask = -mask;
-        if (flags & (KeyFlags.KeyDown | KeyFlags.KeyUp))
-          flags ^= KeyFlags.KeyDown | KeyFlags.KeyUp;
-      }
-      if (flags & KeyFlags.KeyDown) {
-        switches[o.index] |= mask;
-      } else if (flags & KeyFlags.KeyUp) {
-        switches[o.index] &= ~mask;
-      }
-    }
-  };
-}
-
-export function setKeyboardFromMap(video:RasterVideo, switches:number[]|Uint8Array, map:KeyCodeMap, func?:KeyMapFunction, alwaysfunc?:boolean) {
-  var handler = newKeyboardHandler(switches, map, func, alwaysfunc);
-  video.setKeyboardEvents(handler);
-  return new ControllerPoller(handler);
-}
-
-export function makeKeycodeMap(table : [KeyDef,number,number][]) : KeyCodeMap {
-  var map = new Map<number,KeyMapEntry>();
-  for (var i=0; i<table.length; i++) {
-    var entry = table[i];
-    var val : KeyMapEntry = {index:entry[1], mask:entry[2], def:entry[0]};
-    map[entry[0].c] = val;
-  }
-  return map;
 }
 
 const DEFAULT_CONTROLLER_KEYS : KeyDef[] = [
@@ -611,7 +489,6 @@ export class ControllerPoller {
   }
 }
 
-
 export function padBytes(data:Uint8Array|number[], len:number, padstart?:boolean) : Uint8Array {
   if (data.length > len) {
     throw Error("Data too long, " + data.length + " > " + len);
@@ -653,11 +530,6 @@ export function AddressDecoder(table : AddressDecoderEntry[], options?:AddressDe
   return makeFunction().bind(self);
 }
 
-export function newAddressDecoder(table : AddressDecoderEntry[], options?:AddressDecoderOptions) : (a:number,v?:number) => number {
-  return new (AddressDecoder as any)(table, options);
-}
-
-
 // https://stackoverflow.com/questions/17130395/real-mouse-position-in-canvas
 export function getMousePos(canvas : HTMLCanvasElement, evt) : {x:number,y:number} {
   var rect = canvas.getBoundingClientRect(), // abs. size of element
@@ -693,7 +565,7 @@ export class VirtualTextScroller {
     parent.appendChild(div);
     this.maindiv = div;
   }
-  
+
   create(workspace : HTMLElement, maxRowCount : number, fn : (row:number) => VirtualTextLine) {
     this.getLineAt = fn;
     this.memorylist = new VirtualList({

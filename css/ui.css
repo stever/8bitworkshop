@@ -319,12 +319,6 @@ canvas.pixelated {
   border-color:white;
   border-style:dotted;
 }
-#javatari-screen canvas {
-  box-sizing: content-box;
-}
-#javatari-screen div {
-  box-sizing: content-box;
-}
 @font-face {
     font-family: TinyFont;
     src: url(04B_03__.TTF);
@@ -610,18 +604,18 @@ div.asset_toolbar {
   font-size: 10pt;
   line-height: 1.2;
 }
-.transcript {  
+.transcript {
   background-color: #fff;
   width: 100%;
   padding: 1.25em;
   user-select: text;
   font-family: Verdana, Geneva, sans-serif;
 }
-.transcript-bottom {  
+.transcript-bottom {
   background-color: #fff;
   width: 100%;
 }
-.transcript-split {  
+.transcript-split {
   padding: 0.5em;
   background: #eee;
   box-shadow: 0 8px 6px -6px RGBA(0,0,0,0.3);
