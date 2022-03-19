@@ -1,9 +1,8 @@
-
 // 8bitworkshop IDE user interface
 
 import * as localforage from "localforage";
 import { CodeProject, createNewPersistentStore, LocalForageFilesystem, OverlayFilesystem, ProjectFilesystem, WebPresetsFileSystem } from "./project";
-import { WorkerResult, WorkerOutputResult, WorkerError, FileData, WorkerErrorResult } from "../common/workertypes";
+import { WorkerResult, WorkerError, FileData } from "../common/workertypes";
 import { ProjectWindows } from "./windows";
 import { Platform, Preset, DebugSymbols, DebugEvalCondition, isDebuggable, EmuState } from "../common/baseplatform";
 import { PLATFORMS, EmuHalt } from "../common/emu";
