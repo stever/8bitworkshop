@@ -120,20 +120,14 @@
 
       <!-- first row -->
       <button id="replay_back" class="btn" title="Back one frame"><span class="glyphicon glyphicon-backward" aria-hidden="true"></span></button>
-      <div>
-        Frame<br>
-        <span id="replay_frame" style="width:3em">-</span>
-      </div>
+      <div>Frame<br><span id="replay_frame" style="width:3em">-</span></div>
       <input type="range" min="0" max="0" value="0" class="slider" id="replayslider">
       <div>&nbsp;</div>
       <button id="replay_fwd" class="btn" title="Ahead one frame"><span class="glyphicon glyphicon-forward" aria-hidden="true"></span></button>
 
        <!-- second row -->
       <button id="clock_back" class="btn" title="Back one step"><span class="glyphicon glyphicon-backward" aria-hidden="true"></span></button>
-      <div>
-        Step<br>
-        <span id="replay_clock" style="width:3em">-</span>
-      </div>
+      <div>Step<br><span id="replay_clock" style="width:3em">-</span></div>
       <input type="range" min="0" max="0" value="0" class="slider" id="clockslider">
       <div>&nbsp;</div>
       <button id="clock_fwd" class="btn" title="Forward one step"><span class="glyphicon glyphicon-forward" aria-hidden="true"></span></button>
@@ -141,8 +135,7 @@
     </div>
 
     <!-- emulator video -->
-    <div id="emuscreen">
-    </div>
+    <div id="emuscreen"></div>
 
     <!-- for Javatari only -->
     <div id="javatari-div" style="float:center;margin:10px;display:none">
@@ -209,11 +202,9 @@
     </div>
 
     <!-- -->
-    <div id="emuoverlay" class="emuoverlay" style="display:none">
-    </div>
+    <div id="emuoverlay" class="emuoverlay" style="display:none"></div>
   </div>
-  <div id="mem_info" class="mem_info" style="display:none">
-  </div>
+  <div id="mem_info" class="mem_info" style="display:none"></div>
   <div id="error_alert" class="alert alert-danger alert-dismissable" style="position:absolute;right:0;top:0;display:none">
     <button type="button" class="close" onclick="$('.alert').hide()" aria-hidden="true">&times;</button>
     <div id="error_alert_msg"></div>
@@ -226,8 +217,7 @@
       <div class="modal-body">
         Please wait...
         <div class="progress">
-          <div class="progress-bar progress-bar-striped active" role="progressbar" id="pleaseWaitProgressBar">
-          </div>
+          <div class="progress-bar progress-bar-striped active" role="progressbar" id="pleaseWaitProgressBar"></div>
         </div>
       </div>
     </div>
@@ -279,7 +269,7 @@
       </div>
       <div class="modal-body">
         <p>Enter a break expression:</p>
-        <p><input id="debugExprInput" size="60"></input></p>
+        <p><input id="debugExprInput" size="60"/></p>
         <p>Examples:</p>
         <pre id="debugExprExamples"></pre>
       </div>
@@ -298,7 +288,7 @@
       </div>
       <div class="modal-body">
         <p>Enter the GitHub repository URL:</p>
-        <p><input id="importGithubURL" size="60" placeholder="https://github.com/user/repo"></input></p>
+        <p><input id="importGithubURL" size="60" placeholder="https://github.com/user/repo"/></p>
         <p>If the project is compatible with 8bitworkshop, it should build automatically.</p>
         <p>Otherwise, some work may be required -- make sure you've selected the correct platform.</p>
         <p>Source files must be in the root folder of the repository.</p>
@@ -318,8 +308,8 @@
       </div>
       <div class="modal-body">
         <p>This will migrate your existing project to a new GitHub repository.</p>
-        <p>https://github.com/username/&nbsp;<input id="githubRepoName" size="35" placeholder="Enter a project name"></input></p>
-        <p><input id="githubRepoDesc" size="60" placeholder="Enter a project description"></input></p>
+        <p>https://github.com/username/&nbsp;<input id="githubRepoName" size="35" placeholder="Enter a project name"/></p>
+        <p><input id="githubRepoDesc" size="60" placeholder="Enter a project description"/></p>
         <p>Your repository will be <select id="githubRepoPrivate">
           <option value="public">Public</option>
           <option value="private">Private</option>
@@ -348,7 +338,7 @@
         <h3 class="modal-title">Push Project Changes to GitHub</h3>
       </div>
       <div class="modal-body">
-        <p><input id="githubCommitMsg" size="50" placeholder="Enter a commit message"></input></p>
+        <p><input id="githubCommitMsg" size="50" placeholder="Enter a commit message"/></p>
         <p><button type="button" class="btn btn-primary" id="pushGithubButton">Push Changes</button></p>
       </div>
       <div class="modal-footer">
