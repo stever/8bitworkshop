@@ -91,40 +91,14 @@ var lastBreakExpr = "c.PC == 0x6000";
 // TODO: codemirror multiplex support?
 // TODO: move to views.ts?
 const TOOL_TO_SOURCE_STYLE = {
-  'dasm': '6502',
-  'acme': '6502',
-  'cc65': 'text/x-csrc',
-  'ca65': '6502',
-  'nesasm': '6502',
   'z80asm': 'z80',
   'sdasz80': 'z80',
   'sdcc': 'text/x-csrc',
-  'verilator': 'verilog',
-  'jsasm': 'z80',
   'zmac': 'z80',
-  'bataribasic': 'bataribasic',
-  'markdown': 'markdown',
-  'js': 'javascript',
-  'xasm6809': 'z80',
-  'cmoc': 'text/x-csrc',
-  'yasm': 'gas',
-  'smlrc': 'text/x-csrc',
-  'inform6': 'inform6',
-  'fastbasic': 'fastbasic',
-  'basic': 'basic',
-  'silice': 'verilog',
-  'wiz': 'text/x-wiz',
-  'vasmarm': 'vasm',
-  'armips': 'vasm'
 }
 
 const TOOL_TO_HELPURL = {
-  'dasm': 'https://github.com/dasm-assembler/dasm/blob/master/docs/dasm.pdf',
-  'cc65': 'https://cc65.github.io/doc/cc65.html',
-  'ca65': 'https://cc65.github.io/doc/ca65.html',
   'sdcc': 'http://sdcc.sourceforge.net/doc/sdccman.pdf',
-  'verilator': 'https://www.veripool.org/ftp/verilator_doc.pdf',
-  'fastbasic': 'https://github.com/dmsc/fastbasic/blob/master/manual.md'
 }
 
 function gaEvent(category:string, action:string, label?:string, value?:string) {
