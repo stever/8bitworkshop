@@ -1,7 +1,7 @@
 
 import { FileData, Dependency, SourceLine, SourceFile, CodeListing, CodeListingMap, WorkerError, Segment, WorkerResult, WorkerOutputResult, isUnchanged, isOutputResult, WorkerMessage, WorkerItemUpdate } from "../common/workertypes";
 import { getFilenamePrefix, getFolderForPath, isProbablyBinary, getBasePlatform, getWithBinary } from "../common/util";
-import { Platform } from "../common/baseplatform";
+import { Platform } from "../machine/zx";
 import localforage from "localforage";
 
 export interface ProjectFilesystem {
@@ -42,7 +42,7 @@ export class NullFilesystem implements ProjectFilesystem {
     this.sets.push(path);
     return;
   }
-  
+
 }
 
 export class OverlayFilesystem implements ProjectFilesystem {
@@ -224,7 +224,7 @@ export class CodeProject {
     }
     return files;
   }
-  
+
   loadFileDependencies(text:string) : Promise<Dependency[]> {
     let includes = this.parseIncludeDependencies(text);
     let linkfiles = this.parseLinkDependencies(text);
@@ -408,7 +408,7 @@ export class CodeProject {
       }
     }
   }
-  
+
   stripLocalPath(path : string) : string {
     if (this.mainPath) {
       var folder = getFolderForPath(this.mainPath);

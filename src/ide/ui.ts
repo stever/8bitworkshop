@@ -4,7 +4,7 @@ import * as localforage from "localforage";
 import { CodeProject, createNewPersistentStore, LocalForageFilesystem, OverlayFilesystem, ProjectFilesystem, WebPresetsFileSystem } from "./project";
 import { WorkerResult, WorkerError, FileData } from "../common/workertypes";
 import { ProjectWindows } from "./windows";
-import { Platform, Preset, DebugSymbols, DebugEvalCondition, isDebuggable, EmuState } from "../common/baseplatform";
+import { Platform, Preset, DebugSymbols, DebugEvalCondition, isDebuggable, EmuState } from "../machine/zx";
 import { PLATFORMS, EmuHalt } from "../common/emu";
 import { Toolbar } from "../common/toolbar";
 import { getFilenameForPath, getFilenamePrefix, highlightDifferences, byteArrayToString, compressLZG, stringToByteArray,

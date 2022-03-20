@@ -6,12 +6,12 @@ import { hex, lpad, rpad } from "../../common/util";
 import { VirtualList } from "../../common/vlist";
 import { getMousePos, getVisibleEditorLineHeight, VirtualTextLine, VirtualTextScroller } from "../../common/emu";
 import { ProbeFlags, ProbeRecorder } from "../../common/recorder";
-import { BaseZ80MachinePlatform, BaseZ80Platform } from "../../common/baseplatform";
+import { BaseZ80MachinePlatform, BaseZ80Platform } from "../../machine/zx";
 
 ///
 
 function ignoreSymbol(sym:string) {
-  return sym.endsWith('_SIZE__') || sym.endsWith('_LAST__') || sym.endsWith('STACKSIZE__') || sym.endsWith('FILEOFFS__') 
+  return sym.endsWith('_SIZE__') || sym.endsWith('_LAST__') || sym.endsWith('STACKSIZE__') || sym.endsWith('FILEOFFS__')
   || sym.startsWith('l__') || sym.startsWith('s__') || sym.startsWith('.__.');
 }
 
@@ -232,7 +232,7 @@ export class BinaryFileView implements ProjectView {
   refresh() {
     this.vlist.refresh();
   }
-  
+
   getPath() { return this.path; }
 }
 
@@ -405,7 +405,7 @@ export abstract class ProbeViewBaseBase {
     if ((op & ProbeFlags.HAS_VALUE) && typeof value == 'number') s += " = $" + hex(value,2);
     return s;
   }
-  
+
   getOpRGB(op:number) : number {
     switch (op) {
       case ProbeFlags.EXECUTE:		return 0x018001;
@@ -428,7 +428,7 @@ abstract class ProbeViewBase extends ProbeViewBaseBase {
   canvas : HTMLCanvasElement;
   ctx : CanvasRenderingContext2D;
   recreateOnResize = true;
-    
+
   abstract drawEvent(op, addr, col, row);
 
   createCanvas(parent:HTMLElement, width:number, height:number) {
@@ -459,14 +459,14 @@ abstract class ProbeViewBase extends ProbeViewBaseBase {
 
   initCanvas() {
   }
-  
+
   getTooltipText(x:number, y:number) : string {
     return null;
   }
-  
+
   clear() {
   }
-  
+
   tick() {
     this.clear();
     this.redraw(this.drawEvent.bind(this));
@@ -478,7 +478,7 @@ abstract class ProbeBitmapViewBase extends ProbeViewBase {
   imageData : ImageData;
   datau32 : Uint32Array;
   recreateOnResize = false;
-  
+
   createDiv(parent : HTMLElement) {
     return this.createCanvas(parent, this.cyclesPerLine, this.totalScanlines);
   }
@@ -535,7 +535,7 @@ export class AddressHeatMapView extends ProbeBitmapViewBase implements ProjectVi
   createDiv(parent : HTMLElement) {
     return this.createCanvas(parent, 256, 256);
   }
-  
+
   clear() {
     for (var i=0; i<=0xffff; i++) {
       var v = platform.readAddress(i);
@@ -544,7 +544,7 @@ export class AddressHeatMapView extends ProbeBitmapViewBase implements ProjectVi
       this.datau32[i] = rgb | 0xff000000;
     }
   }
-  
+
   drawEvent(op, addr, col, row) {
     var rgb = this.getOpRGB(op);
     if (!rgb) return;
@@ -554,7 +554,7 @@ export class AddressHeatMapView extends ProbeBitmapViewBase implements ProjectVi
     data = data | rgb | 0xff000000;
     this.datau32[addr & 0xffff] = data;
   }
-  
+
   getTooltipText(x:number, y:number) : string {
     var a = (x & 0xff) + (y << 8);
     var s = "";
@@ -753,7 +753,7 @@ export class ProbeSymbolView extends ProbeViewBaseBase {
     var s : string;
     var c : string;
     if (line != null) {
-      s = lpad(sym, 35) 
+      s = lpad(sym, 35)
         + getop(ProbeFlags.MEM_READ)
         + getop(ProbeFlags.MEM_WRITE);
       if (line[ProbeFlags.EXECUTE])

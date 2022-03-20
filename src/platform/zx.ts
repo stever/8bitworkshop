@@ -1,5 +1,5 @@
 import { ZX_WASMMachine } from "../machine/zx";
-import { Platform, BaseZ80MachinePlatform } from "../common/baseplatform";
+import { Platform, BaseZ80MachinePlatform } from "../machine/zx";
 import { PLATFORMS } from "../common/emu";
 
 const ZX_PRESETS = [

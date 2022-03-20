@@ -1,7 +1,7 @@
 
 import { lzgmini } from "../common/util";
 import { PLATFORMS } from "../common/emu";
-import { Platform } from "../common/baseplatform";
+import { Platform } from "../machine/zx";
 import { stringToByteArray, getWithBinary, loadScript, getRootBasePlatform } from "../common/util";
 import { StateRecorderImpl } from "../common/recorder";
 import { importPlatform } from "../platform/_index";

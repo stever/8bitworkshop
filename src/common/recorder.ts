@@ -1,5 +1,5 @@
 
-import { Platform, EmuState, EmuControlsState, EmuRecorder } from "./baseplatform";
+import { Platform, EmuState, EmuControlsState, EmuRecorder } from "../machine/zx";
 import { getNoiseSeed, setNoiseSeed } from "./emu";
 
 // RECORDER
@@ -7,12 +7,12 @@ import { getNoiseSeed, setNoiseSeed } from "./emu";
 type FrameRec = {controls:EmuControlsState, seed:number};
 
 export class StateRecorderImpl implements EmuRecorder {
-  
+
     checkpointInterval : number = 10;
     callbackStateChanged : () => void;
     callbackNewCheckpoint : (state:EmuState) => void;
     maxCheckpoints : number = 300;
-    
+
     platform : Platform;
     checkpoints : EmuState[];
     framerecs : FrameRec[];
@@ -20,7 +20,7 @@ export class StateRecorderImpl implements EmuRecorder {
     lastSeekFrame : number;
     lastSeekStep : number;
     lastStepCount : number;
-    
+
     constructor(platform : Platform) {
         this.reset();
         this.platform = platform;
@@ -58,11 +58,11 @@ export class StateRecorderImpl implements EmuRecorder {
         if (this.callbackStateChanged) this.callbackStateChanged();
         return requested;
     }
-    
+
     numFrames() : number {
         return this.frameCount;
     }
-    
+
     currentFrame() : number {
         return this.lastSeekFrame;
     }
@@ -122,7 +122,7 @@ export class StateRecorderImpl implements EmuRecorder {
             }
             // seek to step index
             // TODO: what if advance() returns clocks, but steps use insns?
-            if (seekstep > 0 && this.platform.advanceFrameClock) { 
+            if (seekstep > 0 && this.platform.advanceFrameClock) {
               seekstep = this.platform.advanceFrameClock(null, seekstep);
             }
             // record new values
@@ -134,13 +134,13 @@ export class StateRecorderImpl implements EmuRecorder {
             return -1;
         }
     }
-    
+
     loadControls(frame : number) {
         if (this.platform.loadControlsState)
             this.platform.loadControlsState(this.framerecs[frame].controls);
         setNoiseSeed(this.framerecs[frame].seed);
     }
-    
+
     getLastCheckpoint() : EmuState {
         return this.checkpoints.length && this.checkpoints[this.checkpoints.length-1];
     }
