@@ -878,7 +878,7 @@ function _shareEmbedLink(e) {
     return true;
   }
   loadClipboardLibrary();
-  loadScript('liblzg.js').then( () => {
+  loadScript('dist/liblzg.js').then( () => {
     // TODO: Module is bad var name (conflicts with MAME)
     var lzgrom = compressLZG( window['Module'], Array.from(<Uint8Array>current_output) );
     window['Module'] = null; // so we load it again next time
