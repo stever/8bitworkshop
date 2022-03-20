@@ -1,6 +1,3 @@
 [submodule "codemirror"]
 	path = public/codemirror
 	url = https://github.com/codemirror/CodeMirror
-[submodule "gif.js"]
-	path = public/gif.js
-	url = https://github.com/sehugg/gif.js
