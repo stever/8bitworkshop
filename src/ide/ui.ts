@@ -5,7 +5,7 @@ import { CodeProject, createNewPersistentStore, LocalForageFilesystem, OverlayFi
 import { WorkerResult, WorkerError, FileData } from "../common/workertypes";
 import { ProjectWindows } from "./windows";
 import { Platform, Preset, DebugSymbols, DebugEvalCondition, isDebuggable, EmuState } from "../machine/zx";
-import { PLATFORMS, EmuHalt } from "../common/emu";
+import { EmuHalt } from "../common/emu";
 import { Toolbar } from "../common/toolbar";
 import { getFilenameForPath, getFilenamePrefix, highlightDifferences, byteArrayToString, compressLZG, stringToByteArray,
          byteArrayToUTF8, isProbablyBinary, getWithBinary, getBasePlatform, getRootBasePlatform, hex, loadScript, decodeQueryString, parseBool } from "../common/util";
@@ -18,6 +18,7 @@ import { AssetEditorView } from "./views/asseteditor";
 import { isMobileDevice } from "./views/baseviews";
 import { CallStackView, DebugBrowserView } from "./views/treeviews";
 import { saveAs } from "file-saver";
+import { ZXWASMPlatform } from "../machine/zx";
 
 // external libs (TODO)
 declare var Tour, GIF, Octokat;
@@ -2192,10 +2193,7 @@ function installGAHooks() {
 }
 
 async function startPlatform() {
-  if (!PLATFORMS[platform_id]) throw Error("Invalid platform '" + platform_id + "'.");
-  let emudiv = $("#emuscreen")[0];
-  let options = decodeQueryString(qs.options || '');
-  platform = new PLATFORMS[platform_id](emudiv, options);
+  platform = new ZXWASMPlatform($("#emuscreen")[0]);
   setPlatformUI();
   stateRecorder = new StateRecorderImpl(platform);
   PRESETS = platform.getPresets ? platform.getPresets() : [];

@@ -12,7 +12,6 @@ import { Probeable, RasterFrameBased, AcceptsPaddleInput } from "../common/devic
 import { SampledAudio } from "../common/audio";
 import { ProbeRecorder } from "../common/recorder";
 import { ZX_WASMMachine as BaseWASMMachine } from "../machine/zx";
-import { PLATFORMS } from "../common/emu";
 
 export interface OpcodeMetadata {
   minCycles: number;
@@ -1281,7 +1280,7 @@ const ZX_MEMORY_MAP = { main:[
   ] }
 
 // WASM ZX Spectrum platform
-class ZXWASMPlatform extends BaseZ80MachinePlatform<ZX_WASMMachine> implements Platform {
+export class ZXWASMPlatform extends BaseZ80MachinePlatform<ZX_WASMMachine> implements Platform {
   newMachine() { return new ZX_WASMMachine('zx'); }
   getPresets() { return ZX_PRESETS; }
   getDefaultExtension() { return ".asm"; };
@@ -1289,5 +1288,3 @@ class ZXWASMPlatform extends BaseZ80MachinePlatform<ZX_WASMMachine> implements P
   getMemoryMap() { return ZX_MEMORY_MAP; }
   showHelp() { window.open("https://worldofspectrum.org/faq/reference/reference.htm", "_help"); }
 }
-
-PLATFORMS['zx'] = ZXWASMPlatform;

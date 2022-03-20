@@ -4,8 +4,6 @@ import { VirtualList } from "./vlist"
 
 // Emulator classes
 
-export var PLATFORMS = {};
-
 var _random_state = 1;
 
 export function noise() {

@@ -1,9 +1,9 @@
 import { lzgmini } from "../common/util";
-import { PLATFORMS } from "../common/emu";
 import { Platform } from "../machine/zx";
 import { stringToByteArray, getWithBinary, loadScript, getRootBasePlatform } from "../common/util";
 import { StateRecorderImpl } from "../common/recorder";
 import { saveAs } from "file-saver";
+import { ZXWASMPlatform } from "../machine/zx";
 
 export var platform_id : string;	// platform ID string
 export var platform : Platform;	// platform object
@@ -130,8 +130,7 @@ function recordVideo(intervalMsec, maxFrames, callback) {
 }
 
 async function startPlatform(qs) {
-  if (!PLATFORMS[platform_id]) throw Error("Invalid platform '" + platform_id + "'.");
-  platform = new PLATFORMS[platform_id]($("#emuscreen")[0]);
+  platform = new ZXWASMPlatform($("#emuscreen")[0]);
   await platform.start();
   // start recorder when click on canvas (TODO?)
   if (qs['rec']) {
