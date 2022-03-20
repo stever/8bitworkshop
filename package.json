@@ -7,11 +7,11 @@
   "scripts": {
     "mkdoc": "typedoc --entryPointStrategy expand --tsconfig ./tsconfig.json --out ./public/jsdoc ./public/src/common/",
     "build": "npm run build:clean && npm run build:copyfiles && npm run build:tsc && npm run build:es",
-    "build:clean": "del-cli public/gen public/jquery.min.js public/bootstrap public/lib/bootstrap-tourist.* public/lib/gif.*js* public/jsdoc",
+    "build:clean": "del-cli public/gen public/jquery.min.js public/bootstrap public/bootstrap-tourist.* public/lib/gif.*js* public/jsdoc",
     "build:copyfiles": "npm run build:copyfiles:jquery && npm run build:copyfiles:bootstrap && npm run build:copyfiles:bootstrap-tourist && npm run build:copyfiles:bootbox && npm run build:copyfiles:gif.js",
     "build:copyfiles:jquery": "copyfiles -u 3 node_modules/jquery/dist/jquery.min.js ./public/",
     "build:copyfiles:bootstrap": "copyfiles -u 3 \"node_modules/bootstrap/dist/**/*\" ./public/bootstrap/",
-    "build:copyfiles:bootstrap-tourist": "copyfiles -u 2 \"node_modules/bootstrap-tourist/*.css\" ./public/lib/ && copyfiles -u 2 \"node_modules/bootstrap-tourist/*.js\" ./public/lib/",
+    "build:copyfiles:bootstrap-tourist": "copyfiles -u 2 \"node_modules/bootstrap-tourist/*.css\" ./public/ && copyfiles -u 2 \"node_modules/bootstrap-tourist/*.js\" ./public/",
     "build:copyfiles:bootbox": "copyfiles -u 3 node_modules/bootbox/dist/bootbox.all.min.js ./public/bootstrap/js/",
     "build:copyfiles:gif.js": "copyfiles -u 2 \"gif.js/dist/*\" ./public/lib/",
     "build:tsc": "tsc --build tsconfig.json",
