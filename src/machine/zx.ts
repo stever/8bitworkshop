@@ -946,7 +946,7 @@ export class ZX_WASMMachine implements Machine {
   }
 
   async fetchWASM() {
-    var wasmResponse = await fetch('res/zx.wasm');
+    var wasmResponse = await fetch('wasm/zx.wasm');
     if (wasmResponse.status == 200 || (wasmResponse as any as Blob).size) {
       var wasmBinary = await wasmResponse.arrayBuffer();
       var wasmCompiled = await WebAssembly.compile(wasmBinary);
