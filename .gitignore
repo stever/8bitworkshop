@@ -2,8 +2,6 @@
 /**/.DS_Store
 /**/.idea/
 /**/node_modules/
-/public/bootstrap-tourist.*
 /public/bootstrap/
 /public/dist/
 /public/jsdoc/
-/public/lib/gif.*js*
