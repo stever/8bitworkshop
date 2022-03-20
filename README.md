@@ -19,6 +19,6 @@ This project is [GPL-3.0](https://github.com/sehugg/8bitworkshop/blob/master/LIC
 
 Dependencies retain their original licenses.
 
-All included code samples (all files under the presets/ directory) are licensed under
+All included code samples (all files under the public/presets/ directory) are licensed under
 [CC0](https://creativecommons.org/publicdomain/zero/1.0/)
 unless otherwise licensed.
