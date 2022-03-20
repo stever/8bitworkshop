@@ -456,7 +456,7 @@ var fsMeta = {};
 var fsBlob = {};
 var wasmBlob = {};
 
-const PSRC = "../../src/";
+const PSRC = "../../";
 const PWORKER = PSRC+"worker/";
 
 // load filesystems for CC65 and others asynchronously
