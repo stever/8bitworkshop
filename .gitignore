@@ -4,7 +4,7 @@
 /**/node_modules/
 /public/bootstrap/
 /public/gen/
-/public/jquery/
+/public/jquery.min.js
 /public/jsdoc/
 /public/lib/bootstrap-tourist.*
 /public/lib/gif.*js*
