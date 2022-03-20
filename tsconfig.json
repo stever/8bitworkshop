@@ -1,6 +1,6 @@
 {
     "include": [
-        "public/src/**/*.ts"
+        "src/**/*.ts"
     ],
     "compilerOptions": {
         "outDir": "public/gen",
