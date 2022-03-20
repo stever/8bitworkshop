@@ -10,7 +10,6 @@ import { Toolbar } from "../common/toolbar";
 import { getFilenameForPath, getFilenamePrefix, highlightDifferences, byteArrayToString, compressLZG, stringToByteArray,
          byteArrayToUTF8, isProbablyBinary, getWithBinary, getBasePlatform, getRootBasePlatform, hex, loadScript, decodeQueryString, parseBool } from "../common/util";
 import { StateRecorderImpl } from "../common/recorder";
-import { GHSession, GithubService, getRepos, parseGithubURL } from "./services";
 import Split = require('split.js');
 import { DisassemblerView, ListingView, SourceEditor } from "./views/editors";
 import { AddressHeatMapView, BinaryFileView, MemoryMapView, MemoryView, ProbeLogView, ProbeSymbolView, RasterPCHeatMapView, ScanlineIOView, VRAMMemoryView } from "./views/debugviews";
@@ -21,7 +20,7 @@ import { saveAs } from "file-saver";
 import { ZXWASMPlatform } from "../machine/zx";
 
 // external libs (TODO)
-declare var Tour, GIF, Octokat;
+declare var Tour, GIF;
 declare var ga;
 declare var $ : JQueryStatic; // use browser jquery
 
@@ -30,11 +29,9 @@ declare var $ : JQueryStatic; // use browser jquery
 interface UIQueryString {
   platform? : string;
   options?: string;
-  repo? : string;
   file? : string;
   electron? : string;
   importURL? : string;
-  githubURL? : string;
   localfs? : string;
   newfile? : string;
   embed? : string;
@@ -56,8 +53,7 @@ const isEmbed = parseBool(qs.embed);
 var PRESETS : Preset[];			// presets array
 
 export var platform_id : string;	// platform ID string (platform)
-export var store_id : string;		// store ID string (repo || platform)
-export var repo_id : string;		// repository ID (repo)
+export var store_id : string;		// store ID string (platform) TODO: Replace with platform_id.
 export var platform : Platform;		// emulator object
 
 var toolbar = $("#controls_top");
@@ -140,10 +136,6 @@ const hasLocalStorage : boolean = function() {
 class UserPrefs {
   setLastPreset(id:string) {
     if (hasLocalStorage && !isEmbed) {
-      if (repo_id && platform_id && !isElectron)
-        localStorage.setItem("__lastrepo_" + platform_id, repo_id);
-      else
-        localStorage.removeItem("__lastrepo_" + platform_id);
       localStorage.setItem("__lastplatform", platform_id);
       localStorage.setItem("__lastid_" + store_id, id);
     }
@@ -159,9 +151,6 @@ class UserPrefs {
   }
   getLastPlatformID() {
     return hasLocalStorage && !isEmbed && localStorage.getItem("__lastplatform");
-  }
-  getLastRepoID(platform: string) {
-    return hasLocalStorage && !isEmbed && platform && localStorage.getItem("__lastrepo_" + platform);
   }
   shouldCompleteTour() {
     return hasLocalStorage && !isEmbed && !localStorage.getItem("8bitworkshop.hello");
@@ -409,18 +398,8 @@ async function loadProject(preset_id:string) {
 }
 
 function reloadProject(id:string) {
-  // leave repository == '/'
-  if (id == '/') {
-    qs = {repo:'/'};
-  } else if (id.indexOf('://') >= 0) {
-    var urlparse = parseGithubURL(id);
-    if (urlparse) {
-      qs = {repo:urlparse.repopath};
-    }
-  } else {
-    qs.platform = platform_id;
-    qs.file = id;
-  }
+  qs.platform = platform_id;
+  qs.file = id;
   gotoNewLocation();
 }
 
@@ -593,10 +572,6 @@ function getCurrentEditorFilename() : string {
   return getFilenameForPath(projectWindows.getActiveID());
 }
 
-// GITHUB stuff (TODO: move)
-
-var githubService : GithubService;
-
 function getCookie(name) : string {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
@@ -606,266 +581,6 @@ function getCookie(name) : string {
         if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
     }
     return null;
-}
-
-async function getGithubService() {
-  if (!githubService) {
-    // load github API client
-    await loadScript('octokat.js');
-    // load firebase
-    await loadScript('https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js');
-    await loadScript('https://www.gstatic.com/firebasejs/8.8.1/firebase-auth.js');
-    await loadScript('https://8bitworkshop.com/config.js');
-    // get github API key from cookie
-    // TODO: move to service?
-    var ghkey = getCookie('__github_key');
-    githubService = new GithubService(Octokat, ghkey, store, current_project);
-    console.log("loaded github service");
-  }
-  return githubService;
-}
-
-function getBoundGithubURL() : string {
-  var toks = (repo_id||'').split('/');
-  if (toks.length != 2) {
-    alertError("<p>You are not in a GitHub repository.</p><p>Choose one from the pulldown, or Import or Publish one.</p>");
-    return null;
-  }
-  return 'https://github.com/' + toks[0] + '/' + toks[1];
-}
-
-async function importProjectFromGithub(githuburl:string, replaceURL:boolean) {
-  var sess : GHSession;
-  var urlparse = parseGithubURL(githuburl);
-  if (!urlparse) {
-    alertError('Could not parse Github URL.');
-    return;
-  }
-  // redirect to repo if exists
-  var existing = getRepos()[urlparse.repopath];
-  if (existing && !confirm("You've already imported " + urlparse.repopath + " -- do you want to replace all local files?")) {
-    return;
-  }
-  // create new store for imported repository
-  setWaitDialog(true);
-  var newstore = createNewPersistentStore(urlparse.repopath);
-  // import into new store
-  setWaitProgress(0.25);
-  var gh = await getGithubService();
-  return gh.import(githuburl).then( (sess1:GHSession) => {
-    sess = sess1;
-    setWaitProgress(0.75);
-    return gh.pull(githuburl, newstore);
-  }).then( (sess2:GHSession) => {
-    // TODO: only first session has mainPath?
-    // reload repo
-    qs = {repo:sess.repopath}; // file:sess.mainPath, platform:sess.platform_id};
-    setWaitDialog(false);
-    gaEvent('sync', 'import', githuburl);
-    gotoNewLocation(replaceURL);
-  }).catch( (e) => {
-    setWaitDialog(false);
-    console.log(e);
-    alertError("<p>Could not import " + githuburl + ".</p>" + e);
-  });
-}
-
-async function _loginToGithub(e) {
-  var gh = await getGithubService();
-  gh.login().then(() => {
-    alertInfo("You are signed in to Github.");
-  }).catch( (e) => {
-    alertError("<p>Could not sign in.</p>" + e);
-  });
-}
-
-async function _logoutOfGithub(e) {
-  var gh = await getGithubService();
-  gh.logout().then(() => {
-    alertInfo("You are logged out of Github.");
-  });
-}
-
-function _importProjectFromGithub(e) {
-  var modal = $("#importGithubModal");
-  var btn = $("#importGithubButton");
-  modal.modal('show');
-  btn.off('click').on('click', () => {
-    var githuburl = $("#importGithubURL").val()+"";
-    modal.modal('hide');
-    importProjectFromGithub(githuburl, false);
-  });
-}
-
-function _publishProjectToGithub(e) {
-  if (repo_id) {
-    if (!confirm("This project (" + current_project.mainPath + ") is already bound to a Github repository. Do you want to re-publish to a new repository? (You can instead choose 'Push Changes' to update files in the existing repository.)"))
-      return;
-  }
-  var modal = $("#publishGithubModal");
-  var btn = $("#publishGithubButton");
-  $("#githubRepoName").val(getFilenamePrefix(getFilenameForPath(current_project.mainPath)));
-  modal.modal('show');
-  btn.off('click').on('click', async () => {
-    var name = $("#githubRepoName").val()+"";
-    var desc = $("#githubRepoDesc").val()+"";
-    var priv = $("#githubRepoPrivate").val() == 'private';
-    var license = $("#githubRepoLicense").val()+"";
-    var sess;
-    if (!name) {
-      alertError("You did not enter a project name.");
-      return;
-    }
-    modal.modal('hide');
-    setWaitDialog(true);
-    var gh = await getGithubService();
-    gh.login().then( () => {
-      setWaitProgress(0.25);
-      return gh.publish(name, desc, license, priv);
-    }).then( (_sess) => {
-      sess = _sess;
-      setWaitProgress(0.5);
-      repo_id = qs.repo = sess.repopath;
-      return pushChangesToGithub('initial import from 8bitworkshop.com');
-    }).then( () => {
-      gaEvent('sync', 'publish', priv?"":name);
-      importProjectFromGithub(sess.url, false);
-    }).catch( (e) => {
-      setWaitDialog(false);
-      console.log(e);
-      alertError("Could not publish GitHub repository: " + e);
-    });
-  });
-}
-
-function _pushProjectToGithub(e) {
-  var ghurl = getBoundGithubURL();
-  if (!ghurl) return;
-  var modal = $("#pushGithubModal");
-  var btn = $("#pushGithubButton");
-  modal.modal('show');
-  btn.off('click').on('click', () => {
-    var commitMsg = $("#githubCommitMsg").val()+"";
-    modal.modal('hide');
-    pushChangesToGithub(commitMsg);
-  });
-}
-
-function _pullProjectFromGithub(e) {
-  var ghurl = getBoundGithubURL();
-  if (!ghurl) return;
-  bootbox.confirm("Pull from repository and replace all local files? Any changes you've made will be overwritten.",
-    async (ok) => {
-    if (ok) {
-      setWaitDialog(true);
-      var gh = await getGithubService();
-      gh.pull(ghurl).then( (sess:GHSession) => {
-        setWaitDialog(false);
-        projectWindows.updateAllOpenWindows(store);
-      });
-    }
-  });
-}
-
-function confirmCommit(sess) : Promise<GHSession> {
-  return new Promise( (resolve, reject) => {
-    var files = sess.commit.files;
-    console.log(files);
-    // anything changed?
-    if (files.length == 0) {
-      setWaitDialog(false);
-      bootbox.alert("No files changed.");
-      return;
-    }
-    // build commit confirm message
-    var msg = "";
-    for (var f of files) {
-      msg += f.filename + ": " + f.status;
-      if (f.additions || f.deletions || f.changes) {
-        msg += " (" + f.additions + " additions, " + f.deletions + " deletions, " + f.changes + " changes)";
-      };
-      msg += "<br/>";
-    }
-    // show dialog, continue when yes
-    bootbox.confirm(msg, (ok) => {
-      if (ok) {
-        resolve(sess);
-      } else {
-        setWaitDialog(false);
-      }
-    });
-  });
-}
-
-async function pushChangesToGithub(message:string) {
-  var ghurl = getBoundGithubURL();
-  if (!ghurl) return;
-  // build file list for push
-  var files = [];
-  for (var path in current_project.filedata) {
-    var newpath = current_project.stripLocalPath(path);
-    var data = current_project.filedata[path];
-    if (newpath && data) {
-      files.push({path:newpath, data:data});
-    }
-  }
-  // include built ROM file in bin/[mainfile].rom
-  if (current_output instanceof Uint8Array) {
-    let binpath = "bin/"+getCurrentMainFilename()+".rom";
-    files.push({path:binpath, data:current_output});
-  }
-  // push files
-  setWaitDialog(true);
-  var gh = await getGithubService();
-  return gh.login().then( () => {
-    setWaitProgress(0.5);
-    return gh.commit(ghurl, message, files);
-  }).then( (sess) => {
-    return confirmCommit(sess);
-  }).then( (sess) => {
-    return gh.push(sess);
-  }).then( (sess) => {
-    setWaitDialog(false);
-    alertInfo("Pushed files to " + ghurl);
-    return sess;
-  }).catch( (e) => {
-    setWaitDialog(false);
-    console.log(e);
-    alertError("Could not push GitHub repository: " + e);
-  });
-}
-
-function _deleteRepository() {
-  var ghurl = getBoundGithubURL();
-  if (!ghurl) return;
-  bootbox.prompt("<p>Are you sure you want to delete this repository (" + ghurl + ") from browser storage?</p><p>All changes since last commit will be lost.</p><p>Type DELETE to proceed.<p>", (yes) => {
-    if (yes.trim().toUpperCase() == "DELETE") {
-      deleteRepository();
-    }
-  });
-}
-
-function deleteRepository() {
-  var ghurl = getBoundGithubURL();
-  var gh;
-  setWaitDialog(true);
-  // delete all keys in storage
-  store.keys().then((keys:string[]) => {
-    return Promise.all(keys.map((key) => {
-      return store.removeItem(key);
-    }));
-  }).then(() => {
-    gh = getGithubService();
-    return gh.getGithubSession(ghurl);
-  }).then((sess) => {
-    // un-bind repo from list
-    gh.bind(sess, false);
-  }).then(() => {
-    setWaitDialog(false);
-    // leave repository
-    qs = {repo:'/'};
-    gotoNewLocation();
-  });
 }
 
 function _shareEmbedLink(e) {
@@ -1009,8 +724,7 @@ function _revertFile(e) {
       });
     }, 'text')
     .fail(() => {
-      if (repo_id) alertError("Can only revert built-in examples. If you want to revert all files, You can pull from the repository.");
-      else alertError("Can only revert built-in examples.");
+      alertError("Can only revert built-in examples.");
     });
   } else {
     alertError("Cannot revert the active window. Please choose a text file.");
@@ -1147,23 +861,6 @@ function populateExamples(sel) {
   return files;
 }
 
-function populateRepos(sel) {
-  if (hasLocalStorage && !isElectron) {
-    var n = 0;
-    var repos = getRepos();
-    if (repos) {
-      for (let repopath in repos) {
-        var repo = repos[repopath];
-        if (repo.platform_id && getBasePlatform(repo.platform_id) == getBasePlatform(platform_id)) {
-          if (n++ == 0)
-            sel.append($("<option />").text("------ Repositories ------").attr('disabled','true'));
-          sel.append($("<option />").val(repo.url).text(repo.url.substring(repo.url.indexOf('/'))));
-        }
-      }
-    }
-  }
-}
-
 async function populateFiles(sel:JQuery, category:string, prefix:string, foundFiles:{}) {
   var keys = await store.keys();
   var numFound = 0;
@@ -1190,19 +887,10 @@ function finishSelector(sel) {
 
 async function updateSelector() {
   var sel = $("#preset_select").empty();
-  if (!repo_id) {
-    // normal: populate repos, examples, and local files
-    populateRepos(sel);
-    var foundFiles = populateExamples(sel);
-    await populateFiles(sel, "Local Files", "", foundFiles);
-    finishSelector(sel);
-  } else {
-    sel.append($("<option />").val('/').text('Leave Repository'));
-    $("#repo_name").text(getFilenameForPath(repo_id)+'/').show();
-    // repo: populate all files
-    await populateFiles(sel, repo_id, "", {});
-    finishSelector(sel);
-  }
+  // normal: examples, and local files
+  var foundFiles = populateExamples(sel);
+  await populateFiles(sel, "Local Files", "", foundFiles);
+  finishSelector(sel);
   // set click handlers
   sel.off('change').change(function(e) {
     reloadProject($(this).val().toString());
@@ -1860,13 +1548,6 @@ function setupDebugControls() {
   $("#item_new_file").click(_createNewFile);
   $("#item_upload_file").click(_uploadNewFile);
   $("#item_open_directory").click(_openLocalDirectory);
-  $("#item_github_login").click(_loginToGithub);
-  $("#item_github_logout").click(_logoutOfGithub);
-  $("#item_github_import").click(_importProjectFromGithub);
-  $("#item_github_publish").click(_publishProjectToGithub);
-  $("#item_github_push").click(_pushProjectToGithub);
-  $("#item_github_pull").click(_pullProjectFromGithub);
-  $("#item_repo_delete").click(_deleteRepository);
   $("#item_share_file").click(_shareEmbedLink);
   $("#item_reset_file").click(_revertFile);
   $("#item_rename_file").click(_renameFile);
@@ -2006,7 +1687,7 @@ async function showWelcomeMessage() {
         {
           element: "#preset_select",
           title: "Project Selector",
-          content: "You can choose different code examples, create your own files, or import projects from GitHub."
+          content: "You can choose different code examples, or create your own files."
         },
         {
           element: "#workspace",
@@ -2187,7 +1868,7 @@ function installGAHooks() {
         gaEvent('menu', e.target.id);
       }
     });
-    ga('send', 'pageview', location.pathname+'?platform='+platform_id+(repo_id?('&repo='+repo_id):('&file='+qs.file)));
+    ga('send', 'pageview', location.pathname+'?platform='+platform_id+'&file='+qs.file);
   }
 }
 
@@ -2200,7 +1881,7 @@ async function startPlatform() {
     // try to load last file (redirect)
     var lastid = userPrefs.getLastPreset();
     // load first preset file, unless we're in a repo
-    var defaultfile = lastid || (repo_id ? null : PRESETS[0].id);
+    var defaultfile = lastid || PRESETS[0].id;
     qs.file = defaultfile || 'DEFAULT';
     if (!defaultfile) {
       alertError("There is no default main file for this project. Try selecting one from the pulldown.");
@@ -2350,30 +2031,8 @@ function setPlatformUI() {
   $(".platform_name").text(name || platform_id);
 }
 
-export function getPlatformAndRepo() {
-  // lookup repository for this platform (TODO: enable cross-platform repos)
+export function getPlatform() {
   platform_id = qs.platform || userPrefs.getLastPlatformID();
-  repo_id = qs.repo;
-  // only look at cached repo_id if file= is not present, so back button works
-  if (!qs.repo && !qs.file)
-     repo_id = userPrefs.getLastRepoID(platform_id);
-  // are we in a repo?
-  if (hasLocalStorage && repo_id && repo_id !== '/') {
-    var repo = getRepos()[repo_id];
-    // override query string params w/ repo settings
-    if (repo) {
-      console.log(platform_id, qs, repo);
-      qs.repo = repo_id;
-      if (repo.platform_id && !qs.platform)
-        qs.platform = platform_id = repo.platform_id;
-      if (!qs.file && repo.mainPath)
-        qs.file = repo.mainPath;
-      //requestPersistPermission(true, true);
-    }
-  } else {
-    repo_id = '';
-    delete qs.repo;
-  }
   // add default platform
   if (!platform_id) {
     if (isEmbed) fatalError(`The 'platform' must be specified when embed=1`);
@@ -2383,15 +2042,10 @@ export function getPlatformAndRepo() {
 
 // start
 export async function startUI() {
-  // import from github?
-  if (qs.githubURL) {
-    importProjectFromGithub(qs.githubURL, true);
-    return;
-  }
-  getPlatformAndRepo();
+  getPlatform();
   setupSplits();
-  // get store ID, repo id or platform id
-  store_id = repo_id || getBasePlatform(platform_id);
+  // get store ID, platform id
+  store_id = getBasePlatform(platform_id);
   // are we embedded?
   if (isEmbed) {
     store_id = (document.referrer || document.location.href) + store_id;
@@ -2419,7 +2073,7 @@ async function loadAndStartPlatform() {
     console.log("starting platform", platform_id); // loaded required <platform_id>.js file
     await startPlatform();
 
-    document.title = document.title + " [" + platform_id + "] - " + (repo_id?('['+repo_id+'] - '):'') + current_project.mainPath;
+    document.title = document.title + " [" + platform_id + "] - " + current_project.mainPath;
   } catch (e) {
     console.log(e);
     alertError('Platform "' + platform_id + '" failed to load.');

@@ -45,7 +45,6 @@
     "localforage": "^1.9.0",
     "lzg": "^1.0.x",
     "mousetrap": "^1.6.5",
-    "octokat": "^0.10.0",
     "preact": "^10.5.14",
     "split.js": "^1.6.2",
     "yufka": "^2.0.1"
