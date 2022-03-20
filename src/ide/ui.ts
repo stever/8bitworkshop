@@ -21,7 +21,6 @@ import { ZXWASMPlatform } from "../machine/zx";
 
 // external libs (TODO)
 declare var Tour, GIF;
-declare var ga;
 declare var $ : JQueryStatic; // use browser jquery
 
 // query string
@@ -94,10 +93,6 @@ const TOOL_TO_SOURCE_STYLE = {
 
 const TOOL_TO_HELPURL = {
   'sdcc': 'http://sdcc.sourceforge.net/doc/sdccman.pdf',
-}
-
-function gaEvent(category:string, action:string, label?:string, value?:string) {
-  if (window['ga']) ga('send', 'event', category, action, label, value);
 }
 
 function alertError(s:string) {
@@ -432,7 +427,6 @@ function _createNewFile(e) {
           filename += platform.getDefaultExtension();
         }
         var path = filename;
-        gaEvent('workspace', 'file', 'new');
         qs.newfile = '1';
         reloadProject(path);
       }
@@ -475,7 +469,6 @@ function handleFileUpload(files: FileList) {
           }
         });
       }
-      gaEvent('workspace', 'file', 'upload');
     } else {
       var path = f.name;
       var reader = new FileReader();
@@ -950,13 +943,12 @@ function showExceptionAsError(err, msg:string) {
 var measureTimeStart : Date = new Date();
 var measureTimeLoad : Date;
 function measureBuildTime() {
-  if (window['ga'] && measureTimeLoad) {
+  if (measureTimeLoad) {
     var measureTimeBuild = new Date();
-    ga('send', 'timing', 'load', platform_id, (measureTimeLoad.getTime() - measureTimeStart.getTime()));
-    ga('send', 'timing', 'build', platform_id, (measureTimeBuild.getTime() - measureTimeLoad.getTime()));
+    console.log('load time', measureTimeLoad.getTime() - measureTimeStart.getTime());
+    console.log('build time', measureTimeBuild.getTime() - measureTimeLoad.getTime());
     measureTimeLoad = null; // only measure once
   }
-  //gaEvent('build', platform_id);
 }
 
 async function setCompileOutput(data: WorkerResult) {
@@ -1861,17 +1853,6 @@ function showInstructions() {
   }
 }
 
-function installGAHooks() {
-  if (window['ga']) {
-    $(".dropdown-item").click((e) => {
-      if (e.target && e.target.id) {
-        gaEvent('menu', e.target.id);
-      }
-    });
-    ga('send', 'pageview', location.pathname+'?platform='+platform_id+'&file='+qs.file);
-  }
-}
-
 async function startPlatform() {
   platform = new ZXWASMPlatform($("#emuscreen")[0]);
   setPlatformUI();
@@ -1894,7 +1875,6 @@ async function startPlatform() {
   // start platform and load file
   replaceURLState();
   installErrorHandler();
-  installGAHooks();
   await platform.start();
   await loadBIOSFromProject();
   await initProject();
