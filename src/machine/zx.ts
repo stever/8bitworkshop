@@ -946,7 +946,7 @@ export class ZX_WASMMachine implements Machine {
   }
 
   async fetchWASM() {
-    var wasmResponse = await fetch('res/'+this.prefix+'.wasm');
+    var wasmResponse = await fetch('res/zx.wasm');
     if (wasmResponse.status == 200 || (wasmResponse as any as Blob).size) {
       var wasmBinary = await wasmResponse.arrayBuffer();
       var wasmCompiled = await WebAssembly.compile(wasmBinary);
@@ -957,7 +957,7 @@ export class ZX_WASMMachine implements Machine {
   }
 
   async fetchBIOS() {
-    var biosResponse = await fetch('res/'+this.prefix+'.bios');
+    var biosResponse = await fetch('roms/opense.rom');
     if (biosResponse.status == 200 || (biosResponse as any as Blob).size) {
       var biosBinary = await biosResponse.arrayBuffer();
       this.biosptr = this.exports.malloc(biosBinary.byteLength);
