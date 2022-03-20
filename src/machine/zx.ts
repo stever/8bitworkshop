@@ -1,19 +1,11 @@
 import { KeyFlags } from "../common/emu";
-
-//// WASM Machine
-
 import { Machine } from "../common/baseplatform";
 import { TrapCondition } from "../common/devices";
-
-import { WasmFs } from "@wasmer/wasmfs";
-import { CpuState, EmuState } from "../common/baseplatform";
 import { CPU, SampledAudioSink, ProbeAll, NullProbe } from "../common/devices";
 import { EmuHalt } from "../common/emu";
 
-// WASM Support
-// TODO: detangle from c64
+export class ZX_WASMMachine implements Machine {
 
-export abstract class BaseWASMMachine {
   prefix : string;
   instance : WebAssembly.Instance;
   exports : any;
@@ -36,10 +28,6 @@ export abstract class BaseWASMMachine {
   audioarr : Float32Array;
   probe : ProbeAll;
   maxROMSize : number = 0x40000;
-
-  abstract getCPUState() : CpuState;
-  abstract saveState() : EmuState;
-  abstract loadState(state: EmuState);
 
   constructor(prefix: string) {
     this.prefix = prefix;
@@ -141,10 +129,6 @@ export abstract class BaseWASMMachine {
   // TODO: can't load after machine_init
   loadBIOS(srcArray: Uint8Array) {
     this.biosarr.set(srcArray);
-  }
-
-  reset() {
-    this.exports.machine_reset(this.sys);
   }
 
   /* TODO: we don't need this because c64_exec does this?
@@ -250,65 +234,6 @@ export abstract class BaseWASMMachine {
   getDebugTree() {
     return this.saveState();
   }
-}
-
-let stub = function() { console.log(arguments); return 0 }
-
-export abstract class BaseWASIMachine extends BaseWASMMachine {
-  m_wasi;
-  wasiInstance;
-  wasmFs : WasmFs;
-
-  constructor(prefix: string) {
-    super(prefix);
-  }
-
-  getImports(wmod: WebAssembly.Module) {
-    var imports = this.wasiInstance.getImports(wmod);
-    // TODO: eliminate these imports
-    imports.env = {
-      system: stub,
-      __sys_mkdir: stub,
-      __sys_chmod: stub,
-      __sys_stat64: stub,
-      __sys_unlink: stub,
-      __sys_rename: stub,
-      __sys_getdents64: stub,
-      __sys_getcwd: stub,
-      __sys_rmdir: stub,
-      emscripten_thread_sleep: stub,
-    }
-    return imports;
-  }
-
-  stdoutWrite(buffer) {
-    console.log('>>>', buffer.toString());
-    return buffer.length;
-  }
-
-  async loadWASM() {
-    let WASI = await import('@wasmer/wasi');
-    let WasmFs = await import('@wasmer/wasmfs');
-    this.wasmFs = new WasmFs.WasmFs();
-    let bindings = WASI.WASI.defaultBindings;
-    bindings.fs = this.wasmFs.fs;
-    bindings.fs.mkdirSync('/tmp');
-    bindings.path = bindings.path.default;
-    this.wasiInstance = new WASI.WASI({
-      preopenDirectories: {'/tmp':'/tmp'},
-      env: {},
-      args: [],
-      bindings: bindings
-    });
-    this.wasmFs.volume.fds[1].write = this.stdoutWrite.bind(this);
-    this.wasmFs.volume.fds[2].write = this.stdoutWrite.bind(this);
-    await this.fetchWASM();
-    this.wasiInstance.start(this.instance);
-    await this.initWASM();
-  }
-}
-
-export class ZX_WASMMachine extends BaseWASMMachine implements Machine {
 
   numTotalScanlines = 312;
   cpuCyclesPerLine = 224;
@@ -316,7 +241,7 @@ export class ZX_WASMMachine extends BaseWASMMachine implements Machine {
   joymask0 = 0;
 
   reset() {
-    super.reset();
+    this.exports.machine_reset(this.sys);
 
     // advance bios
     this.exports.machine_exec(this.sys, 500000); // TODO?
@@ -345,7 +270,7 @@ export class ZX_WASMMachine extends BaseWASMMachine implements Machine {
     //var scanline = this.exports.machine_get_raster_line(this.sys);
     var probing = this.probe != null;
     if (probing) this.exports.machine_reset_probe_buffer();
-    var clocks = super.advanceFrameClock(trap, Math.floor(1000000 / 50)); // TODO: use ticks, not msec
+    var clocks = this.advanceFrameClock(trap, Math.floor(1000000 / 50)); // TODO: use ticks, not msec
     if (probing) this.copyProbeData();
     return clocks;
   }

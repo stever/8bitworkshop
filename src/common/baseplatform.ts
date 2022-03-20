@@ -8,7 +8,7 @@ import { Bus, Resettable, FrameBased, VideoSource, SampledAudioSource, AcceptsRO
 import { Probeable, RasterFrameBased, AcceptsPaddleInput } from "./devices";
 import { SampledAudio } from "./audio";
 import { ProbeRecorder } from "./recorder";
-import { BaseWASMMachine } from "../machine/zx";
+import { ZX_WASMMachine as BaseWASMMachine } from "../machine/zx";
 
 export interface OpcodeMetadata {
   minCycles: number;
