@@ -13,7 +13,7 @@
     "build:copyfiles:bootstrap": "copyfiles -u 3 \"node_modules/bootstrap/dist/**/*\" ./public/bootstrap/",
     "build:copyfiles:bootstrap-tourist": "copyfiles -u 2 \"node_modules/bootstrap-tourist/*.css\" ./public/ && copyfiles -u 2 \"node_modules/bootstrap-tourist/*.js\" ./public/",
     "build:copyfiles:bootbox": "copyfiles -u 3 node_modules/bootbox/dist/bootbox.all.min.js ./public/bootstrap/js/",
-    "build:copyfiles:gif.js": "copyfiles -u 2 \"gif.js/dist/*\" ./public/lib/",
+    "build:copyfiles:gif.js": "copyfiles -u 3 \"public/gif.js/dist/*\" ./public/dist/",
     "build:tsc": "tsc --build tsconfig.json",
     "build:es": "npm run build:es:worker && npm run build:es:ui",
     "build:es:worker": "esbuild src/worker/workermain.ts --bundle --sourcemap --target=es2017 --outfile=./public/dist/worker/bundle.js",

@@ -89,7 +89,7 @@ function findPrimaryCanvas() {
 }
 
 function recordVideo(intervalMsec, maxFrames, callback) {
- loadScript("gif.js/dist/gif.js").then( () => {
+ loadScript("dist/gif.js").then( () => {
   var canvas = findPrimaryCanvas()[0] as HTMLCanvasElement;
   if (!canvas) {
     alert("Could not find canvas element to record video!");
@@ -103,7 +103,7 @@ function recordVideo(intervalMsec, maxFrames, callback) {
       rotate = 1;
   }
   var gif = new GIF({
-    workerScript: 'gif.js/dist/gif.worker.js',
+    workerScript: 'dist/gif.worker.js',
     workers: 4,
     quality: 10,
     rotate: rotate
