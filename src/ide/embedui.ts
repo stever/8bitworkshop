@@ -1,10 +1,8 @@
-
 import { lzgmini } from "../common/util";
 import { PLATFORMS } from "../common/emu";
 import { Platform } from "../machine/zx";
 import { stringToByteArray, getWithBinary, loadScript, getRootBasePlatform } from "../common/util";
 import { StateRecorderImpl } from "../common/recorder";
-import { importPlatform } from "../platform/_index";
 import { saveAs } from "file-saver";
 
 export var platform_id : string;	// platform ID string
@@ -170,9 +168,12 @@ async function loadPlatform(qs) {
   platform_id = qs['p'];
   if (!platform_id) throw new Error('No platform variable!');
   try {
-    var module = await importPlatform(getRootBasePlatform(platform_id));
+    console.assert(getRootBasePlatform(platform_id) === 'zx', getRootBasePlatform(platform_id));
+    await import("../machine/zx")
+
     console.log("starting platform", platform_id); // loaded required <platform_id>.js file
     await startPlatform(qs);
+
   } catch (e) {
     console.log(e);
     alert('Platform "' + platform_id + '" not supported.');

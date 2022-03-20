@@ -12,7 +12,6 @@ import { getFilenameForPath, getFilenamePrefix, highlightDifferences, byteArrayT
 import { StateRecorderImpl } from "../common/recorder";
 import { GHSession, GithubService, getRepos, parseGithubURL } from "./services";
 import Split = require('split.js');
-import { importPlatform } from "../platform/_index";
 import { DisassemblerView, ListingView, SourceEditor } from "./views/editors";
 import { AddressHeatMapView, BinaryFileView, MemoryMapView, MemoryView, ProbeLogView, ProbeSymbolView, RasterPCHeatMapView, ScanlineIOView, VRAMMemoryView } from "./views/debugviews";
 import { AssetEditorView } from "./views/asseteditor";
@@ -2417,9 +2416,12 @@ export async function startUI() {
 
 async function loadAndStartPlatform() {
   try {
-    var module = await importPlatform(getRootBasePlatform(platform_id));
+    console.assert(getRootBasePlatform(platform_id) === 'zx', getRootBasePlatform(platform_id));
+    await import("../machine/zx")
+
     console.log("starting platform", platform_id); // loaded required <platform_id>.js file
     await startPlatform();
+
     document.title = document.title + " [" + platform_id + "] - " + (repo_id?('['+repo_id+'] - '):'') + current_project.mainPath;
   } catch (e) {
     console.log(e);
