@@ -1,9 +1,9 @@
 {
     "include": [
-        "src/**/*.ts"
+        "public/src/**/*.ts"
     ],
     "compilerOptions": {
-        "outDir": "gen",
+        "outDir": "public/gen",
         "allowJs": false,
         "checkJs": false,
         "sourceMap": true,

@@ -2,9 +2,9 @@
 /**/.DS_Store
 /**/.idea/
 /**/node_modules/
-/bootstrap/
-/gen/
-/jquery/
-/lib/bootstrap-tourist.*
-/lib/gif.*js*
+/public/bootstrap/
+/public/gen/
+/public/jquery/
+/public/lib/bootstrap-tourist.*
+/public/lib/gif.*js*
 /web/
