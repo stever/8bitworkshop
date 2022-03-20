@@ -612,7 +612,7 @@ function getCookie(name) : string {
 async function getGithubService() {
   if (!githubService) {
     // load github API client
-    await loadScript('lib/octokat.js');
+    await loadScript('octokat.js');
     // load firebase
     await loadScript('https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js');
     await loadScript('https://www.gstatic.com/firebasejs/8.8.1/firebase-auth.js');
@@ -879,7 +879,7 @@ function _shareEmbedLink(e) {
     return true;
   }
   loadClipboardLibrary();
-  loadScript('lib/liblzg.js').then( () => {
+  loadScript('liblzg.js').then( () => {
     // TODO: Module is bad var name (conflicts with MAME)
     var lzgrom = compressLZG( window['Module'], Array.from(<Uint8Array>current_output) );
     window['Module'] = null; // so we load it again next time
