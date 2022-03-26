@@ -1,4 +1,4 @@
-import { WorkerError } from "./workertypes";
+import {WorkerError} from "./workertypes";
 import ErrorStackParser = require("error-stack-parser");
 import yufka from 'yufka';
 import * as io from "./io";
@@ -46,7 +46,7 @@ class RuntimeError extends Error {
     }
 }
 
-function setConstructorName(o: object) : void {
+function setConstructorName(o: object): void {
     let name = Object.getPrototypeOf(o)?.constructor?.name;
     if (name != null && name != 'Object') {
         o[PROP_CONSTRUCTOR_NAME] = name;
@@ -58,22 +58,26 @@ export class Environment {
     postamble: string;
     obj: {};
     seq: number;
-    declvars : {[name : string] : acorn.Node};
-    builtins : {}
+    declvars: { [name: string]: acorn.Node };
+    builtins: {}
 
     constructor(
         public readonly globalenv: any,
         public readonly path: string
     ) {
         var badlst = Object.getOwnPropertyNames(this.globalenv).filter(name => GLOBAL_GOODLIST.indexOf(name) < 0);
+
         this.builtins = {
             print: (...args) => this.print(args),
             ...IMPORTS
         }
+
         this.preamble = `'use strict';var ${badlst.join(',')};`;
+
         for (var impname in this.builtins) {
             this.preamble += `var ${impname}=$$.${impname};`
         }
+
         this.preamble += '{\n';
         this.postamble = '\n}';
     }
@@ -93,6 +97,7 @@ export class Environment {
     preprocess(code: string): string {
         this.declvars = {};
         this.seq = 0;
+
         let options = {
             // https://www.npmjs.com/package/magic-string#sgeneratemap-options-
             sourceMap: {
@@ -111,10 +116,15 @@ export class Environment {
             }
         };
 
-        const result = yufka(code, options, (node, { update, source, parent }) => {
+        const result = yufka(code, options, (node, {
+            update,
+            source,
+            parent
+        }) => {
             const isTopLevel = () => {
                 return parent() && parent().type === 'ExpressionStatement' && parent(2) && parent(2).type === 'Program';
             }
+
             const convertTopToPrint = () => {
                 if (isTopLevel()) {
                     let printkey = `$print__${this.seq++}`;
@@ -122,7 +132,9 @@ export class Environment {
                     //update(`print(${source()});`)
                 }
             }
+
             const left = node['left'];
+
             switch (node.type) {
                 // add preamble, postamble
                 case 'Program':
@@ -173,30 +185,45 @@ export class Environment {
     async run(code: string): Promise<void> {
         code = this.preprocess(code);
         this.obj = {};
-        const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
+
+        const AsyncFunction = Object.getPrototypeOf(async function () {
+
+        }).constructor;
+
         const fn = new AsyncFunction('$$', code).bind(this.obj, this.builtins);
         await fn.call(this);
+
         this.checkResult(this.obj, new Set(), []);
     }
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
     checkResult(o, checked: Set<object>, fullkey: string[]) {
-        if (o == null) return;
+        if (o == null) {
+            return;
+        }
 
-        if (checked.has(o)) return;
+        if (checked.has(o)) {
+            return;
+        }
 
         if (typeof o === 'object') {
             setConstructorName(o);
 
             delete o.$$callback; // clear callbacks
 
-            if (o.length > 100) return; // big array, don't bother
+            if (o.length > 100) {
+                return; // big array, don't bother
+            }
 
-            if (o.BYTES_PER_ELEMENT > 0) return; // typed array, don't bother
+            if (o.BYTES_PER_ELEMENT > 0) {
+                return; // typed array, don't bother
+            }
 
             checked.add(o); // so we don't recurse if cycle
 
-            function prkey() { return fullkey.join('.') }
+            function prkey() {
+                return fullkey.join('.')
+            }
 
             // go through all object properties recursively
             for (var [key, value] of Object.entries(o)) {
@@ -207,10 +234,11 @@ export class Environment {
                 fullkey.push(key);
 
                 if (typeof value === 'function') {
-                    if (fullkey.length == 1)
+                    if (fullkey.length == 1) {
                         this.error(fullkey[0], `"${prkey()}" is a function. Did you forget to pass parameters?`);
-                    else
+                    } else {
                         this.error(fullkey[0], `This expression may be incomplete, or it contains a function object: ${prkey()}`);
+                    }
                 }
 
                 if (typeof value === 'symbol') {
@@ -232,7 +260,7 @@ export class Environment {
 
         for (var [key, value] of Object.entries(this.obj)) {
             console.assert(typeof value !== 'function')
-            var cell: Cell = { id: key, object: value };
+            var cell: Cell = {id: key, object: value};
             cells.push(cell);
         }
 
@@ -268,7 +296,7 @@ export class Environment {
         if (frame < 0 && e.stack != null) {
             let m = /.anonymous.:(\d+):(\d+)/g.exec(e.stack);
             if (m != null) {
-                errors.push( {
+                errors.push({
                     path: this.path,
                     msg: e.message,
                     line: parseInt(m[1]) - LINE_NUMBER_OFFSET,
@@ -281,23 +309,23 @@ export class Environment {
             console.log(frames[frame]);
             if (frames[frame].fileName.endsWith('Function')) {
                 // TODO: use source map
-                errors.push( {
+                errors.push({
                     path: this.path,
                     msg: e.message,
                     line: frames[frame].lineNumber - LINE_NUMBER_OFFSET,
                     //start: frames[frame].columnNumber,
-                } );
+                });
             }
             --frame;
         }
 
         // if no stack frames parsed, last resort error msg
         if (errors.length == 0) {
-            errors.push( {
+            errors.push({
                 path: this.path,
                 msg: e.message,
                 line: 0
-            } );
+            });
         }
 
         return errors;

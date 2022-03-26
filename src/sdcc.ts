@@ -26,15 +26,18 @@ import {EmscriptenModule} from "./workermain"
 function hexToArray(s, ofs) {
     var buf = new ArrayBuffer(s.length / 2);
     var arr = new Uint8Array(buf);
+
     for (var i = 0; i < arr.length; i++) {
         arr[i] = parseInt(s.slice(i * 2 + ofs, i * 2 + ofs + 2), 16);
     }
+
     return arr;
 }
 
 function parseIHX(ihx, rom_start, rom_size, errors) {
     var output = new Uint8Array(new ArrayBuffer(rom_size));
     var high_size = 0;
+
     for (var s of ihx.split("\n")) {
         if (s[0] == ':') {
             var arr = hexToArray(s, 1);
@@ -48,7 +51,11 @@ function parseIHX(ihx, rom_start, rom_size, errors) {
                     var b = arr[4 + i];
                     output[i + address] = b;
                 }
-                if (i + address > high_size) high_size = i + address;
+
+                if (i + address > high_size) {
+                    high_size = i + address;
+                }
+
             } else if (rectype == 1) {
                 break;
             } else {
@@ -66,7 +73,7 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
     var objout, lstout, symout;
     var errors = [];
 
-    gatherFiles(step, { mainFilePath: "main.asm" });
+    gatherFiles(step, {mainFilePath: "main.asm"});
 
     var objpath = step.prefix + ".rel";
     var lstpath = step.prefix + ".lst";
@@ -112,11 +119,11 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
         execMain(step, ASZ80, ['-plosgffwy', step.path]);
 
         if (errors.length) {
-            return { errors: errors };
+            return {errors: errors};
         }
 
-        objout = FS.readFile(objpath, { encoding: 'utf8' });
-        lstout = FS.readFile(lstpath, { encoding: 'utf8' });
+        objout = FS.readFile(objpath, {encoding: 'utf8'});
+        lstout = FS.readFile(lstpath, {encoding: 'utf8'});
 
         putWorkFile(objpath, objout);
         putWorkFile(lstpath, lstout);
@@ -182,8 +189,8 @@ export function linkSDLDZ80(step: BuildStep) {
 
         execMain(step, LDZ80, args);
 
-        var hexout = FS.readFile("main.ihx", { encoding: 'utf8' });
-        var noiout = FS.readFile("main.noi", { encoding: 'utf8' });
+        var hexout = FS.readFile("main.ihx", {encoding: 'utf8'});
+        var noiout = FS.readFile("main.noi", {encoding: 'utf8'});
 
         putWorkFile("main.ihx", hexout);
         putWorkFile("main.noi", noiout);
@@ -195,14 +202,14 @@ export function linkSDLDZ80(step: BuildStep) {
         // parse binary file
         var binout = parseIHX(hexout, params.rom_start !== undefined ? params.rom_start : params.code_start, params.rom_size, errors);
         if (errors.length) {
-            return { errors: errors };
+            return {errors: errors};
         }
 
         // parse listings
         var listings: CodeListingMap = {};
         for (var fn of step.files) {
             if (fn.endsWith('.lst')) {
-                var rstout = FS.readFile(fn.replace('.lst', '.rst'), { encoding: 'utf8' });
+                var rstout = FS.readFile(fn.replace('.lst', '.rst'), {encoding: 'utf8'});
                 //   0000 21 02 00      [10]   52 	ld	hl, #2
                 var asmlines = parseListing(rstout, /^\s*([0-9A-F]{4})\s+([0-9A-F][0-9A-F r]*[0-9A-F])\s+\[([0-9 ]+)\]?\s+(\d+) (.*)/i, 4, 1, 2, 3);
                 var srclines = parseSourceLines(rstout, /^\s+\d+ ;<stdin>:(\d+):/i, /^\s*([0-9A-F]{4})/i);
@@ -238,8 +245,14 @@ export function linkSDLDZ80(step: BuildStep) {
                     if (['INITIALIZER', 'GSINIT', 'GSFINAL'].includes(seg)) type = 'rom';
                     else if (seg.startsWith('CODE')) type = 'rom';
                     else if (['DATA', 'INITIALIZED'].includes(seg)) type = 'ram';
-                    if (type == 'rom' || segstart > 0) // ignore HEADER0, CABS0, etc
-                        segments.push({ name: seg, start: segstart, size: segsize, type: type });
+                    if (type == 'rom' || segstart > 0) { // ignore HEADER0, CABS0, etc
+                        segments.push({
+                            name: seg,
+                            start: segstart,
+                            size: segsize,
+                            type: type
+                        });
+                    }
                 }
             }
         }
@@ -263,7 +276,9 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
     if (staleFiles(step, [outpath])) {
         var errors = [];
         var params = step.params;
+
         loadNative('sdcc');
+
         var SDCC: EmscriptenModule = emglobal.sdcc({
             instantiateWasm: moduleInstFn('sdcc'),
             noInitialRun: true,
@@ -281,9 +296,10 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
         var code = getWorkFileAsString(step.path);
         var preproc = preprocessMCPP(step, 'sdcc');
         if (preproc.errors) {
-            return { errors: preproc.errors };
+            return {errors: preproc.errors};
+        } else {
+            code = preproc.code;
         }
-        else code = preproc.code;
 
         // pipe file to stdin
         setupStdin(FS, code);
@@ -325,11 +341,11 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
         execMain(step, SDCC, args);
 
         if (errors.length /* && nwarnings < msvc_errors.length*/) {
-            return { errors: errors };
+            return {errors: errors};
         }
 
         // massage the asm output
-        var asmout = FS.readFile(outpath, { encoding: 'utf8' });
+        var asmout = FS.readFile(outpath, {encoding: 'utf8'});
         asmout = " .area _HOME\n .area _CODE\n .area _INITIALIZER\n .area _DATA\n .area _INITIALIZED\n .area _BSEG\n .area _BSS\n .area _HEAP\n" + asmout;
 
         putWorkFile(outpath, asmout);

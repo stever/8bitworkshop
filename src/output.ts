@@ -10,7 +10,7 @@ enum DataType {
     f64,
 }
 
-function getArrayDataType(value: any) : DataType {
+function getArrayDataType(value: any): DataType {
     if (value instanceof Uint8Array) {
         return DataType.u8;
     } else if (value instanceof Int8Array) {
@@ -32,43 +32,52 @@ function getArrayDataType(value: any) : DataType {
 
 export abstract class OutputFile {
     constructor(
-        public readonly path : string,
-        public readonly decls : {}
+        public readonly path: string,
+        public readonly decls: {}
     ) {
 
     }
 
-    abstract declToText(label: string, value: any) : string;
+    abstract declToText(label: string, value: any): string;
 
-    toString() : string {
-        return Object.entries(this.decls).map(entry => this.declToText(entry[0],entry[1])).join('\n\n');
+    toString(): string {
+        return Object.entries(this.decls).map(entry => this.declToText(entry[0], entry[1])).join('\n\n');
     }
 }
 
 export class COutputFile extends OutputFile {
-    toString() : string {
+    toString(): string {
         return `#include <stdint.h>\n\n${super.toString()}\n`;
     }
 
     dataTypeToString(dtype: DataType) {
         switch (dtype) {
-            case DataType.u8: return 'uint8_t';
-            case DataType.s8: return 'int8_t';
-            case DataType.u16: return 'uint16_t';
-            case DataType.s16: return 'int16_t';
-            case DataType.u32: return 'uint32_t';
-            case DataType.s32: return 'int32_t';
-            case DataType.f32: return 'float';
-            case DataType.f64: return 'double';
+            case DataType.u8:
+                return 'uint8_t';
+            case DataType.s8:
+                return 'int8_t';
+            case DataType.u16:
+                return 'uint16_t';
+            case DataType.s16:
+                return 'int16_t';
+            case DataType.u32:
+                return 'uint32_t';
+            case DataType.s32:
+                return 'int32_t';
+            case DataType.f32:
+                return 'float';
+            case DataType.f64:
+                return 'double';
             default:
                 throw new Error('Cannot convert data type');
         }
     }
-    valueToString(value, atype: DataType) : string {
-        return value+"";
+
+    valueToString(value, atype: DataType): string {
+        return value + "";
     }
 
-    declToText(label: string, value: any) : string {
+    declToText(label: string, value: any): string {
         if (Array.isArray(value) || value['BYTES_PER_ELEMENT']) {
             let atype = getArrayDataType(value);
             if (atype != null) {

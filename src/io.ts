@@ -1,5 +1,5 @@
-import { FileDataCache } from "./util";
-import { FileData, WorkingStore } from "./workertypes";
+import {FileDataCache} from "./util";
+import {FileData, WorkingStore} from "./workertypes";
 
 // remote resource cache
 var $$cache = new FileDataCache();
@@ -11,16 +11,16 @@ var $$store: WorkingStore;
 var $$data: {} = {};
 
 // module cache
-var $$modules: Map<string,{}> = new Map();
+var $$modules: Map<string, {}> = new Map();
 
 // object that can load state from backing store
 export interface Loadable {
 
     // called during script, from io.data.load()
-    $$setstate?(newstate: {}) : void;
+    $$setstate?(newstate: {}): void;
 
     // called after script, from io.data.save()
-    $$getstate() : {};
+    $$getstate(): {};
 }
 
 export namespace data {
@@ -34,15 +34,18 @@ export namespace data {
         }
         return object;
     }
+
     export function save(object: Loadable, key: string): Loadable {
         if ($$data && object && object.$$getstate) {
             $$data[key] = object.$$getstate();
         }
         return object;
     }
+
     export function get(key: string) {
         return $$data && $$data[key];
     }
+
     export function set(key: string, value: object) {
         if ($$data) {
             $$data[key] = value;
@@ -50,7 +53,7 @@ export namespace data {
     }
 }
 
-export function canonicalurl(url: string) : string {
+export function canonicalurl(url: string): string {
     // get raw resource URL for github
     if (url.startsWith('https://github.com/')) {
         let toks = url.split('/');
@@ -58,6 +61,7 @@ export function canonicalurl(url: string) : string {
             return `https://raw.githubusercontent.com/${toks[3]}/${toks[4]}/${toks.slice(6).join('/')}`
         }
     }
+
     return url;
 }
 
@@ -66,6 +70,7 @@ export function fetchurl(url: string, type?: 'binary' | 'text'): FileData {
     xhr.responseType = type === 'text' ? 'text' : 'arraybuffer';
     xhr.open("GET", url, false);  // synchronous request
     xhr.send(null);
+
     if (xhr.response != null && xhr.status == 200) {
         if (type === 'text') {
             return xhr.response as string;
@@ -81,6 +86,7 @@ export function readnocache(url: string, type?: 'binary' | 'text'): FileData {
     if (url.startsWith('http:') || url.startsWith('https:')) {
         return fetchurl(url, type);
     }
+
     if ($$store) {
         return $$store.getFileData(url);
     }
@@ -89,15 +95,18 @@ export function readnocache(url: string, type?: 'binary' | 'text'): FileData {
 export function read(url: string, type?: 'binary' | 'text'): FileData {
     // canonical-ize url
     url = canonicalurl(url);
+
     // check cache first
     let cachekey = url;
     let data = $$cache.get(cachekey);
     if (data != null) return data;
+
     // not in cache, read it
     data = readnocache(url, type);
     if (data == null) throw new Error(`Cannot find resource "${url}"`);
     if (type === 'text' && typeof data !== 'string') throw new Error(`Resource "${url}" is not a string`);
     if (type === 'binary' && !(data instanceof Uint8Array)) throw new Error(`Resource "${url}" is not a binary file`);
+
     // store in cache
     $$cache.put(cachekey, data);
     return data;
@@ -105,17 +114,18 @@ export function read(url: string, type?: 'binary' | 'text'): FileData {
 
 export function readbin(url: string): Uint8Array {
     var data = read(url, 'binary');
-    if (data instanceof Uint8Array)
+    if (data instanceof Uint8Array) {
         return data;
-    else
+    } else {
         throw new Error(`The resource at "${url}" is not a binary file.`);
+    }
 }
 
-export function readlines(url: string) : string[] {
+export function readlines(url: string): string[] {
     return (read(url, 'text') as string).split('\n');
 }
 
-export function splitlines(text: string) : string[] {
+export function splitlines(text: string): string[] {
     return text.split(/\n|\r\n/g);
 }
 
@@ -123,6 +133,7 @@ export function module(url: string) {
     // find module in cache?
     let key = `${url}::${url.length}`;
     let exports = $$modules.get(key);
+
     if (exports == null) {
         let code = readnocache(url, 'text') as string;
         let func = new Function('exports', 'module', code);
@@ -131,21 +142,24 @@ export function module(url: string) {
         func(exports, module);
         $$modules.set(key, exports);
     }
+
     return exports;
 }
 
-export function mutable<T>(obj: object) : object {
+export function mutable<T>(obj: object): object {
     Object.defineProperty(obj, '$$setstate', {
-        value: function(newstate) {
+        value: function (newstate) {
             Object.assign(this, newstate);
         },
         enumerable: false
     });
+
     Object.defineProperty(obj, '$$getstate', {
-        value: function() {
+        value: function () {
             return this;
         },
         enumerable: false
     });
+
     return obj;
 }

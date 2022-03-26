@@ -1,7 +1,7 @@
 import * as io from "./io";
 
 // sequence counter
-var $$seq : number = 0;
+var $$seq: number = 0;
 
 // if an event is specified, it goes here
 export const EVENT_KEY = "$$event";
@@ -12,7 +12,7 @@ export interface Interactive {
 }
 
 export interface InteractEvent {
-    interactid : number;
+    interactid: number;
     type: string;
     x?: number;
     y?: number;
@@ -27,8 +27,8 @@ export type InteractCallback = (event: InteractEvent) => void;
 // event comes from $$data.$$event
 export class InteractionRecord implements io.Loadable {
     readonly interacttarget: Interactive;
-    interactid : number;
-    lastevent : {} = null;
+    interactid: number;
+    lastevent: {} = null;
 
     constructor(
         interacttarget: Interactive,
@@ -38,17 +38,21 @@ export class InteractionRecord implements io.Loadable {
         this.interactid = ++$$seq;
     }
 
-    $$setstate(newstate: {interactid: number}) {
+    $$setstate(newstate: { interactid: number }) {
         this.interactid = newstate.interactid;
         this.interacttarget.$$interact = this;
-        let event : InteractEvent = io.data.get(EVENT_KEY);
+
+        let event: InteractEvent = io.data.get(EVENT_KEY);
+
         if (event && event.interactid == this.interactid) {
             if (this.$$callback) {
                 this.$$callback(event);
             }
+
             this.lastevent = event;
             io.data.set(EVENT_KEY, null);
         }
+
         this.$$callback = null;
     }
 
@@ -62,7 +66,7 @@ export function isInteractive(obj: object): obj is Interactive {
     return !!((obj as Interactive).$$interact);
 }
 
-export function interact(object: any, callback) : InteractionRecord {
+export function interact(object: any, callback): InteractionRecord {
     if (typeof object === 'object') {
         return new InteractionRecord(object, callback);
     }
@@ -71,7 +75,7 @@ export function interact(object: any, callback) : InteractionRecord {
 }
 
 export interface ScriptUIType {
-    uitype : string;
+    uitype: string;
 }
 
 export class ScriptUISliderType implements ScriptUIType {
@@ -94,7 +98,7 @@ export class ScriptUISlider extends ScriptUISliderType implements io.Loadable {
     }
 
     $$getstate() {
-        return { value: this.value };
+        return {value: this.value};
     }
 }
 
@@ -106,6 +110,7 @@ export class ScriptUISelectType<T> implements ScriptUIType {
     readonly uitype = 'select';
     value: T;
     index: number;
+
     constructor(
         readonly options: T[]
     ) {
@@ -122,7 +127,7 @@ export class ScriptUISelect<T> extends ScriptUISelectType<T> implements io.Loada
     }
 
     $$getstate() {
-        return { value: this.value, index: this.index };
+        return {value: this.value, index: this.index};
     }
 }
 
@@ -167,7 +172,7 @@ export class ScriptUIToggle extends ScriptUIButton implements io.Loadable {
 }
 
 export function toggle(name: string) {
-    return new ScriptUIToggle(name, function(e) {
+    return new ScriptUIToggle(name, function (e) {
         this.enabled = !this.enabled;
     });
 }

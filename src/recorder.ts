@@ -40,21 +40,30 @@ export class StateRecorderImpl implements EmuRecorder {
             controls: this.platform.saveControlsState(),
             seed: getNoiseSeed()
         };
+
         var requested = false;
+
         // are we replaying? then we don't need to save a frame, just replace controls
         if (this.lastSeekFrame < this.frameCount) {
             this.loadControls(this.lastSeekFrame);
         } else {
+
             // record the control state, if available
             if (this.platform.saveControlsState) {
                 this.framerecs.push(controls);
             }
+
             // time to save next frame?
             requested = (this.frameCount++ % this.checkpointInterval) == 0;
         }
+
         this.lastSeekFrame++;
         this.lastSeekStep = 0;
-        if (this.callbackStateChanged) this.callbackStateChanged();
+
+        if (this.callbackStateChanged) {
+            this.callbackStateChanged();
+        }
+
         return requested;
     }
 
@@ -73,58 +82,74 @@ export class StateRecorderImpl implements EmuRecorder {
     recordFrame(state: EmuState) {
         this.checkpoints.push(state);
         if (this.callbackNewCheckpoint) this.callbackNewCheckpoint(state);
+
         // checkpoints full?
         if (this.checkpoints.length > this.maxCheckpoints) {
             this.checkpoints.shift(); // remove 1st checkpoint
             this.framerecs = this.framerecs.slice(this.checkpointInterval);
             this.lastSeekFrame -= this.checkpointInterval;
             this.frameCount -= this.checkpointInterval;
-            if (this.callbackStateChanged) this.callbackStateChanged();
+
+            if (this.callbackStateChanged) {
+                this.callbackStateChanged();
+            }
         }
     }
 
     getStateAtOrBefore(frame: number): { frame: number, state: EmuState } {
+
         // initial frame?
-        if (frame <= 0 && this.checkpoints.length > 0)
+        if (frame <= 0 && this.checkpoints.length > 0) {
             return {frame: 0, state: this.checkpoints[0]};
+        }
 
         var bufidx = Math.floor(frame / this.checkpointInterval);
         var foundidx = bufidx < this.checkpoints.length ? bufidx : this.checkpoints.length - 1;
         var foundframe = foundidx * this.checkpointInterval;
+
         return {frame: foundframe, state: this.checkpoints[foundidx]};
     }
 
     loadFrame(seekframe: number, seekstep?: number): number {
         seekframe |= 0;
         seekstep |= 0;
+
         if (seekframe == this.lastSeekFrame && seekstep == this.lastSeekStep) {
             return seekframe; // already set to this frame
         }
+
         let {frame, state} = this.getStateAtOrBefore(seekframe - 1);
+
         if (state) {
             var numSteps = 0;
             this.platform.pause();
             this.platform.loadState(state);
+
             // seek to frame index
             while (frame < seekframe) {
                 if (frame < this.framerecs.length) {
                     this.loadControls(frame);
                 }
+
                 frame++;
                 numSteps = this.platform.advance(frame < seekframe);
             }
+
             if (frame == 0) {
                 numSteps = this.platform.advance(true);
                 this.platform.loadState(state);
             }
+
             // seek to step index
             if (seekstep > 0 && this.platform.advanceFrameClock) {
                 seekstep = this.platform.advanceFrameClock(null, seekstep);
             }
+
             // record new values
             this.lastSeekFrame = seekframe;
             this.lastSeekStep = seekstep;
             this.lastStepCount = numSteps;
+
             return seekframe;
         } else {
             return -1;
@@ -132,8 +157,10 @@ export class StateRecorderImpl implements EmuRecorder {
     }
 
     loadControls(frame: number) {
-        if (this.platform.loadControlsState)
+        if (this.platform.loadControlsState) {
             this.platform.loadControlsState(this.framerecs[frame].controls);
+        }
+
         setNoiseSeed(this.framerecs[frame].seed);
     }
 }
@@ -159,7 +186,6 @@ export enum ProbeFlags {
 }
 
 export class ProbeRecorder implements ProbeAll {
-
     m: Probeable;      // machine to probe
     buf: Uint32Array;  // buffer
     idx: number = 0;   // index into buffer
@@ -181,7 +207,10 @@ export class ProbeRecorder implements ProbeAll {
     }
 
     reset(newbuflen?: number) {
-        if (newbuflen) this.buf = new Uint32Array(newbuflen);
+        if (newbuflen) {
+            this.buf = new Uint32Array(newbuflen);
+        }
+
         this.sl = 0;
         this.cur_sp = -1;
         this.clear();
@@ -196,7 +225,10 @@ export class ProbeRecorder implements ProbeAll {
     }
 
     log(a: number) {
-        if (this.idx >= this.buf.length) return;
+        if (this.idx >= this.buf.length) {
+            return;
+        }
+
         this.buf[this.idx++] = a;
     }
 
@@ -205,23 +237,26 @@ export class ProbeRecorder implements ProbeAll {
     }
 
     lastOp() {
-        if (this.idx > 0)
+        if (this.idx > 0) {
             return this.buf[this.idx - 1] & 0xff000000;
-        else
+        } else {
             return -1;
+        }
     }
 
     lastAddr() {
-        if (this.idx > 0)
+        if (this.idx > 0) {
             return this.buf[this.idx - 1] & 0xffffff;
-        else
+        } else {
             return -1;
+        }
     }
 
     addLogBuffer(src: Uint32Array) {
         if (this.idx + src.length > this.buf.length) {
             src = src.slice(0, this.buf.length - this.idx);
         }
+
         this.buf.set(src, this.idx);
         this.idx += src.length;
     }
@@ -229,10 +264,11 @@ export class ProbeRecorder implements ProbeAll {
     logClocks(clocks: number) {
         clocks |= 0;
         if (clocks > 0) {
-            if (this.lastOp() == ProbeFlags.CLOCKS)
+            if (this.lastOp() == ProbeFlags.CLOCKS) {
                 this.relog((this.lastAddr() + clocks) | ProbeFlags.CLOCKS); // coalesce clocks
-            else
+            } else {
                 this.log(clocks | ProbeFlags.CLOCKS);
+            }
         }
     }
 
@@ -244,7 +280,9 @@ export class ProbeRecorder implements ProbeAll {
     logNewFrame() {
         this.log(ProbeFlags.FRAME);
         this.sl = 0;
-        if (this.singleFrame) this.clear();
+        if (this.singleFrame) {
+            this.clear();
+        }
     }
 
     logExecute(address: number, SP: number) {
@@ -253,11 +291,14 @@ export class ProbeRecorder implements ProbeAll {
             if (SP < this.cur_sp) {
                 this.log(ProbeFlags.SP_PUSH | SP);
             }
+
             if (SP > this.cur_sp) {
                 this.log(ProbeFlags.SP_POP | SP);
             }
+
             this.cur_sp = SP;
         }
+
         this.log(address | ProbeFlags.EXECUTE);
     }
 
@@ -299,19 +340,25 @@ export class ProbeRecorder implements ProbeAll {
 
     countEvents(op: number): number {
         var count = 0;
+
         for (var i = 0; i < this.idx; i++) {
-            if ((this.buf[i] & 0xff000000) == op)
+            if ((this.buf[i] & 0xff000000) == op) {
                 count++;
+            }
         }
+
         return count;
     }
 
     countClocks(): number {
         var count = 0;
+
         for (var i = 0; i < this.idx; i++) {
-            if ((this.buf[i] & 0xff000000) == ProbeFlags.CLOCKS)
+            if ((this.buf[i] & 0xff000000) == ProbeFlags.CLOCKS) {
                 count += this.buf[i] & 0xffff;
+            }
         }
+
         return count;
     }
 }

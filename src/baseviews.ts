@@ -1,20 +1,34 @@
-import { SourceFile, WorkerError } from "./workertypes";
+import {SourceFile, WorkerError} from "./workertypes";
 
 export interface ProjectView {
     createDiv(parent: HTMLElement): HTMLElement;
+
     setVisible?(showing: boolean): void;
+
     refresh(moveCursor: boolean): void;
+
     tick?(): void;
+
     getPath?(): string;
+
     getValue?(): string;
+
     setText?(text: string): void;
+
     insertText?(text: string): void;
+
     getCursorPC?(): number;
+
     getSourceFile?(): SourceFile;
+
     setGutterBytes?(line: number, s: string): void;
+
     markErrors?(errors: WorkerError[]): void;
+
     clearErrors?(): void;
+
     recreateOnResize?: boolean;
+
     undoStep?(): void;
 };
 

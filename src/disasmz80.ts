@@ -24,6 +24,7 @@ export function disassembleZ80(pc: number, b0: number, b1: number, b2: number, b
         case 0xdd:
         case 0xfd:
             var ireg = (b0 == 0xdd) ? 'ix' : 'iy';
+
             if (b1 == 0xcb) {
                 // swap the 3rd and 4th bytes [$dd $cb displacement opcode]
                 am = Z80_OPS_CB[b3];
@@ -33,8 +34,10 @@ export function disassembleZ80(pc: number, b0: number, b1: number, b2: number, b
             } else {
                 am = Z80_OPS[b1];
             }
+
             am = am.replace(/[(]hl[)]/, '(' + ireg + '+x)');
             am = am.replace(/\bhl\b/, ireg);
+
             n++;
             break;
         default:
@@ -42,7 +45,9 @@ export function disassembleZ80(pc: number, b0: number, b1: number, b2: number, b
             break;
     }
 
-    if (!am || !am.length) am = "??";
+    if (!am || !am.length) {
+        am = "??";
+    }
 
     if (/\bxx\b/.test(am)) {
         am = am.replace(/\bxx\b/, '$' + hex(bytes[n] + (bytes[n + 1] << 8), 4));
@@ -57,6 +62,7 @@ export function disassembleZ80(pc: number, b0: number, b1: number, b2: number, b
         } else {
             am = am.replace(/\bx\b/, '$' + hex(bytes[n], 2));
         }
+
         n += 1;
     }
 
