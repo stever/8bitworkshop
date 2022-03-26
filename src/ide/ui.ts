@@ -19,8 +19,8 @@ import { CallStackView, DebugBrowserView } from "./views/treeviews";
 import { saveAs } from "file-saver";
 import { ZXWASMPlatform } from "../machine/zx";
 
-// external libs (TODO)
-declare var Tour, GIF;
+// external libs
+declare var GIF;
 declare var $ : JQueryStatic; // use browser jquery
 
 // query string
@@ -144,12 +144,6 @@ class UserPrefs {
   }
   getLastPlatformID() {
     return hasLocalStorage && !isEmbed && localStorage.getItem("__lastplatform");
-  }
-  shouldCompleteTour() {
-    return hasLocalStorage && !isEmbed && !localStorage.getItem("8bitworkshop.hello");
-  }
-  completedTour() {
-    if (hasLocalStorage && !isEmbed) localStorage.setItem("8bitworkshop.hello", "true");
   }
 }
 
@@ -1659,86 +1653,6 @@ function isLandscape() {
   return window.innerWidth > window.innerHeight;
 }
 
-async function showWelcomeMessage() {
-  if (userPrefs.shouldCompleteTour()) {
-    await loadScript('dist/bootstrap-tourist.js');
-    var is_vcs = platform_id.startsWith('vcs');
-    var steps = [
-        {
-          element: "#platformsMenuButton",
-          placement: 'right',
-          title: "Platform Selector",
-          content: "You're currently on the \"<b>" + platform_id + "</b>\" platform. You can choose a different one from the menu."
-        },
-        {
-          element: "#preset_select",
-          title: "Project Selector",
-          content: "You can choose different code examples, or create your own files."
-        },
-        {
-          element: "#workspace",
-          title: "Code Editor",
-          content: is_vcs ? "Type your 6502 assembly code into the editor, and it'll be assembled in real-time."
-                          : "Type your source code into the editor, and it'll be compiled in real-time."
-        },
-        {
-          element: "#emulator",
-          placement: 'left',
-          title: "Emulator",
-          content: "We'll load your compiled code into the emulator whenever you make changes."
-        },
-        {
-          element: "#debug_bar",
-          placement: 'bottom',
-          title: "Debug Tools",
-          content: "Use these buttons to set breakpoints, single step through code, pause/resume, and use debugging tools."
-        },
-        {
-          element: "#dropdownMenuButton",
-          title: "Main Menu",
-          content: "Click the menu to create new files, download your code, or share your work with others."
-        },
-        {
-          element: "#sidebar",
-          title: "Sidebar",
-          content: "Pull right to expose the sidebar. It lets you switch between source files, view assembly listings, and use other tools like Disassembler, Memory Browser, and Asset Editor."
-        }
-      ];
-    if (!isLandscape()) {
-      steps.unshift({
-        element: "#controls_top",
-        placement: 'bottom',
-        title: "Portrait mode detected",
-        content: "This site works best on desktop browsers. For best results, rotate your device to landscape orientation."
-      });
-    }
-    if (window.location.host.endsWith('8bitworkshop.com')) {
-      steps.unshift({
-        element: "#dropdownMenuButton",
-        placement: 'right',
-        title: "Cookie Consent",
-        content: 'Before we start, we should tell you that this website stores cookies and other data in your browser. You can review our <a href="/privacy.html" target="_new">privacy policy</a>.'
-      });
-      steps.push({
-        element: "#booksMenuButton",
-        placement: 'left',
-        title: "Books",
-        content: "Get some books that explain how to program all of this stuff, and write some games!"
-      });
-    }
-    var tour = new Tour({
-      autoscroll:false,
-      //storage:false,
-      steps:steps,
-      onEnd: () => {
-        userPrefs.completedTour();
-        //requestPersistPermission(false, true);
-      }
-    });
-    setTimeout(() => { tour.start(); }, 2500);
-  }
-}
-
 ///////////////////////////////////////////////////
 
 function globalErrorHandler(msgevent) {
@@ -1867,8 +1781,6 @@ async function startPlatform() {
     hideControlsForEmbed();
   } else {
     updateSelector();
-    updateBooksMenu();
-    showWelcomeMessage();
   }
   revealTopBar();
 }
@@ -1877,13 +1789,6 @@ function hideControlsForEmbed() {
   $('#dropdownMenuButton').hide();
   $('#platformsMenuButton').hide();
   $('#booksMenuButton').hide();
-}
-
-function updateBooksMenu() {
-  if (getRootBasePlatform(platform_id) == 'nes') $(".book-nes").addClass("book-active");
-  else if (getRootBasePlatform(platform_id) == 'vcs') $(".book-vcs").addClass("book-active");
-  else if (getRootBasePlatform(platform_id) == 'verilog') $(".book-verilog").addClass("book-active");
-  else if (platform.getToolForFilename(getCurrentMainFilename()) == 'sdcc') $(".book-arcade").addClass("book-active");
 }
 
 function revealTopBar() {
