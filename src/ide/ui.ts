@@ -114,22 +114,6 @@ function newWorker() : Worker {
   return new Worker("./dist/worker/bundle.js");
 }
 
-// https://developers.google.com/web/updates/2016/06/persistent-storage
-function requestPersistPermission(interactive: boolean, failureonly: boolean) {
-  if (navigator.storage && navigator.storage.persist) {
-    navigator.storage.persist().then(persistent=>{
-      console.log("requestPersistPermission =", persistent);
-      if (persistent) {
-        interactive && !failureonly && alertInfo("Your browser says it will persist your local file edits, but you may want to back up your work anyway.");
-      } else {
-        interactive && alertError("Your browser refused to expand the peristent storage quota. Your edits may not be preserved after closing the page.");
-      }
-    });
-  } else {
-    interactive && alertError("Your browser may not persist edits after closing the page. Try a different browser.");
-  }
-}
-
 function getCurrentPresetTitle() : string {
   if (!current_preset)
     return current_project.mainPath || "ROM";
@@ -342,26 +326,17 @@ function loadMainWindow(preset_id:string) {
 async function loadProject(preset_id:string) {
   // set current file ID
   // TODO: this is done twice (mainPath and mainpath!)
+
   current_project.mainPath = preset_id;
+
   // load files from storage or web URLs
   var result = await current_project.loadFiles([preset_id]);
+  console.assert(result && result.length);
+
   measureTimeLoad = new Date(); // for timing calc.
-  if (result && result.length) {
-    // file found; continue
-    loadMainWindow(preset_id);
-  } else {
-    var skel = await getSkeletonFile(preset_id);
-    current_project.filedata[preset_id] = skel || "\n";
-    loadMainWindow(preset_id);
-    // don't alert if we selected "new file"
-    if (!qs.newfile) {
-      alertInfo("Could not find file \"" + preset_id + "\". Loading default file.");
-    } else {
-      requestPersistPermission(true, true);
-    }
-    delete qs.newfile;
-    replaceURLState();
-  }
+
+  // file found; continue
+  loadMainWindow(preset_id);
 }
 
 function reloadProject(id:string) {
@@ -385,103 +360,6 @@ function checkEnteredFilename(fn : string) : boolean {
     return false;
   }
   return true;
-}
-
-function _createNewFile(e) {
-  // TODO: support spaces
-  bootbox.prompt({
-    title:"Enter the name of your new main source file.",
-    placeholder:"newfile" + platform.getDefaultExtension(),
-    callback:(filename) => {
-      if (filename && filename.trim().length > 0) {
-        if (!checkEnteredFilename(filename)) return;
-        if (filename.indexOf(".") < 0) {
-          filename += platform.getDefaultExtension();
-        }
-        var path = filename;
-        qs.newfile = '1';
-        reloadProject(path);
-      }
-    }
-  } as any);
-  return true;
-}
-
-function _uploadNewFile(e) {
-  const uploadFileElem = $(`<input type="file" multiple accept="*" style="display:none">`);
-  const file = uploadFileElem[0] as HTMLInputElement;
-  uploadFileElem.change((e) => { handleFileUpload(file.files) });
-  uploadFileElem.click();
-}
-
-// called from index.html
-function handleFileUpload(files: FileList) {
-  console.log(files);
-  var index = 0;
-  function uploadNextFile() {
-    var f = files[index++];
-    if (!f) {
-      console.log("Done uploading", index);
-      if (index > 2) {
-        alertInfo("Files uploaded.");
-        setTimeout(updateSelector, 1000); // TODO: wait for files to upload
-      } else {
-        qs.file = files[0].name;
-        bootbox.confirm({
-          message: "Open '" + qs.file + "' as main project file?",
-          buttons: {
-            confirm: { label: "Open As New Project" },
-            cancel: { label: "Include/Link With Project Later" },
-          },
-          callback: (result) => {
-            if (result)
-              gotoNewLocation();
-            else
-              setTimeout(updateSelector, 1000); // TODO: wait for files to upload
-          }
-        });
-      }
-    } else {
-      var path = f.name;
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        var arrbuf = (<any>e.target).result as ArrayBuffer;
-        var data : FileData = new Uint8Array(arrbuf);
-        // convert to UTF8, unless it's a binary file
-        if (isProbablyBinary(path, data)) {
-          //gotoMainFile = false;
-        } else {
-          data = byteArrayToUTF8(data).replace('\r\n','\n'); // convert CRLF to LF
-        }
-        // store in local forage
-        projectWindows.updateFile(path, data);
-        console.log("Uploaded " + path + " " + data.length + " bytes");
-        uploadNextFile();
-      }
-      reader.readAsArrayBuffer(f); // read as binary
-    }
-  }
-  if (files) uploadNextFile();
-}
-
-async function _openLocalDirectory(e) {
-  var pickerfn = window['showDirectoryPicker'];
-  if (!pickerfn) {
-    bootbox.alert(`This browser can't open local files on your computer, yet. Try Chrome.`);
-  }
-  var dirHandle = await pickerfn();
-  var repoid = dirHandle.name;
-  var storekey = '__localfs__' + repoid;
-  var fsdata = {
-    handle: dirHandle,
-  }
-  var lstore = localforage.createInstance({
-    name: storekey,
-    version: 2.0
-  });
-  await lstore.setItem(storekey, fsdata);
-  qs = {localfs: repoid};
-  gotoNewLocation(true);
 }
 
 async function promptUser(message: string) : Promise<string> {
@@ -691,76 +569,6 @@ function _downloadCassetteFile(e) {
   fn(e);
 }
 
-
-function _revertFile(e) {
-  var wnd = projectWindows.getActive();
-  if (wnd && wnd.setText) {
-    var fn = projectWindows.getActiveID();
-    $.get( "presets/"+getBasePlatform(platform_id)+"/"+fn, (text) => {
-      bootbox.confirm("Reset '" + fn + "' to default?", (ok) => {
-        if (ok) {
-          wnd.setText(text);
-        }
-      });
-    }, 'text')
-    .fail(() => {
-      alertError("Can only revert built-in examples.");
-    });
-  } else {
-    alertError("Cannot revert the active window. Please choose a text file.");
-  }
-}
-
-function _deleteFile(e) {
-  var wnd = projectWindows.getActive();
-  if (wnd && wnd.getPath) {
-    var fn = projectWindows.getActiveID();
-    bootbox.confirm("Delete '" + fn + "'?", (ok) => {
-      if (ok) {
-        store.removeItem(fn).then( () => {
-          // if we delete what is selected
-          if (qs.file == fn) {
-            gotoNewLocation();
-          } else {
-            updateSelector();
-            alertInfo("Deleted " + fn);
-          }
-        });
-      }
-    });
-  } else {
-    alertError("Cannot delete the active window.");
-  }
-}
-
-function _renameFile(e) {
-  var wnd = projectWindows.getActive();
-  if (wnd && wnd.getPath && current_project.getFile(wnd.getPath())) {
-    var fn = projectWindows.getActiveID();
-    bootbox.prompt({
-      title: "Rename '" + fn + "' to?",
-      value: fn,
-      callback: (newfn) => {
-        var data = current_project.getFile(wnd.getPath());
-        if (newfn && newfn != fn && data) {
-          if (!checkEnteredFilename(newfn)) return;
-          store.removeItem(fn).then( () => {
-            return store.setItem(newfn, data);
-          }).then( () => {
-            updateSelector();
-            alert("Renamed " + fn + " to " + newfn); // need alert() so it pauses
-            if (fn == current_project.mainPath) {
-              reloadProject(newfn);
-            }
-          });
-        }
-      }
-    });
-  } else {
-    alertError("Cannot rename the active window.");
-  }
-}
-
 function _downloadROMImage(e) {
   if (current_output == null) {
     alertError("Please finish compiling with no errors before downloading ROM.");
@@ -806,30 +614,6 @@ async function _downloadProjectZipFile(e) {
   zip.generateAsync({type:"blob"}).then( (content) => {
     saveAs(content, getCurrentMainFilename() + "-" + getBasePlatform(platform_id) + ".zip");
   });
-}
-
-async function _downloadAllFilesZipFile(e) {
-  var zip = await newJSZip();
-  var keys = await store.keys();
-
-  setWaitDialog(true);
-
-  try {
-    var i = 0;
-    await Promise.all(keys.map( (path) => {
-      return store.getItem(path).then( (text) => {
-        setWaitProgress(i++/(keys.length+1));
-        if (text) {
-          zip.file(path, text as any);
-        }
-      });
-    }));
-
-    var content = await zip.generateAsync({type:"blob"});
-    saveAs(content, getBasePlatform(platform_id) + "-all.zip");
-  } finally {
-    setWaitDialog(false);
-  }
 }
 
 function populateExamples(sel) {
@@ -1457,36 +1241,6 @@ function addFileToProject(type, ext, linefn) {
   }
 }
 
-// TODO: lwtools and smaller c
-function _addIncludeFile() {
-  var fn = getCurrentMainFilename();
-  var tool = platform.getToolForFilename(fn);
-  // TODO: more tools? make this a function of the platform / tool provider
-  if (fn.endsWith(".c") || tool == 'sdcc' || tool == 'cc65' || tool == 'cmoc' || tool == 'smlrc')
-    addFileToProject("Header", ".h", (s) => { return '#include "'+s+'"' });
-  else if (tool == 'dasm' || tool == 'zmac')
-    addFileToProject("Include", ".inc", (s) => { return '\tinclude "'+s+'"' });
-  else if (tool == 'ca65' || tool == 'sdasz80' || tool == 'vasm' || tool == 'armips')
-    addFileToProject("Include", ".inc", (s) => { return '\t.include "'+s+'"' });
-  else if (tool == 'verilator')
-    addFileToProject("Verilog", ".v", (s) => { return '`include "'+s+'"' });
-    else if (tool == 'wiz')
-    addFileToProject("Include", ".wiz", (s) => { return 'import "'+s+'";' });
-  else
-    alertError("Can't add include file to this project type (" + tool + ")");
-}
-
-function _addLinkFile() {
-  var fn = getCurrentMainFilename();
-  var tool = platform.getToolForFilename(fn);
-  if (fn.endsWith(".c") || tool == 'sdcc' || tool == 'cc65' || tool == 'cmoc' || tool == 'smlrc')
-    addFileToProject("Linked C (or .s)", ".c", (s) => { return '//#link "'+s+'"' });
-  else if (fn.endsWith("asm") || fn.endsWith(".s") || tool == 'ca65' || tool == 'lwasm')
-    addFileToProject("Linked ASM", ".inc", (s) => { return ';#link "'+s+'"' });
-  else
-    alertError("Can't add linked file to this project type (" + tool + ")");
-}
-
 function setupDebugControls() {
 
   // create toolbar buttons
@@ -1536,13 +1290,7 @@ function setupDebugControls() {
 
   // add menu clicks
   $(".dropdown-menu").collapse({toggle: false});
-  $("#item_new_file").click(_createNewFile);
-  $("#item_upload_file").click(_uploadNewFile);
-  $("#item_open_directory").click(_openLocalDirectory);
   $("#item_share_file").click(_shareEmbedLink);
-  $("#item_reset_file").click(_revertFile);
-  $("#item_rename_file").click(_renameFile);
-  $("#item_delete_file").click(_deleteFile);
 
   if (platform.runEval)
     $("#item_debug_expr").click(_breakExpression).show();
@@ -1552,7 +1300,6 @@ function setupDebugControls() {
   $("#item_download_rom").click(_downloadROMImage);
   $("#item_download_file").click(_downloadSourceFile);
   $("#item_download_zip").click(_downloadProjectZipFile);
-  $("#item_download_allzip").click(_downloadAllFilesZipFile);
   $("#item_record_video").click(_recordVideo);
 
   if (platform_id.startsWith('apple2') || platform_id.startsWith('vcs')) // TODO: look for function
@@ -1566,10 +1313,6 @@ function setupDebugControls() {
     $("#dbg_slowest").click(_slowestFrameRate);
     $("#dbg_fastest").click(_fastestFrameRate);
   }
-
-  $("#item_addfile_include").click(_addIncludeFile);
-  $("#item_addfile_link").click(_addLinkFile);
-  $("#item_request_persist").click(() => requestPersistPermission(true, false));
 
   updateDebugWindows();
 
@@ -1677,16 +1420,9 @@ function isLandscape() {
 ///////////////////////////////////////////////////
 
 function globalErrorHandler(msgevent) {
-  var msg = (msgevent.message || msgevent.error || msgevent)+"";
-
-  // storage quota full? (Chrome) try to expand it
-  if (msg.indexOf("QuotaExceededError") >= 0) {
-    requestPersistPermission(false, false);
-  } else {
-    var err = msgevent.error || msgevent.reason;
-    if (err != null && err instanceof EmuHalt) {
-      haltEmulation(err);
-    }
+  var err = msgevent.error || msgevent.reason;
+  if (err != null && err instanceof EmuHalt) {
+    haltEmulation(err);
   }
 }
 
