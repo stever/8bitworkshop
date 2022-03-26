@@ -1324,8 +1324,12 @@ async function loadAndStartPlatform() {
 function emulationHalted(err: EmuHalt) {
     var msg = (err && err.message) || msg;
     showExceptionAsError(err, msg);
+
     projectWindows.refresh(false); // don't mess with cursor
-    if (platform.saveState) showDebugInfo(platform.saveState());
+
+    if (platform.saveState) {
+        showDebugInfo(platform.saveState());
+    }
 }
 
 startUI();
