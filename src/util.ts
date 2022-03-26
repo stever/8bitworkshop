@@ -249,10 +249,6 @@ export function printFlags(val: number, names: string[], r2l: boolean) {
     return s;
 }
 
-export function rgb2bgr(x) {
-    return ((x & 0xff) << 16) | ((x >> 16) & 0xff) | (x & 0x00ff00);
-}
-
 export function RGBA(r: number, g: number, b: number) {
     return (r & 0xff) | ((g & 0xff) << 8) | ((b & 0xff) << 16) | 0xff000000;
 }
@@ -265,38 +261,20 @@ export function safeident(s: string): string {
     return s.replace(/\W+/g, "_");
 }
 
-export function rle_unpack(src: Uint8Array): Uint8Array {
-    var i = 0;
-    var tag = src[i++];
-    var dest = [];
-    var data = tag;
-    while (i < src.length) {
-        var ch = src[i++];
-        if (ch == tag) {
-            var count = src[i++];
-            for (var j = 0; j < count; j++)
-                dest.push(data);
-            if (count == 0)
-                break;
-        } else {
-            data = ch;
-            dest.push(data);
-        }
-    }
-    return new Uint8Array(dest);
-}
-
 // firefox doesn't do GET with binary files
 export function getWithBinary(url: string, success: (text: string | Uint8Array) => void, datatype: 'text' | 'arraybuffer') {
     var oReq = new XMLHttpRequest();
     oReq.open("GET", url, true);
     oReq.responseType = datatype;
+
     oReq.onload = function (oEvent) {
         if (oReq.status == 200) {
             var data = oReq.response;
+
             if (data instanceof ArrayBuffer) {
                 data = new Uint8Array(data);
             }
+
             success(data);
         } else if (oReq.status == 404) {
             success(null);
@@ -304,12 +282,15 @@ export function getWithBinary(url: string, success: (text: string | Uint8Array) 
             throw Error("Error " + oReq.status + " loading " + url);
         }
     }
+
     oReq.onerror = function (oEvent) {
         success(null);
     }
+
     oReq.ontimeout = function (oEvent) {
         throw Error("Timeout loading " + url);
     }
+
     oReq.send(null);
 }
 
@@ -341,10 +322,11 @@ export function convertDataToString(data: string | Uint8Array): string {
 }
 
 export function byteToASCII(b: number): string {
-    if (b < 32)
+    if (b < 32) {
         return String.fromCharCode(b + 0x2400);
-    else
+    } else {
         return String.fromCharCode(b);
+    }
 }
 
 export function loadScript(scriptfn: string): Promise<Event> {
@@ -360,23 +342,38 @@ export function loadScript(scriptfn: string): Promise<Event> {
 export function decodeQueryString(qs: string): {} {
     if (qs.startsWith('?')) qs = qs.substr(1);
     var a = qs.split('&');
-    if (!a || a.length == 0)
+
+    if (!a || a.length == 0) {
         return {};
+    }
+
     var b = {};
     for (var i = 0; i < a.length; ++i) {
         var p = a[i].split('=', 2);
-        if (p.length == 1)
+
+        if (p.length == 1) {
             b[p[0]] = "";
-        else
+        } else {
             b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+        }
     }
+
     return b;
 }
 
 export function parseBool(s: string): boolean {
-    if (!s) return false;
-    if (s == 'false' || s == '0') return false;
-    if (s == 'true' || s == '1') return true;
+    if (!s) {
+        return false;
+    }
+
+    if (s == 'false' || s == '0') {
+        return false;
+    }
+
+    if (s == 'true' || s == '1') {
+        return true;
+    }
+
     return s ? true : false;
 }
 
@@ -385,30 +382,43 @@ export function parseBool(s: string): boolean {
 export function findIntegerFactors(x: number, mina: number, minb: number, aspect: number): { a: number, b: number } {
     let a = x;
     let b = 1;
+
     if (minb > 1 && minb < a) {
         a = Math.ceil(x / minb);
         b = minb;
     }
+
     while (a > b) {
         let a2 = a;
         let b2 = b;
+
         if ((a & 1) == 0) {
             b2 = b * 2;
             a2 = a / 2;
         }
+
         if ((a % 3) == 0) {
             b2 = b * 3;
             a2 = a / 3;
         }
+
         if ((a % 5) == 0) {
             b2 = b * 5;
             a2 = a / 5;
         }
-        if (a2 < mina) break;
-        if (a2 < b2 * aspect) break;
+
+        if (a2 < mina) {
+            break;
+        }
+
+        if (a2 < b2 * aspect) {
+            break;
+        }
+
         a = a2;
         b = b2;
     }
+
     return {a, b};
 }
 
@@ -428,6 +438,7 @@ export class FileDataCache {
     put(key: string, value: string | Uint8Array) {
         this.cache.set(key, value);
         this.size += value.length;
+
         if (this.size > this.maxSize) {
             console.log('cache reset', this);
             this.reset();
@@ -441,8 +452,13 @@ export class FileDataCache {
 }
 
 export function coerceToArray<T>(arrobj: any): T[] {
-    if (Array.isArray(arrobj)) return arrobj;
-    else if (arrobj != null && typeof arrobj[Symbol.iterator] === 'function') return Array.from(arrobj);
-    else if (typeof arrobj === 'object') return Array.from(Object.values(arrobj))
-    else throw new Error(`Expected array or object, got "${arrobj}"`);
+    if (Array.isArray(arrobj)) {
+        return arrobj;
+    } else if (arrobj != null && typeof arrobj[Symbol.iterator] === 'function') {
+        return Array.from(arrobj);
+    } else if (typeof arrobj === 'object') {
+        return Array.from(Object.values(arrobj))
+    } else {
+        throw new Error(`Expected array or object, got "${arrobj}"`);
+    }
 }
