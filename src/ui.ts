@@ -41,7 +41,6 @@ import {
   VRAMMemoryView
 } from "./debugviews";
 import {
-  CallStackView,
   DebugBrowserView,
   FrameCallsView
 } from "./treeviews";
@@ -253,10 +252,6 @@ function refreshWindowList() {
 
     addWindowItem("#symbolprobe", "Symbol Profiler", () => {
       return new ProbeSymbolView();
-    });
-
-    addWindowItem("#callstack", "Call Stack", () => {
-      return new CallStackView();
     });
 
     addWindowItem("#framecalls", "Frame Profiler", () => {
