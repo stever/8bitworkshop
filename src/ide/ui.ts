@@ -335,10 +335,6 @@ function getCurrentMainFilename() : string {
   return getFilenameForPath(current_project.mainPath);
 }
 
-function getCurrentEditorFilename() : string {
-  return getFilenameForPath(projectWindows.getActiveID());
-}
-
 function _downloadROMImage(e) {
   if (current_output == null) {
     alertError("Please finish compiling with no errors before downloading ROM.");
@@ -358,32 +354,6 @@ function _downloadROMImage(e) {
   } else {
     alertError(`The "${platform_id}" platform doesn't have downloadable ROMs.`);
   }
-}
-
-function _downloadSourceFile(e) {
-  var text = projectWindows.getCurrentText();
-  if (!text) return false;
-  var blob = new Blob([text], {type:"text/plain;charset=utf-8"});
-  saveAs(blob, getCurrentEditorFilename(), {autoBom:false});
-}
-
-async function newJSZip() {
-  let JSZip = (await import('jszip')).default;
-  return new JSZip();
-}
-
-async function _downloadProjectZipFile(e) {
-  var zip = await newJSZip();
-
-  current_project.iterateFiles( (id, data) => {
-    if (data) {
-      zip.file(getFilenameForPath(id), data);
-    }
-  });
-
-  zip.generateAsync({type:"blob"}).then( (content) => {
-    saveAs(content, getCurrentMainFilename() + "-" + getBasePlatform(platform_id) + ".zip");
-  });
 }
 
 function populateExamples(sel) {
@@ -984,8 +954,6 @@ function setupDebugControls() {
     $("#item_debug_expr").hide();
 
   $("#item_download_rom").click(_downloadROMImage);
-  $("#item_download_file").click(_downloadSourceFile);
-  $("#item_download_zip").click(_downloadProjectZipFile);
 
   if (platform.setFrameRate && platform.getFrameRate) {
     $("#dbg_slower").click(_slowerFrameRate);
