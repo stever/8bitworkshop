@@ -1113,7 +1113,6 @@ function addPageFocusHandlers() {
 
 async function startPlatform() {
   platform = new ZXWASMPlatform($("#emuscreen")[0]);
-  setPlatformUI();
   stateRecorder = new StateRecorderImpl(platform);
   PRESETS = platform.getPresets ? platform.getPresets() : [];
   if (!qs.file) {
@@ -1154,16 +1153,6 @@ export function setupSplits() {
       if (projectWindows) projectWindows.resize();
     },
   });
-}
-
-function setPlatformUI() {
-  var name = platform.getPlatformName && platform.getPlatformName();
-  var menuitem = $('a[href="?platform=zx"]');
-  if (menuitem.length) {
-    menuitem.addClass("dropdown-item-checked");
-    name = name || menuitem.text() || name;
-  }
-  $(".platform_name").text(name || 'zx');
 }
 
 // start
