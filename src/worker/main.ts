@@ -189,10 +189,6 @@ export class FileWorkingStore implements WorkingStore {
         return entry;
     }
 
-    hasFile(path: string) {
-        return this.workfs[path] != null;
-    }
-
     getFileData(path: string): FileData {
         return this.workfs[path] && this.workfs[path].data;
     }
@@ -220,11 +216,6 @@ function errorResult(msg: string): WorkerErrorResult {
 class Builder {
     steps: BuildStep[] = [];
     startseq: number = 0;
-
-    // returns true if file changed during this build step
-    wasChanged(entry: FileEntry): boolean {
-        return entry.ts > this.startseq;
-    }
 
     async executeBuildSteps(): Promise<WorkerResult> {
         this.startseq = store.currentVersion();
@@ -589,22 +580,6 @@ export function loadNative(modulename: string) {
 export function setupFS(FS, name: string) {
     var WORKERFS = FS.filesystems['WORKERFS'];
 
-    if (name === '65-vector') {
-        name = '65-none';
-    }
-
-    if (name === '65-atari7800') {
-        name = '65-none';
-    }
-
-    if (name === '65-devel') {
-        name = '65-none';
-    }
-
-    if (name === '65-vcs') {
-        name = '65-none';
-    }
-
     if (!fsMeta[name]) {
         throw Error("No filesystem for '" + name + "'");
     }
@@ -662,7 +637,6 @@ export function msvcErrorMatcher(errors: WorkerError[]) {
             errors.push({
                 line: errline,
                 path: matches[1],
-                //type:matches[3],
                 msg: matches[4]
             });
         } else {
@@ -698,8 +672,6 @@ export function extractErrors(regex, strings: string[], path: string, iline, ims
 }
 
 export const re_crlf = /\r?\n/;
-
-//    1   %line 16+1 hello.asm
 export const re_lineoffset = /\s*(\d+)\s+[%]line\s+(\d+)\+(\d+)\s+(.+)/;
 
 export function parseListing(code: string,
@@ -880,20 +852,6 @@ export function preprocessMCPP(step: BuildStep, filesys: string) {
     }
 
     return {code: iout};
-}
-
-export function setupRequireFunction() {
-    var exports = {};
-    exports['jsdom'] = {
-        JSDOM: function (a, b) {
-            this.window = {};
-        }
-    };
-
-    emglobal['require'] = (modname: string) => {
-        console.log('require', modname, exports[modname] != null);
-        return exports[modname];
-    }
 }
 
 var TOOLS = {
