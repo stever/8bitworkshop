@@ -53,7 +53,6 @@ declare var $ : JQueryStatic; // use browser jquery
 
 // query string
 interface UIQueryString {
-  platform? : string;
   file? : string;
 }
 
@@ -325,7 +324,6 @@ async function loadProject(preset_id:string) {
 }
 
 function reloadProject(id:string) {
-  qs.platform = platform_id;
   qs.file = id;
   gotoNewLocation();
 }
@@ -937,7 +935,7 @@ function setupDebugControls() {
     uitoolbar.add('ctrl+alt+n', 'Next Frame/Interrupt', 'glyphicon-forward', singleFrameStep).prop('id','dbg_tovsync');
   }
 
-  if ((platform.runEval || platform.runToPC) && !platform_id.startsWith('verilog')) {
+  if ((platform.runEval || platform.runToPC)) {
     uitoolbar.add('ctrl+alt+l', 'Run To Line', 'glyphicon-save', runToCursor).prop('id','dbg_toline');
   }
 
@@ -1078,7 +1076,6 @@ function gotoNewLocation(replaceHistory? : boolean) {
 }
 
 function replaceURLState() {
-  if (platform_id) qs.platform = platform_id;
   delete qs['']; // remove null parameter
   history.replaceState({}, "", "?" + $.param(qs));
 }
