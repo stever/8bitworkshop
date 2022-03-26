@@ -106,26 +106,12 @@ const TOOL_TO_SOURCE_STYLE = {
   'zmac': 'z80',
 }
 
-const TOOL_TO_HELPURL = {
-  'sdcc': 'http://sdcc.sourceforge.net/doc/sdccman.pdf',
-}
-
 function alertError(s:string) {
   setWaitDialog(false);
   bootbox.alert({
     title: '<span class="glyphicon glyphicon-alert" aria-hidden="true"></span> Alert',
     message: s
   });
-}
-
-function alertInfo(s:string) {
-  setWaitDialog(false);
-  bootbox.alert(s);
-}
-
-function fatalError(s:string) {
-  alertError(s);
-  throw new Error(s);
 }
 
 function newWorker() : Worker {
@@ -347,23 +333,6 @@ function reloadProject(id:string) {
   gotoNewLocation();
 }
 
-async function getSkeletonFile(fileid:string) : Promise<string> {
-  var ext = platform.getToolForFilename(fileid);
-  try {
-    return await $.get( "presets/"+getBasePlatform(platform_id)+"/skeleton."+ext, 'text');
-  } catch(e) {
-    alertError("Could not load skeleton for " + platform_id + "/" + ext + "; using blank file");
-  }
-}
-
-function checkEnteredFilename(fn : string) : boolean {
-  if (fn.indexOf(" ") >= 0) {
-    alertError("No spaces in filenames, please.");
-    return false;
-  }
-  return true;
-}
-
 function getCurrentMainFilename() : string {
   return getFilenameForPath(current_project.mainPath);
 }
@@ -381,86 +350,6 @@ function getCookie(name) : string {
         if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
     }
     return null;
-}
-
-function loadClipboardLibrary() {
-  // can happen in background because it won't be used until user clicks
-  console.log('clipboard');
-  import('clipboard').then( (clipmod) => {
-    let ClipboardJS = clipmod.default;
-    new ClipboardJS(".btn");
-  });
-}
-
-function get8bitworkshopLink(linkqs : string, fn : string) {
-  console.log(linkqs);
-  var loc = window.location;
-  var prefix = loc.pathname.replace('index.html','');
-  var protocol = (loc.host == '8bitworkshop.com') ? 'https:' : loc.protocol;
-  var fulllink = protocol + '//' + loc.host + prefix + fn + '?' + linkqs;
-  return fulllink;
-}
-
-function _downloadCassetteFile_apple2(e) {
-  var addr = compparams && compparams.code_start;
-  loadScript('lib/c2t.js').then( () => {
-    var stdout = '';
-    var print_fn = function(s) { stdout += s + "\n"; }
-    var c2t = window['c2t']({
-      noInitialRun:true,
-      print:print_fn,
-      printErr:print_fn
-    });
-
-    var FS = c2t['FS'];
-    var rompath = getCurrentMainFilename() + ".bin";
-    var audpath = getCurrentMainFilename() + ".wav";
-    FS.writeFile(rompath, current_output, {encoding:'binary'});
-    var args = ["-2bc", rompath+','+addr.toString(16), audpath];
-    c2t.callMain(args);
-    var audout = FS.readFile(audpath, {'encoding':'binary'});
-
-    if (audout) {
-      var blob = new Blob([audout], {type: "audio/wav"});
-      saveAs(blob, audpath);
-      stdout += "Then connect your audio output to the cassette input, turn up the volume, and play the audio file.";
-      alertInfo('<pre style="white-space: pre-wrap">'+stdout+'</pre>');
-    }
-  });
-}
-
-function _downloadCassetteFile_vcs(e) {
-  loadScript('lib/makewav.js').then( () => {
-    let stdout = '';
-    let print_fn = function(s) { stdout += s + "\n"; }
-    var prefix = getFilenamePrefix(getCurrentMainFilename());
-    let rompath = prefix + ".bin";
-    let audpath = prefix + ".wav";
-    let _makewav = window['makewav']({
-      noInitialRun:false,
-      print:print_fn,
-      printErr:print_fn,
-      arguments:['-ts', '-f0', '-v10', rompath],
-      preRun: (mod) => {
-        let FS = mod['FS'];
-        FS.writeFile(rompath, current_output, {encoding:'binary'});
-      }
-    });
-
-    _makewav.ready.then((makewav) => {
-      let args = [rompath];
-      makewav.run(args);
-      console.log(stdout);
-      let FS = makewav['FS'];
-      let audout = FS.readFile(audpath, {'encoding':'binary'});
-      if (audout) {
-        let blob = new Blob([audout], {type: "audio/wav"});
-        saveAs(blob, audpath);
-        stdout += "\nConnect your audio output to the SuperCharger input, turn up the volume, and play the audio file.";
-        alertInfo('<pre style="white-space: pre-wrap">'+stdout+'</pre>');
-      }
-    });
-  });
 }
 
 function _downloadROMImage(e) {
@@ -1107,34 +996,6 @@ function _lookupHelp() {
   }
 }
 
-function addFileToProject(type, ext, linefn) {
-  var wnd = projectWindows.getActive();
-  if (wnd && wnd.insertText) {
-    bootbox.prompt({
-      title:"Add "+type+" File to Project",
-      value:"filename"+ext,
-      callback:(filename:string) => {
-        if (filename && filename.trim().length > 0) {
-          if (!checkEnteredFilename(filename)) return;
-          var path = filename;
-          var newline = "\n" + linefn(filename) + "\n";
-          current_project.loadFiles([path]).then((result) => {
-            if (result && result.length) {
-              alertError(filename + " already exists; including anyway");
-            } else {
-              current_project.updateFile(path, "\n");
-            }
-            wnd.insertText(newline);
-            refreshWindowList();
-          });
-        }
-      }
-    });
-  } else {
-    alertError("Can't insert text in this window -- switch back to main file");
-  }
-}
-
 function setupDebugControls() {
 
   // create toolbar buttons
@@ -1283,28 +1144,6 @@ function setupReplaySlider() {
     uitoolbar.add('ctrl+alt+0', 'Start/Stop Replay Recording', 'glyphicon-record', _toggleRecording).prop('id','dbg_record');
 }
 
-
-function isLandscape() {
-  try {
-    var object = window.screen['orientation'] || window.screen['msOrientation'] || window.screen['mozOrientation'] || null;
-    if (object) {
-      if (object.type.indexOf('landscape') !== -1) { return true; }
-      if (object.type.indexOf('portrait') !== -1) { return false; }
-    }
-    if ('orientation' in window) {
-      var value = window.orientation;
-      if (value === 0 || value === 180) {
-        return false;
-      } else if (value === 90 || value === 270) {
-        return true;
-      }
-    }
-  } catch (e) { }
-
-  // fallback to comparing width to height
-  return window.innerWidth > window.innerHeight;
-}
-
 ///////////////////////////////////////////////////
 
 function globalErrorHandler(msgevent) {
@@ -1426,12 +1265,6 @@ async function startPlatform() {
   updateSelector();
 
   revealTopBar();
-}
-
-function hideControlsForEmbed() {
-  $('#dropdownMenuButton').hide();
-  $('#platformsMenuButton').hide();
-  $('#booksMenuButton').hide();
 }
 
 function revealTopBar() {
@@ -1571,25 +1404,6 @@ export function highlightSearch(query: string) { // TODO: filename?
       wnd.editor.setSelection(sc.pos.to, sc.pos.from);
     }
   }
-}
-
-function startUIWhenVisible() {
-  let started = false;
-  let observer = new IntersectionObserver((entries, observer) => {
-    for (var entry of entries) {
-      if (entry.isIntersecting && !started) {
-        startUI();
-        started = true;
-      }
-      if (entry.intersectionRatio == 0 && isPlatformReady() && platform.isRunning()) {
-        _pause();
-      }
-      if (entry.intersectionRatio > 0 && isPlatformReady() && !platform.isRunning()) {
-        _resume();
-      }
-    }
-  }, { });
-  observer.observe($("#emulator")[0]); //window.document.body);
 }
 
 /// start UI if in browser (not node)
