@@ -24,14 +24,11 @@ import {
   getFilenameForPath,
   getFilenamePrefix,
   highlightDifferences,
-  byteArrayToString,
-  compressLZG,
   getBasePlatform,
   getRootBasePlatform,
   hex,
   loadScript,
-  decodeQueryString,
-  parseBool
+  decodeQueryString
 } from "../common/util";
 import {StateRecorderImpl} from "../common/recorder";
 import Split = require('split.js');
@@ -48,7 +45,6 @@ import {
   VRAMMemoryView
 } from "./views/debugviews";
 import {AssetEditorView} from "./views/asseteditor";
-import {isMobileDevice} from "./views/baseviews";
 import {CallStackView, DebugBrowserView} from "./views/treeviews";
 import {saveAs} from "file-saver";
 import {ZXWASMPlatform} from "../machine/zx";
@@ -62,12 +58,9 @@ interface UIQueryString {
   platform? : string;
   file? : string;
   options?: string;
-  embed? : string;
 }
 
 export var qs : UIQueryString = decodeQueryString(window.location.search||'?') as UIQueryString;
-
-const isEmbed = parseBool(qs.embed);
 
 /// GLOBALS
 
@@ -390,43 +383,6 @@ function getCookie(name) : string {
     return null;
 }
 
-function _shareEmbedLink(e) {
-  if (current_output == null) {
-    alertError("Please fix errors before sharing.");
-    return true;
-  }
-
-  if (!(current_output instanceof Uint8Array)) {
-    alertError("Can't share a Verilog executable yet. (It's not actually a ROM...)");
-    return true;
-  }
-
-  loadClipboardLibrary();
-  loadScript('dist/liblzg.js').then( () => {
-    // TODO: Module is bad var name (conflicts with MAME)
-    var lzgrom = compressLZG( window['Module'], Array.from(<Uint8Array>current_output) );
-    window['Module'] = null; // so we load it again next time
-    var lzgb64 = btoa(byteArrayToString(lzgrom));
-    var embed = {
-      p: platform_id,
-      //n: current_project.mainPath,
-      r: lzgb64
-    };
-    var linkqs = $.param(embed);
-    var fulllink = get8bitworkshopLink(linkqs, 'player.html');
-    var iframelink = '<iframe width=640 height=600 src="' + fulllink + '">';
-    $("#embedLinkTextarea").text(fulllink);
-    $("#embedIframeTextarea").text(iframelink);
-    $("#embedLinkModal").modal('show');
-    $("#embedAdviceWarnAll").hide();
-    $("#embedAdviceWarnIE").hide();
-    if (fulllink.length >= 65536) $("#embedAdviceWarnAll").show();
-    else if (fulllink.length >= 5120) $("#embedAdviceWarnIE").show();
-  });
-
-  return true;
-}
-
 function loadClipboardLibrary() {
   // can happen in background because it won't be used until user clicks
   console.log('clipboard');
@@ -505,26 +461,6 @@ function _downloadCassetteFile_vcs(e) {
       }
     });
   });
-}
-
-function _downloadCassetteFile(e) {
-  if (current_output == null) {
-    alertError("Please fix errors before exporting.");
-    return true;
-  }
-
-  var fn;
-  switch (getBasePlatform(platform_id)) {
-    case 'vcs': fn = _downloadCassetteFile_vcs; break;
-    case 'apple2': fn = _downloadCassetteFile_apple2; break;
-  }
-
-  if (fn === undefined) {
-    alertError("Cassette export is not supported on this platform.");
-    return true;
-  }
-
-  fn(e);
 }
 
 function _downloadROMImage(e) {
@@ -1248,7 +1184,6 @@ function setupDebugControls() {
 
   // add menu clicks
   $(".dropdown-menu").collapse({toggle: false});
-  $("#item_share_file").click(_shareEmbedLink);
 
   if (platform.runEval)
     $("#item_debug_expr").click(_breakExpression).show();
@@ -1259,11 +1194,6 @@ function setupDebugControls() {
   $("#item_download_file").click(_downloadSourceFile);
   $("#item_download_zip").click(_downloadProjectZipFile);
   $("#item_record_video").click(_recordVideo);
-
-  if (platform_id.startsWith('apple2') || platform_id.startsWith('vcs')) // TODO: look for function
-    $("#item_export_cassette").click(_downloadCassetteFile);
-  else
-    $("#item_export_cassette").hide();
 
   if (platform.setFrameRate && platform.getFrameRate) {
     $("#dbg_slower").click(_slowerFrameRate);
@@ -1493,11 +1423,7 @@ async function startPlatform() {
   addPageFocusHandlers();
   showInstructions();
 
-  if (isEmbed) {
-    hideControlsForEmbed();
-  } else {
-    updateSelector();
-  }
+  updateSelector();
 
   revealTopBar();
 }
@@ -1513,14 +1439,8 @@ function revealTopBar() {
 }
 
 export function setupSplits() {
-  var splitName = 'workspace-split3-' + platform_id;
-  if (isEmbed) splitName = 'embed-' + splitName;
-
   var sizes;
-  if (isEmbed || isMobileDevice)
-    sizes = [0, 55, 45];
-  else
-    sizes = [12, 44, 44];
+  sizes = [12, 44, 44];
 
   var split = Split(['#sidebar', '#workspace', '#emulator'], {
     sizes: sizes,
@@ -1552,11 +1472,6 @@ export async function startUI() {
 
   // get store ID, platform id
   store_id = getBasePlatform(platform_id);
-
-  // are we embedded?
-  if (isEmbed) {
-    store_id = (document.referrer || document.location.href) + store_id;
-  }
 
   // create store
   store = createNewPersistentStore(store_id);
@@ -1679,10 +1594,5 @@ function startUIWhenVisible() {
 
 /// start UI if in browser (not node)
 if (typeof process === 'undefined') {
-  // if embedded, do not start UI until we scroll past it
-  if (isEmbed && typeof IntersectionObserver === 'function') {
-    startUIWhenVisible();
-  } else {
-    startUI();
-  }
+  startUI();
 }
