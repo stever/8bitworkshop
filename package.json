@@ -36,7 +36,6 @@
     "file-saver": "^2.0.5",
     "jquery": "^3.6.0",
     "jsdom": "^12.2.0",
-    "jszip": "^3.7.0",
     "localforage": "^1.9.0",
     "lzg": "^1.0.x",
     "mousetrap": "^1.6.5",
