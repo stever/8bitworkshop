@@ -1330,54 +1330,6 @@ async function loadAndStartPlatform() {
   }
 }
 
-// HTTPS REDIRECT
-
-const useHTTPSCookieName = "__use_https";
-
-function setHTTPSCookie(val : number) {
-  document.cookie = useHTTPSCookieName + "=" + val + ";domain=8bitworkshop.com;path=/;max-age=315360000";
-}
-
-function shouldRedirectHTTPS() : boolean {
-
-  // cookie set? either true or false
-  var shouldRedir = getCookie(useHTTPSCookieName);
-  if (typeof shouldRedir === 'string') {
-    return !!shouldRedir; // convert to bool
-  }
-
-  // set a 10yr cookie, value depends on if it's our first time here
-  var val = 0;
-  setHTTPSCookie(val);
-
-  return !!val;
-}
-
-function _switchToHTTPS() {
-  bootbox.confirm('<p>Do you want to force the browser to use HTTPS from now on?</p>'+
-  '<p>WARNING: This will make all of your local files unavailable, so you should "Download All Changes" first for each platform where you have done work.</p>'+
-  '<p>You can go back to HTTP by setting the "'+useHTTPSCookieName+'" cookie to 0.</p>', (ok) => {
-    if (ok) {
-      setHTTPSCookie(1);
-      redirectToHTTPS();
-    }
-  });
-}
-
-function redirectToHTTPS() {
-  if (window.location.protocol == 'http:' && window.location.host == '8bitworkshop.com') {
-    if (shouldRedirectHTTPS()) {
-      uninstallErrorHandler();
-      window.location.replace(window.location.href.replace(/^http:/, 'https:'));
-    } else {
-      $("#item_switch_https").click(_switchToHTTPS).show();
-    }
-  }
-}
-
-// redirect to HTTPS after script loads?
-redirectToHTTPS();
-
 export function emulationHalted(err: EmuHalt) {
   var msg = (err && err.message) || msg;
   showExceptionAsError(err, msg);
