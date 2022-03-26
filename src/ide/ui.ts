@@ -44,7 +44,11 @@ import {
   VRAMMemoryView
 } from "./views/debugviews";
 import {AssetEditorView} from "./views/asseteditor";
-import {CallStackView, DebugBrowserView} from "./views/treeviews";
+import {
+  CallStackView,
+  DebugBrowserView,
+  FrameCallsView
+} from "./views/treeviews";
 import {saveAs} from "file-saver";
 import {ZXWASMPlatform} from "../machine/zx";
 
@@ -278,11 +282,9 @@ function refreshWindowList() {
       return new CallStackView();
     });
 
-    /*
     addWindowItem("#framecalls", "Frame Profiler", () => {
       return new FrameCallsView();
     });
-    */
   }
 
   if (platform.getDebugTree) {
