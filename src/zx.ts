@@ -47,7 +47,6 @@ export interface EmuState {
     c?: CpuState,	// CPU state
     b?: Uint8Array | number[], 	// RAM
     ram?: Uint8Array,
-    o?: {}, // verilog
 }
 
 export interface EmuControlsState {
