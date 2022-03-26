@@ -14,20 +14,20 @@ import {
     DebugSymbols,
     DebugEvalCondition,
     isDebuggable,
-    EmuState
-} from "./zx";
-import {EmuHalt} from "./emu";
+    EmuState,
+    ZXWASMPlatform
+} from "./emulator/zx";
+import {EmuHalt} from "./emulator/emu";
 import {Toolbar} from "./toolbar";
 import {
     getFilenameForPath,
     getFilenamePrefix,
     highlightDifferences,
     getBasePlatform,
-    getRootBasePlatform,
     hex,
     decodeQueryString
 } from "./util";
-import {StateRecorderImpl} from "./recorder";
+import {StateRecorderImpl} from "./emulator/recorder";
 import Split = require('split.js');
 import {DisassemblerView, ListingView, SourceEditor} from "./editors";
 import {
@@ -45,7 +45,6 @@ import {
     FrameCallsView
 } from "./treeviews";
 import {saveAs} from "file-saver";
-import {ZXWASMPlatform} from "./zx";
 
 declare var $: JQueryStatic;
 
@@ -94,7 +93,7 @@ function alertError(s: string) {
 }
 
 function newWorker(): Worker {
-    return new Worker("./dist/worker/bundle.js");
+    return new Worker("./dist/worker.js");
 }
 
 function getCurrentPresetTitle(): string {
@@ -1305,13 +1304,8 @@ export async function start() {
 
 async function loadAndStartPlatform() {
     try {
-        console.assert(getRootBasePlatform('zx') === 'zx', getRootBasePlatform('zx'));
-        await import("./zx")
-
-        console.log("starting platform", 'zx');
         await startPlatform();
-
-        document.title = document.title + " [zx] - " + current_project.mainPath;
+        document.title = document.title + " - " + current_project.mainPath;
     } catch (e) {
         console.log(e);
         alertError('Platform zx failed to load.');

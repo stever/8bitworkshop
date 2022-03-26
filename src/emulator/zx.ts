@@ -3,8 +3,8 @@ import {TrapCondition} from "./devices";
 import {CPU, SampledAudioSink, ProbeAll, NullProbe} from "./devices";
 import {EmuHalt} from "./emu";
 import {RasterVideo, AnimationTimer, ControllerPoller} from "./emu";
-import {hex, printFlags, invertMap, byteToASCII} from "./util";
-import {Segment, FileData} from "./workertypes";
+import {hex, printFlags, invertMap, byteToASCII} from "../util";
+import {Segment, FileData} from "../workertypes";
 import {disassembleZ80} from "./disasmz80";
 import {
     Bus,

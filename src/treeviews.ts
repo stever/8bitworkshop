@@ -1,5 +1,5 @@
-import {dumpRAM} from "./emu";
-import {ProbeFlags} from "./recorder";
+import {dumpRAM} from "./emulator/emu";
+import {ProbeFlags} from "./emulator/recorder";
 import {hex} from "./util";
 import {platform} from "./ui";
 import {ProjectView} from "./baseviews";

@@ -8,9 +8,9 @@ import {
     getVisibleEditorLineHeight,
     VirtualTextLine,
     VirtualTextScroller
-} from "./emu";
-import {ProbeFlags, ProbeRecorder} from "./recorder";
-import {BaseZ80MachinePlatform, BaseZ80Platform} from "./zx";
+} from "./emulator/emu";
+import {ProbeFlags, ProbeRecorder} from "./emulator/recorder";
+import {BaseZ80MachinePlatform, BaseZ80Platform} from "./emulator/zx";
 
 function ignoreSymbol(sym: string) {
     return sym.endsWith('_SIZE__')
