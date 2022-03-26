@@ -5,7 +5,7 @@
   "description": "8bitworkshop.com retro programming IDE",
   "license": "GPL-3.0",
   "scripts": {
-    "build": "run-s clean build:parallel clean",
+    "build": "run-s clean build:parallel clean:build",
     "clean": "run-s clean:build clean:dist",
     "clean:build": "del-cli build",
     "clean:dist": "del-cli public/dist",
