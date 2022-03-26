@@ -493,19 +493,6 @@ async function setCompileOutput(data: WorkerResult) {
   }
 }
 
-async function loadBIOSFromProject() {
-  if (platform.loadBIOS) {
-    var biospath = 'zx.rom';
-    var biosdata = await store.getItem(biospath);
-    if (biosdata instanceof Uint8Array) {
-      console.log('loading BIOS', biospath, biosdata.length + " bytes")
-      platform.loadBIOS(biospath, biosdata);
-    } else {
-      console.log('BIOS file must be binary')
-    }
-  }
-}
-
 function hideDebugInfo() {
   var meminfo = $("#mem_info");
   meminfo.hide();
@@ -1084,6 +1071,19 @@ function addPageFocusHandlers() {
   $(window).on("orientationchange", () => {
     if (platform && platform.resize) setTimeout(platform.resize.bind(platform), 200);
   });
+}
+
+async function loadBIOSFromProject() {
+  if (platform.loadBIOS) {
+    var biospath = 'zx.rom';
+    var biosdata = await store.getItem(biospath);
+    if (biosdata instanceof Uint8Array) {
+      console.log('loading BIOS', biospath, biosdata.length + " bytes")
+      platform.loadBIOS(biospath, biosdata);
+    } else {
+      console.log('BIOS file must be binary')
+    }
+  }
 }
 
 async function startPlatform() {
