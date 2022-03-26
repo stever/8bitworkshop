@@ -108,44 +108,6 @@
     </div>
   </div>
 </div>
-<div id="videoPreviewModal" class="modal fade">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Video Preview - Right-click to save</h3>
-      </div>
-      <div class="modal-body">
-        <img id="videoPreviewImage">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="embedLinkModal" class="modal fade">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Share Playable Link</h3>
-      </div>
-      <div class="modal-body">
-        <p>Here's a direct link to a playable version of your game:</p>
-        <textarea rows="4" cols="80" id="embedLinkTextarea" class="cliptext"></textarea>
-        <button type="button" class="btn btn-primary" data-clipboard-target="#embedLinkTextarea">Copy Direct Link</button>
-        <p>You can also embed it into an IFRAME:</p>
-        <textarea rows="4" cols="80" id="embedIframeTextarea" class="cliptext"></textarea>
-        <button type="button" class="btn btn-primary" data-clipboard-target="#embedIframeTextarea">Copy IFRAME Tag</button>
-        <p id="embedAdviceWarnIE">Note: These links may be too long for IE/Edge browsers.</p>
-        <p id="embedAdviceWarnAll">Note: These links may be too long for some browsers.</p>
-      </div>
-      <div class="modal-footer">
-        Choose one (or none) then
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
 <div id="debugExprModal" class="modal fade">
   <div class="modal-dialog modal-md" role="document">
     <div class="modal-content">
@@ -161,73 +123,6 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" id="debugExprSubmit">Debug</button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="importGithubModal" class="modal fade">
-  <div class="modal-dialog modal-md" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Import Project from GitHub</h3>
-      </div>
-      <div class="modal-body">
-        <p>Enter the GitHub repository URL:</p>
-        <p><input id="importGithubURL" size="60" placeholder="https://github.com/user/repo"/></p>
-        <p>If the project is compatible with 8bitworkshop, it should build automatically.</p>
-        <p>Otherwise, some work may be required -- make sure you've selected the correct platform.</p>
-        <p>Source files must be in the root folder of the repository.</p>
-        <p><button type="button" class="btn btn-primary" id="importGithubButton">Import Project</button></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="publishGithubModal" class="modal fade">
-  <div class="modal-dialog modal-md" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Publish Project on GitHub</h3>
-      </div>
-      <div class="modal-body">
-        <p>This will migrate your existing project to a new GitHub repository.</p>
-        <p>https://github.com/username/&nbsp;<input id="githubRepoName" size="35" placeholder="Enter a project name"/></p>
-        <p><input id="githubRepoDesc" size="60" placeholder="Enter a project description"/></p>
-        <p>Your repository will be <select id="githubRepoPrivate">
-          <option value="public">Public</option>
-          <option value="private">Private</option>
-        </select></p>
-        <p>License: <select id="githubRepoLicense">
-          <option value="">Will decide later / all rights reserved</option>
-          <option value="cc0-1.0">CC Zero (public domain, remix-friendly)</option>
-          <option value="mit">MIT (must preserve notices)</option>
-          <option value="cc-by-4.0">CC BY (must attribute)</option>
-          <option value="cc-by-sa-4.0">CC BY-SA (must attribute, use same license)</option>
-          <option value="gpl-3.0">GPL v3 (must publish source)</option>
-        </select></p>
-        <p><button type="button" class="btn btn-primary" id="publishGithubButton">Upload Project</button></p>
-        <p>Your existing file will be moved to a new folder in the IDE.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="pushGithubModal" class="modal fade">
-  <div class="modal-dialog modal-md" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Push Project Changes to GitHub</h3>
-      </div>
-      <div class="modal-body">
-        <p><input id="githubCommitMsg" size="50" placeholder="Enter a commit message"/></p>
-        <p><button type="button" class="btn btn-primary" id="pushGithubButton">Push Changes</button></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
