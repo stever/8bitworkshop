@@ -1166,7 +1166,7 @@ export async function startUI() {
   store = createNewPersistentStore(store_id);
 
   // load and start platform object
-  loadAndStartPlatform();
+  await loadAndStartPlatform();
 }
 
 async function loadAndStartPlatform() {
