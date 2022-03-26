@@ -1148,25 +1148,6 @@ function addPageFocusHandlers() {
   });
 }
 
-// TODO: merge w/ player.html somehow?
-function showInstructions() {
-  var div = $(document).find(".emucontrols-" + getRootBasePlatform(platform_id));
-  if (platform_id.endsWith(".mame")) div.show(); // TODO: MAME seems to eat the focus() event
-  var vcanvas = $("#emulator").find("canvas");
-  if (vcanvas) {
-    vcanvas.on('focus', () => {
-      if (platform.isRunning()) {
-        div.fadeIn(200);
-        // toggle sound for browser autoplay
-        platform.resume();
-      }
-    });
-    vcanvas.on('blur', () => {
-      div.fadeOut(200);
-    });
-  }
-}
-
 async function startPlatform() {
   platform = new ZXWASMPlatform($("#emuscreen")[0]);
   setPlatformUI();
@@ -1191,10 +1172,7 @@ async function startPlatform() {
   platform.sourceFileFetch = (path) => current_project.filedata[path];
   setupDebugControls();
   addPageFocusHandlers();
-  showInstructions();
-
   updateSelector();
-
   revealTopBar();
 }
 
