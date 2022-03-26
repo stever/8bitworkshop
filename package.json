@@ -31,7 +31,6 @@
     "bootstrap": "^3.4.1",
     "btoa": "^1.2.x",
     "chroma-js": "^2.1.2",
-    "clipboard": "^2.0.6",
     "codemirror": "^5.56.0",
     "error-stack-parser": "^2.0.6",
     "fast-png": "^5.0.4",
