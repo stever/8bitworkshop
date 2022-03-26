@@ -55,7 +55,6 @@ declare var $ : JQueryStatic; // use browser jquery
 interface UIQueryString {
   platform? : string;
   file? : string;
-  options?: string;
 }
 
 export var qs : UIQueryString = decodeQueryString(window.location.search||'?') as UIQueryString;
