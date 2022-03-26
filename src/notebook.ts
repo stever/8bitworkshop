@@ -1,15 +1,12 @@
 import { Component, h, createRef, VNode } from 'preact';
 import { PROP_CONSTRUCTOR_NAME } from "./env";
-import { findIntegerFactors, hex, isArray, rgb2bgr } from "./util";
+import { hex, isArray } from "./util";
 import { dumpRAM } from "./emu";
 import { current_project } from "./ui";
 
-import * as bitmap from "./bitmap";
-import * as color from "./color";
 import * as scriptui from "./scriptui";
 
 const MAX_STRING_LEN = 100;
-const DEFAULT_ASPECT = 1;
 
 function sendInteraction(iobj: scriptui.Interactive, type: string, event: Event, xtraprops: {}) {
     let irec = iobj.$$interact;
@@ -32,130 +29,6 @@ function sendInteraction(iobj: scriptui.Interactive, type: string, event: Event,
         key: scriptui.EVENT_KEY,
         value: ievent
     }]);
-}
-
-interface ColorComponentProps {
-    rgbavalue: number;
-}
-
-class ColorComponent extends Component<ColorComponentProps> {
-    render(virtualDom, containerNode, replaceNode) {
-        let rgb = this.props.rgbavalue & 0xffffff;
-        let bgr = rgb2bgr(rgb);
-        var htmlcolor = `#${hex(bgr,6)}`;
-        var textcolor = (rgb & 0x008000) ? '#222' : '#ddd';
-        return h('div', {
-            class: 'scripting-item scripting-color',
-            style: `background-color: ${htmlcolor}; color: ${textcolor}`,
-            alt: htmlcolor,
-        }, []);
-    }
-}
-
-interface BitmapComponentProps {
-    bitmap: bitmap.BitmapType;
-    width: number;
-    height: number;
-}
-
-class BitmapComponent extends Component<BitmapComponentProps> {
-    ref = createRef();
-    canvas: HTMLCanvasElement;
-    ctx: CanvasRenderingContext2D;
-    imageData: ImageData;
-    datau32: Uint32Array;
-    pressed = false;
-
-    constructor(props: BitmapComponentProps) {
-        super(props);
-    }
-
-    render(virtualDom, containerNode, replaceNode) {
-        let props = {
-            class: 'scripting-item',
-            ref: this.ref,
-            width: this.props.width,
-            height: this.props.height,
-            style: this.props.bitmap.style
-        }
-
-        let obj : any = this.props.bitmap;
-        if (scriptui.isInteractive(obj)) {
-            return h('canvas', {
-                onPointerMove: (e: PointerEvent) => {
-                    sendInteraction(obj, 'move', e, { pressed: this.pressed });
-                },
-                onPointerDown: (e: PointerEvent) => {
-                    this.pressed = true;
-                    this.canvas.setPointerCapture(e.pointerId);
-                    sendInteraction(obj, 'down', e, { pressed: true });
-                },
-                onPointerUp: (e: PointerEvent) => {
-                    this.pressed = false;
-                    sendInteraction(obj, 'up', e, { pressed: false });
-                },
-                onPointerOut: (e: PointerEvent) => {
-                    this.pressed = false;
-                    sendInteraction(obj, 'out', e, { pressed: false });
-                },
-                ...props
-            });
-        } else {
-            return h('canvas', props);
-        }
-    }
-
-    componentDidMount() {
-        this.refresh();
-    }
-
-    componentWillUnmount() {
-        this.canvas = null;
-        this.imageData = null;
-        this.datau32 = null;
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        this.refresh();
-    }
-
-    prepare() {
-        this.canvas = this.base as HTMLCanvasElement;
-        this.ctx = this.canvas.getContext('2d');
-        this.imageData = this.ctx.createImageData(this.canvas.width, this.canvas.height);
-        this.datau32 = new Uint32Array(this.imageData.data.buffer);
-    }
-
-    refresh() {
-        // preact can reuse this component but it can change shape :^P
-        if (this.canvas !== this.base
-            || this.imageData.width != this.props.width
-            || this.imageData.height != this.props.height) {
-            this.prepare();
-        }
-        this.updateCanvas(this.datau32, this.props.bitmap);
-        this.ctx.putImageData(this.imageData, 0, 0);
-    }
-
-    updateCanvas(vdata: Uint32Array, bmp: bitmap.BitmapType) {
-        if (bmp['palette']) {
-            this.updateCanvasIndexed(vdata, bmp as bitmap.IndexedBitmap);
-        }
-        if (bmp['rgba']) {
-            this.updateCanvasRGBA(vdata, bmp as bitmap.RGBABitmap);
-        }
-    }
-
-    updateCanvasRGBA(vdata: Uint32Array, bmp: bitmap.RGBABitmap) {
-        vdata.set(bmp.rgba);
-    }
-
-    updateCanvasIndexed(vdata: Uint32Array, bmp: bitmap.IndexedBitmap) {
-        let pal = bmp.palette.colors;
-        for (var i = 0; i < bmp.pixels.length; i++) {
-            vdata[i] = pal[bmp.pixels[i]];
-        }
-    }
 }
 
 interface ObjectTreeComponentProps {
@@ -237,18 +110,8 @@ function primitiveToString(obj) {
     return text;
 }
 
-function isIndexedBitmap(object): object is bitmap.IndexedBitmap {
-    return object['bpp'] && object['pixels'] && object['palette'];
-}
-
-function isRGBABitmap(object): object is bitmap.RGBABitmap {
-    return object['rgba'] instanceof Uint32Array;
-}
-
 function objectToChildren(object: any) : any[] {
-    if (color.isPalette(object)) {
-        return new color.Palette(object.colors).chromas();
-    } else if (isArray(object)) {
+    if (isArray(object)) {
         return Array.from(object);
     } else if (object != null) {
         return [ object ]
@@ -258,9 +121,7 @@ function objectToChildren(object: any) : any[] {
 }
 
 function objectToChild(object: any, index: number) : any {
-    if (color.isPalette(object)) {
-        return color.from(object.colors[index]);
-    } else if (isArray(object)) {
+    if (isArray(object)) {
         return object[index];
     } else if (object != null) {
         return object
@@ -288,23 +149,6 @@ function objectToDiv(object: any, name: string, objpath: string): VNode<any> {
         return h(cons, { iokey: objpath, uiobject: object });
     } else if (object['literaltext']) {
         return h("pre", { }, [ object['literaltext'] ]);
-    } else if (isIndexedBitmap(object) || isRGBABitmap(object)) {
-        return h(BitmapComponent, { bitmap: object, width: object.width, height: object.height });
-    } else if (color.isChroma(object)) {
-        return h(ColorComponent, { rgbavalue: color.rgb(object) });
-    } else if (color.isPalette(object)) {
-        if (object.colors.length <= 256) {
-            let children = [];
-            let props = { class: '', key: `${objpath}__obj` };
-            props.class += ' scripting-flex ';
-            object.colors.forEach((val) => {
-                children.push(h(ColorComponent, { rgbavalue: val }));
-            })
-            return h('div', props, children);
-        } else {
-            let {a,b} = findIntegerFactors(object.colors.length, 1, 1, DEFAULT_ASPECT);
-            return objectToDiv({ rgba: object.colors, width: a, height: b }, name, objpath);
-        }
     } else {
         return h(ObjectKeyValueComponent, { name, object, objpath }, []);
     }

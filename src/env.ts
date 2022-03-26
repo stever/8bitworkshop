@@ -1,10 +1,8 @@
 import { WorkerError } from "./workertypes";
 import ErrorStackParser = require("error-stack-parser");
 import yufka from 'yufka';
-import * as bitmap from "./bitmap";
 import * as io from "./io";
 import * as output from "./output";
-import * as color from "./color";
 import * as scriptui from "./scriptui";
 
 export const PROP_CONSTRUCTOR_NAME = "$$consname";
@@ -20,10 +18,8 @@ export interface RunResult {
 }
 
 const IMPORTS = {
-    'bitmap': bitmap,
     'io': io,
     'output': output,
-    'color': color,
     'ui': scriptui,
 }
 

@@ -41,7 +41,6 @@ import {
   ScanlineIOView,
   VRAMMemoryView
 } from "./debugviews";
-import {AssetEditorView} from "./asseteditor";
 import {
   CallStackView,
   DebugBrowserView,
@@ -275,10 +274,6 @@ function refreshWindowList() {
       return new DebugBrowserView();
     });
   }
-
-  addWindowItem('#asseteditor', 'Asset Editor', () => {
-    return new AssetEditorView();
-  });
 }
 
 function loadMainWindow(preset_id:string) {
