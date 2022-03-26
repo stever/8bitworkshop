@@ -24,11 +24,10 @@ declare var GIF;
 declare var $ : JQueryStatic; // use browser jquery
 
 // query string
-
 interface UIQueryString {
   platform? : string;
-  options?: string;
   file? : string;
+  options?: string;
   importURL? : string;
   localfs? : string;
   newfile? : string;
@@ -114,46 +113,6 @@ function fatalError(s:string) {
 function newWorker() : Worker {
   return new Worker("./dist/worker/bundle.js");
 }
-
-const hasLocalStorage : boolean = function() {
-  try {
-    const key = "__some_random_key_you_are_not_going_to_use__";
-    localStorage.setItem(key, key);
-    var has = localStorage.getItem(key) == key;
-    localStorage.removeItem(key);
-    return has;
-  } catch (e) {
-    return false;
-  }
-}();
-
-// wrapper for localstorage
-class UserPrefs {
-
-  setLastPreset(id:string) {
-    if (hasLocalStorage && !isEmbed) {
-      localStorage.setItem("__lastplatform", platform_id);
-      localStorage.setItem("__lastid_" + store_id, id);
-    }
-  }
-
-  unsetLastPreset() {
-    if (hasLocalStorage && !isEmbed) {
-      delete qs.file;
-      localStorage.removeItem("__lastid_"+store_id);
-    }
-  }
-
-  getLastPreset() {
-    return hasLocalStorage && !isEmbed && localStorage.getItem("__lastid_"+store_id);
-  }
-
-  getLastPlatformID() {
-    return hasLocalStorage && !isEmbed && localStorage.getItem("__lastplatform");
-  }
-}
-
-var userPrefs = new UserPrefs();
 
 // https://developers.google.com/web/updates/2016/06/persistent-storage
 function requestPersistPermission(interactive: boolean, failureonly: boolean) {
@@ -384,7 +343,6 @@ async function loadProject(preset_id:string) {
   // set current file ID
   // TODO: this is done twice (mainPath and mainpath!)
   current_project.mainPath = preset_id;
-  userPrefs.setLastPreset(preset_id);
   // load files from storage or web URLs
   var result = await current_project.loadFiles([preset_id]);
   measureTimeLoad = new Date(); // for timing calc.
@@ -762,7 +720,6 @@ function _deleteFile(e) {
         store.removeItem(fn).then( () => {
           // if we delete what is selected
           if (qs.file == fn) {
-            userPrefs.unsetLastPreset();
             gotoNewLocation();
           } else {
             updateSelector();
@@ -1822,10 +1779,8 @@ async function startPlatform() {
   stateRecorder = new StateRecorderImpl(platform);
   PRESETS = platform.getPresets ? platform.getPresets() : [];
   if (!qs.file) {
-    // try to load last file (redirect)
-    var lastid = userPrefs.getLastPreset();
     // load first preset file, unless we're in a repo
-    var defaultfile = lastid || PRESETS[0].id;
+    var defaultfile = PRESETS[0].id;
     qs.file = defaultfile || 'DEFAULT';
     if (!defaultfile) {
       alertError("There is no default main file for this project. Try selecting one from the pulldown.");
@@ -1866,19 +1821,13 @@ function revealTopBar() {
 export function setupSplits() {
   var splitName = 'workspace-split3-' + platform_id;
   if (isEmbed) splitName = 'embed-' + splitName;
+
   var sizes;
-  if (platform_id.startsWith('vcs'))
-    sizes = [0, 50, 50];
-  else if (isEmbed || isMobileDevice)
+  if (isEmbed || isMobileDevice)
     sizes = [0, 55, 45];
   else
     sizes = [12, 44, 44];
-  var sizesStr = hasLocalStorage && localStorage.getItem(splitName);
-  if (sizesStr) {
-    try {
-      sizes = JSON.parse(sizesStr);
-    } catch (e) { console.log(e); }
-  }
+
   var split = Split(['#sidebar', '#workspace', '#emulator'], {
     sizes: sizes,
     minSize: [0, 250, 250],
@@ -1886,7 +1835,6 @@ export function setupSplits() {
       if (platform && platform.resize) platform.resize();
     },
     onDragEnd: () => {
-      if (hasLocalStorage) localStorage.setItem(splitName, JSON.stringify(split.getSizes()))
       if (projectWindows) projectWindows.resize();
     },
   });
@@ -1964,18 +1912,10 @@ function setPlatformUI() {
   $(".platform_name").text(name || platform_id);
 }
 
-export function getPlatform() {
-  platform_id = qs.platform || userPrefs.getLastPlatformID();
-  // add default platform
-  if (!platform_id) {
-    if (isEmbed) fatalError(`The 'platform' must be specified when embed=1`);
-    platform_id = qs.platform = "vcs";
-  }
-}
-
 // start
 export async function startUI() {
-  getPlatform();
+  platform_id = 'zx';
+
   setupSplits();
 
   // get store ID, platform id
@@ -2038,7 +1978,7 @@ function shouldRedirectHTTPS() : boolean {
   }
 
   // set a 10yr cookie, value depends on if it's our first time here
-  var val = hasLocalStorage && !localStorage.getItem("__lastplatform") ? 1 : 0;
+  var val = 0;
   setHTTPSCookie(val);
 
   return !!val;
