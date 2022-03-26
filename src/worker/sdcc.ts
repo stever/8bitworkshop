@@ -1,27 +1,27 @@
-import {CodeListingMap} from "./workertypes";
+import {CodeListingMap} from "../workertypes";
 import {
+    anyTargetChanged,
     BuildStep,
     BuildStepResult,
-    loadNative,
-    gatherFiles,
-    staleFiles,
     emglobal,
-    moduleInstFn,
-    populateFiles,
+    EmscriptenModule,
     execMain,
+    gatherFiles,
+    getWorkFileAsString,
+    loadNative,
+    moduleInstFn,
+    msvcErrorMatcher,
+    parseListing,
+    parseSourceLines,
+    populateExtraFiles,
+    populateFiles,
+    preprocessMCPP,
+    print_fn,
     putWorkFile,
     setupFS,
-    populateExtraFiles,
-    anyTargetChanged,
-    parseListing,
-    print_fn,
-    msvcErrorMatcher,
-    getWorkFileAsString,
     setupStdin,
-    preprocessMCPP,
-    parseSourceLines
-} from "./workermain";
-import {EmscriptenModule} from "./workermain"
+    staleFiles
+} from "./main";
 
 function hexToArray(s, ofs) {
     var buf = new ArrayBuffer(s.length / 2);

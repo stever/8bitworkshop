@@ -1,4 +1,4 @@
-import {CodeListingMap} from "./workertypes";
+import {CodeListingMap} from "../workertypes";
 import {
     anyTargetChanged,
     BuildStep,
@@ -15,7 +15,7 @@ import {
     print_fn,
     putWorkFile,
     staleFiles
-} from "./workermain"
+} from "./main"
 
 export function assembleZMAC(step: BuildStep): BuildStepResult {
     loadNative("zmac");

@@ -6,8 +6,8 @@ import type {
     SourceLine,
     WorkerErrorResult,
     WorkingStore
-} from "./workertypes";
-import {getBasePlatform, getRootBasePlatform} from "./util";
+} from "../workertypes";
+import {getBasePlatform, getRootBasePlatform} from "../util";
 import * as sdcc from './sdcc'
 import * as z80 from './z80'
 
