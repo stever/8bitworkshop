@@ -1202,16 +1202,6 @@ export async function reloadWorkspaceFile(path: string) {
   }
 }
 
-export function highlightSearch(query: string) { // TODO: filename?
-  var wnd = projectWindows.getActive();
-  if (wnd instanceof SourceEditor) {
-    var sc = wnd.editor.getSearchCursor(query);
-    if (sc.findNext()) {
-      wnd.editor.setSelection(sc.pos.to, sc.pos.from);
-    }
-  }
-}
-
 /// start UI if in browser (not node)
 if (typeof process === 'undefined') {
   startUI();
