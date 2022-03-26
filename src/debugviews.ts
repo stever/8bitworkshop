@@ -294,10 +294,7 @@ export class MemoryMapView implements ProjectView {
       }
     }
   }
-
 }
-
-///
 
 // TODO: clear buffer when scrubbing
 
@@ -714,8 +711,6 @@ export class ScanlineIOView extends ProbeViewBaseBase {
   }
 }
 
-///
-
 export class ProbeSymbolView extends ProbeViewBaseBase {
   vlist : VirtualTextScroller;
   keys : string[];
@@ -788,6 +783,3 @@ export class ProbeSymbolView extends ProbeViewBaseBase {
     if (this.probe) this.probe.clear(); // clear cumulative data (TODO: doesnt work with seeking or debugging)
   }
 }
-
-///
-
