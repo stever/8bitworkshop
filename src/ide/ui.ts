@@ -1,23 +1,61 @@
 // 8bitworkshop IDE user interface
 
 import * as localforage from "localforage";
-import { CodeProject, createNewPersistentStore, LocalForageFilesystem, OverlayFilesystem, ProjectFilesystem, WebPresetsFileSystem } from "./project";
-import { WorkerResult, WorkerError, FileData } from "../common/workertypes";
-import { ProjectWindows } from "./windows";
-import { Platform, Preset, DebugSymbols, DebugEvalCondition, isDebuggable, EmuState } from "../machine/zx";
-import { EmuHalt } from "../common/emu";
-import { Toolbar } from "../common/toolbar";
-import { getFilenameForPath, getFilenamePrefix, highlightDifferences, byteArrayToString, compressLZG, stringToByteArray,
-         byteArrayToUTF8, isProbablyBinary, getWithBinary, getBasePlatform, getRootBasePlatform, hex, loadScript, decodeQueryString, parseBool } from "../common/util";
-import { StateRecorderImpl } from "../common/recorder";
+import {
+  CodeProject,
+  createNewPersistentStore,
+  LocalForageFilesystem,
+  OverlayFilesystem,
+  ProjectFilesystem,
+  WebPresetsFileSystem
+} from "./project";
+import {WorkerResult, WorkerError} from "../common/workertypes";
+import {ProjectWindows} from "./windows";
+import {
+  Platform,
+  Preset,
+  DebugSymbols,
+  DebugEvalCondition,
+  isDebuggable,
+  EmuState
+} from "../machine/zx";
+import {EmuHalt} from "../common/emu";
+import {Toolbar} from "../common/toolbar";
+import {
+  getFilenameForPath,
+  getFilenamePrefix,
+  highlightDifferences,
+  byteArrayToString,
+  compressLZG,
+  stringToByteArray,
+  isProbablyBinary,
+  getWithBinary,
+  getBasePlatform,
+  getRootBasePlatform,
+  hex,
+  loadScript,
+  decodeQueryString,
+  parseBool
+} from "../common/util";
+import {StateRecorderImpl} from "../common/recorder";
 import Split = require('split.js');
-import { DisassemblerView, ListingView, SourceEditor } from "./views/editors";
-import { AddressHeatMapView, BinaryFileView, MemoryMapView, MemoryView, ProbeLogView, ProbeSymbolView, RasterPCHeatMapView, ScanlineIOView, VRAMMemoryView } from "./views/debugviews";
-import { AssetEditorView } from "./views/asseteditor";
-import { isMobileDevice } from "./views/baseviews";
-import { CallStackView, DebugBrowserView } from "./views/treeviews";
-import { saveAs } from "file-saver";
-import { ZXWASMPlatform } from "../machine/zx";
+import {DisassemblerView, ListingView, SourceEditor} from "./views/editors";
+import {
+  AddressHeatMapView,
+  BinaryFileView,
+  MemoryMapView,
+  MemoryView,
+  ProbeLogView,
+  ProbeSymbolView,
+  RasterPCHeatMapView,
+  ScanlineIOView,
+  VRAMMemoryView
+} from "./views/debugviews";
+import {AssetEditorView} from "./views/asseteditor";
+import {isMobileDevice} from "./views/baseviews";
+import {CallStackView, DebugBrowserView} from "./views/treeviews";
+import {saveAs} from "file-saver";
+import {ZXWASMPlatform} from "../machine/zx";
 
 // external libs
 declare var GIF;
