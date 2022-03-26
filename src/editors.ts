@@ -19,8 +19,6 @@ function createTextSpan(text:string, className:string) : HTMLElement {
   return span;
 }
 
-/////
-
 const MAX_ERRORS = 200;
 
 const MODEDEFS = {
@@ -33,18 +31,19 @@ const MODEDEFS = {
   inform6: { theme: 'cobalt' },
   markdown: { lineWrap: true },
   fastbasic: { noGutters: true },
-  basic: { noLineNumbers: true, noGutters: true }, // TODO: not used?
+  basic: { noLineNumbers: true, noGutters: true }
 }
 
 export var textMapFunctions = {
   input: null
-};
+}
 
 export class SourceEditor implements ProjectView {
   constructor(path:string, mode:string) {
     this.path = path;
     this.mode = mode;
   }
+
   path : string;
   mode : string;
   editor;
@@ -67,7 +66,7 @@ export class SourceEditor implements ProjectView {
     var asmOverride = text && this.mode=='verilog' && /__asm\b([\s\S]+?)\b__endasm\b/.test(text);
     this.newEditor(div, asmOverride);
     if (text) {
-      this.setText(text); // TODO: this calls setCode() and builds... it shouldn't
+      this.setText(text);
       this.editor.setSelection({line:0,ch:0}, {line:0,ch:0}, {scroll:true}); // move cursor to start
     }
     this.setupEditor();
@@ -160,17 +159,10 @@ export class SourceEditor implements ProjectView {
   }
 
   setText(text:string) {
-    var i,j;
     var oldtext = this.editor.getValue();
     if (oldtext != text) {
       this.editor.setValue(text);
-      /*
-      // find minimum range to undo
-      for (i=0; i<oldtext.length && i<text.length && text[i] == oldtext[i]; i++) { }
-      for (j=0; j<oldtext.length && j<text.length && text[text.length-1-j] == oldtext[oldtext.length-1-j]; j++) { }
-      //console.log(i,j,oldtext.substring(i,oldtext.length-j));
-      this.replaceSelection(i, oldtext.length-j, text.substring(i, text.length-j)); // calls setCode()
-      */
+
       // clear history if setting empty editor
       if (oldtext == '') {
         this.editor.clearHistory();
@@ -184,7 +176,6 @@ export class SourceEditor implements ProjectView {
   }
 
   highlightLines(start:number, end:number) {
-    //this.editor.setSelection({line:start, ch:0}, {line:end, ch:0});
     var cls = 'hilite-span'
     var markOpts = {className:cls, inclusiveLeft:true};
     this.markHighlight = this.editor.markText({line:start,ch:0}, {line:end,ch:0}, markOpts);
@@ -244,7 +235,6 @@ export class SourceEditor implements ProjectView {
   }
 
   markErrors(errors:WorkerError[]) {
-    // TODO: move cursor to error line if offscreen?
     this.clearErrors();
     errors = errors.slice(0, MAX_ERRORS);
     for (var info of errors) {
@@ -265,7 +255,6 @@ export class SourceEditor implements ProjectView {
 
   updateListing() {
     // update editor annotations
-    // TODO: recreate editor if gutter-bytes is used (verilog)
     this.clearErrors();
     this.editor.clearGutter("gutter-bytes");
     this.editor.clearGutter("gutter-offset");
@@ -279,7 +268,6 @@ export class SourceEditor implements ProjectView {
         var insnstr = info.insns.length > 9 ? ("...") : info.insns;
         this.setGutter("gutter-bytes", info.line-1, insnstr);
         if (info.iscode) {
-          // TODO: labels trick this part?
           if (info.cycles) {
             this.setGutter("gutter-clock", info.line-1, info.cycles+"");
           } else if (platform.getOpcodeMetadata) {
@@ -362,8 +350,6 @@ export class SourceEditor implements ProjectView {
   }
 
   refreshDebugState(moveCursor:boolean) {
-    // TODO: only if line changed
-    // TODO: remove after compilation
     this.clearCurrentLine(moveCursor);
     var line = this.getActiveLine();
     if (line) {
@@ -415,25 +401,12 @@ export class SourceEditor implements ProjectView {
   }
 
   toggleBreakpoint(lineno: number) {
-    // TODO: we have to always start at beginning of frame
     if (this.sourcefile != null) {
       var targetPC = this.sourcefile.line2offset[lineno+1];
-      /*
-      var bpid = "pc" + targetPC;
-      if (platform.hasBreakpoint(bpid)) {
-        platform.clearBreakpoint(bpid);
-      } else {
-        platform.setBreakpoint(bpid, () => {
-          return platform.getPC() == targetPC;
-        });
-      }
-      */
       runToPC(targetPC);
     }
   }
 }
-
-///
 
 const disasmWindow = 1024; // disassemble this many bytes around cursor
 
@@ -452,7 +425,7 @@ export class DisassemblerView implements ProjectView {
 
   newEditor(parent : HTMLElement) {
     this.disasmview = CodeMirror(parent, {
-      mode: 'z80', // TODO: pick correct one
+      mode: 'z80',
       theme: 'cobalt',
       tabSize: 8,
       readOnly: true,
@@ -460,31 +433,18 @@ export class DisassemblerView implements ProjectView {
     });
   }
 
-  // TODO: too many globals
   refresh(moveCursor: boolean) {
-    let state = lastDebugState || platform.saveState(); // TODO?
+    let state = lastDebugState || platform.saveState();
     let pc = state.c ? state.c.PC : 0;
     let curline = 0;
     let selline = 0;
     let addr2symbol = (platform.debugSymbols && platform.debugSymbols.addr2symbol) || {};
-    // TODO: not perfect disassembler
     let disassemble = (start, len) => {
-      // TODO: use pc2visits
       let s = "";
       let ofs = 0;
       while (ofs < len) {
         let a = (start + ofs) | 0;
         let disasm = platform.disassemble(a, platform.readAddress.bind(platform));
-        /* TODO: look thru all source files
-        let srclinenum = sourcefile && this.sourcefile.offset2line[a];
-        if (srclinenum) {
-          let srcline = getActiveEditor().getLine(srclinenum);
-          if (srcline && srcline.trim().length) {
-            s += "; " + srclinenum + ":\t" + srcline + "\n";
-            curline++;
-          }
-        }
-        */
         let bytes = "";
         let comment = "";
         for (let i=0; i<disasm.nbytes; i++)
@@ -492,7 +452,7 @@ export class DisassemblerView implements ProjectView {
         while (bytes.length < 14)
           bytes += ' ';
         let dstr = disasm.line;
-        if (addr2symbol && disasm.isaddr) { // TODO: move out
+        if (addr2symbol && disasm.isaddr) {
           dstr = dstr.replace(/([^#])[$]([0-9A-F]+)/, (substr:string, ...args:any[]):string => {
             let addr = parseInt(args[1], 16);
             let sym = addr2symbol[addr];
@@ -538,8 +498,6 @@ export class DisassemblerView implements ProjectView {
   }
 }
 
-///
-
 export class ListingView extends DisassemblerView implements ProjectView {
   assemblyfile : SourceFile;
   path : string;
@@ -552,7 +510,6 @@ export class ListingView extends DisassemblerView implements ProjectView {
   refreshListing() {
     // lookup corresponding assemblyfile for this file, using listing
     var lst = current_project.getListingForFile(this.path);
-    // TODO?
     this.assemblyfile = lst && (lst.assemblyfile || lst.sourcefile);
   }
 
@@ -578,5 +535,4 @@ export class ListingView extends DisassemblerView implements ProjectView {
       }
     }
   }
-
 }
