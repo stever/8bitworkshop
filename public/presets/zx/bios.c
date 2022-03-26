@@ -64,10 +64,10 @@ void setpixel(unsigned char x, unsigned char y) {
 void main() {
   init_stdio();
   printf("HELLO WORLD!\r");
-  waitkey(50);
-  printf("Wait...\r");
-  waitkey(50);
-  printf("Done!\r");
+  //waitkey(50);
+  //printf("Wait...\r");
+  //waitkey(50);
+  //printf("Done!\r");
   beep(1000,20);
   beep(750,20);
   beep(500,20);
