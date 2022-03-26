@@ -312,18 +312,6 @@ canvas.pixelated {
     -ms-interpolation-mode: nearest-neighbor; /* IE */
 }
 
-.palbtn {
-    width: 2em;
-    height: 2em;
-    border-style: none;
-}
-
-.palbtn.selected {
-    border-width: 2px;
-    border-color: white;
-    border-style: dotted;
-}
-
 .toolbarMenuButton {
     background-color: #666;
     border-style: solid;
@@ -527,89 +515,6 @@ span.profiler-local {
 
 span.profiler-cident {
     color: #99ffff;
-}
-
-div.asset_file {
-    border: 2px solid black;
-    border-radius: 8px;
-    color: #ddd;
-    background-color: #666;
-    margin: 0.5em;
-    padding: 1em;
-}
-
-div.asset_file select {
-    color: #000;
-}
-
-div.asset_file_header {
-    font-weight: bold;
-    color: white;
-    background-color: #333;
-    border-radius: 8px;
-    padding-left: 1em;
-}
-
-div.asset_grid {
-    line-height: 0;
-    margin: 1em;
-}
-
-div.asset_grid span {
-    white-space: nowrap;
-}
-
-.asset_cell {
-    padding: 0;
-    border: 1px solid black;
-}
-
-.asset_cell:hover {
-    border: 1px solid white;
-}
-
-.asset_cell.selected {
-    border: 1px dotted white !important;
-    box-shadow: 0 0 1em rgba(255, 255, 255, 1);
-}
-
-td.asset_editable {
-    padding: 0.3em;
-    font-family: "Andale Mono", "Menlo", "Lucida Console", monospace;
-}
-
-div.asset_dual {
-    display: flex;
-    align-items: center;
-}
-
-div.asset_dual table {
-    border-spacing: 10px;
-    border-collapse: separate;
-}
-
-div.asset_editor {
-    border-radius: 16px;
-    padding: 16px;
-    margin: 16px;
-    background-color: #999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-div.asset_toolbar {
-    padding: 8px;
-    margin: 8px;
-}
-
-.book-active span {
-    font-weight: bold;
-}
-
-.book-active span::after {
-    font-size: x-large;
-    content: ' \2b50';
 }
 
 .tree-header {
