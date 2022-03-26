@@ -52,42 +52,34 @@ import {ZXWASMPlatform} from "../machine/zx";
 
 declare var $ : JQueryStatic;
 
+// Global variables
+export var platform : Platform; // emulator object
+export var current_project : CodeProject;
+export var projectWindows : ProjectWindows;	// window manager
+export var compparams; // received build params from worker
+export var lastDebugState : EmuState; // last debug state (object)
+
 interface UIQueryString {
   file? : string;
 }
 
-var qs : UIQueryString = decodeQueryString(window.location.search||'?') as UIQueryString;
+const qs : UIQueryString = decodeQueryString(window.location.search||'?') as UIQueryString;
+const toolbar = $("#controls_top");
 
-var PRESETS : Preset[];
-
-export var platform : Platform; // emulator object
-
-var toolbar = $("#controls_top");
-
-var uitoolbar : Toolbar;
-
-export var current_project : CodeProject;
-
-export var projectWindows : ProjectWindows;	// window manager
-
-var stateRecorder : StateRecorderImpl;
-
-var userPaused : boolean; // did user explicitly pause?
-
-var current_output : any; // current ROM (or other object)
-var current_preset : Preset; // current preset object (if selected)
-var store : LocalForage; // persistent store
-
-export var compparams; // received build params from worker
-export var lastDebugState : EmuState; // last debug state (object)
-
-var lastDebugInfo; // last debug info (CPU text)
-var debugCategory; // current debug category
-var debugTickPaused = false;
-var recorderActive = false;
-var lastViewClicked = null;
-var errorWasRuntime = false;
-var lastBreakExpr = "c.PC == 0x6000";
+let PRESETS : Preset[];
+let uitoolbar : Toolbar;
+let stateRecorder : StateRecorderImpl;
+let userPaused : boolean; // did user explicitly pause?
+let current_output : any; // current ROM (or other object)
+let current_preset : Preset; // current preset object (if selected)
+let store : LocalForage; // persistent store
+let lastDebugInfo; // last debug info (CPU text)
+let debugCategory; // current debug category
+let debugTickPaused = false;
+let recorderActive = false;
+let lastViewClicked = null;
+let errorWasRuntime = false;
+let lastBreakExpr = "c.PC == 0x6000";
 
 const TOOL_TO_SOURCE_STYLE = {
   'z80asm': 'z80',
