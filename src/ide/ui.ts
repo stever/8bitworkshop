@@ -1149,11 +1149,8 @@ function revealTopBar() {
 }
 
 export function setupSplits() {
-  var sizes;
-  sizes = [12, 44, 44];
-
-  var split = Split(['#sidebar', '#workspace', '#emulator'], {
-    sizes: sizes,
+  Split(['#sidebar', '#workspace', '#emulator'], {
+    sizes: [12, 44, 44],
     minSize: [0, 250, 250],
     onDrag: () => {
       if (platform && platform.resize) platform.resize();
