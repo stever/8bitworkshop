@@ -1,6 +1,24 @@
-import { FileData, Dependency, SourceLine, SourceFile, CodeListing, CodeListingMap, WorkerError, Segment, WorkerResult, WorkerOutputResult, isUnchanged, isOutputResult, WorkerMessage, WorkerItemUpdate } from "./workertypes";
-import { getFilenamePrefix, getFolderForPath, isProbablyBinary, getBasePlatform, getWithBinary } from "./util";
-import { Platform } from "./zx";
+import {
+  FileData,
+  Dependency,
+  SourceFile,
+  CodeListing,
+  CodeListingMap,
+  Segment,
+  WorkerResult,
+  WorkerOutputResult,
+  isOutputResult,
+  WorkerMessage,
+  WorkerItemUpdate
+} from "./workertypes";
+import {
+  getFilenamePrefix,
+  getFolderForPath,
+  isProbablyBinary,
+  getBasePlatform,
+  getWithBinary
+} from "./util";
+import {Platform} from "./zx";
 import localforage from "localforage";
 
 export interface ProjectFilesystem {
@@ -81,10 +99,6 @@ export class LocalForageFilesystem {
 type BuildResultCallback = (result:WorkerResult) => void;
 type BuildStatusCallback = (busy:boolean) => void;
 type IterateFilesCallback = (path:string, data:FileData) => void;
-
-function isEmptyString(text : FileData) {
-  return typeof text == 'string' && text.trim && text.trim().length == 0;
-}
 
 export class CodeProject {
   filedata : {[path:string]:FileData} = {};
@@ -247,11 +261,9 @@ export class CodeProject {
     this.filesystem.setFileData(path, text);
   }
 
-  // TODO: test duplicate files, local paths mixed with presets
   buildWorkerMessage(depends:Dependency[]) : WorkerMessage {
     this.preloadWorker(this.mainPath);
     var msg : WorkerMessage = {updates:[], buildsteps:[]};
-    // TODO: add preproc directive for __MAINFILE__
     var mainfilename = this.stripLocalPath(this.mainPath);
     var maintext = this.getFile(this.mainPath);
     var depfiles = [];
@@ -285,7 +297,6 @@ export class CodeProject {
     return msg;
   }
 
-  // TODO: get local file as well as presets?
   async loadFiles(paths:string[]) : Promise<Dependency[]> {
     var result : Dependency[] = [];
     var addResult = (path:string, data:FileData) => {
@@ -320,7 +331,6 @@ export class CodeProject {
     return this.filedata[path];
   }
 
-  // TODO: purge files not included in latest build?
   iterateFiles(callback:IterateFilesCallback) {
     for (var path in this.filedata) {
       callback(path, this.getFile(path));
@@ -344,7 +354,6 @@ export class CodeProject {
     }
     // otherwise, make it a string
     var text = typeof maindata === "string" ? maindata : '';
-    // TODO: load dependencies of non-main files
     return this.loadFileDependencies(text).then( (depends) => {
       if (!depends) depends = [];
       var workermsg = this.buildWorkerMessage(depends);
@@ -355,7 +364,7 @@ export class CodeProject {
 
   updateFile(path:string, text:FileData) {
     if (this.filedata[path] == text) return; // unchanged, don't update
-    this.updateFileInStore(path, text); // TODO: isBinary
+    this.updateFileInStore(path, text);
     this.filedata[path] = text;
     if (this.okToSend()) {
       if (this.callbackBuildStatus) this.callbackBuildStatus(true);
@@ -370,7 +379,6 @@ export class CodeProject {
   }
 
   processBuildResult(data: WorkerOutputResult<any>) {
-    // TODO: link listings with source files
     if (data.listings) {
       this.listings = data.listings;
       for (var lstname in this.listings) {
@@ -392,11 +400,8 @@ export class CodeProject {
     return this.listings;
   }
 
-  // returns first listing in format [prefix].lst (TODO: could be better)
+  // returns first listing in format [prefix].lst
   getListingForFile(path: string) : CodeListing {
-    // ignore include files (TODO)
-    //if (path.toLowerCase().endsWith('.h') || path.toLowerCase().endsWith('.inc'))
-      //return;
     var fnprefix = getFilenamePrefix(this.stripLocalPath(path));
     var listings = this.getListings();
     var onlyfile = null;
@@ -420,18 +425,16 @@ export class CodeProject {
 
   updateDataItems(items: WorkerItemUpdate[]) {
     this.dataItems = items;
-    if (this.okToSend()) { // TODO? mainpath == null?
-      this.sendBuild(); // TODO: don't need entire build?
+    if (this.okToSend()) {
+      this.sendBuild();
     }
   }
 
 }
 
 export function createNewPersistentStore(storeid:string) : LocalForage {
-  var store = localforage.createInstance({
+  return localforage.createInstance({
     name: "__" + storeid,
     version: 2.0
   });
-  return store;
 }
-

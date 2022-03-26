@@ -3,7 +3,7 @@ export type FileData = string | Uint8Array;
 export interface SourceLocation {
   line: number;
   label?: string;
-  path?: string; // TODO: make mandatory?
+  path?: string;
   start?: number;
   end?: number;
   segment?:string;
@@ -33,7 +33,6 @@ export class SourceFile {
     for (var info of lines) {
       if (info.offset >= 0) {
         // first line wins (is assigned to offset)
-        // TODO: handle macros/includes w/ multiple offsets per line
         if (!this.offset2loc[info.offset])
           this.offset2loc[info.offset] = info;
         if (!this.line2offset[info.line])
@@ -41,7 +40,7 @@ export class SourceFile {
       }
     }
   }
-  // TODO: smarter about looking for source lines between two addresses
+
   findLineForOffset(PC:number, lookbehind:number) {
     if (this.offset2loc) {
       for (var i=0; i<=lookbehind; i++) {
@@ -54,6 +53,7 @@ export class SourceFile {
     }
     return null;
   }
+
   lineCount():number { return this.lines.length; }
 }
 
@@ -61,26 +61,27 @@ export interface Dependency {
   path:string
   filename:string
   link:boolean
-  data:FileData // TODO: or binary?
+  data:FileData
 }
 
 export interface WorkerFileUpdate {
   path:string
   data:FileData
-};
+}
+
 export interface WorkerBuildStep {
   path?:string
   files?:string[]
   platform:string
   tool:string
   mainfile?:boolean
-};
+}
+
 export interface WorkerItemUpdate {
   key:string
   value:object
-};
+}
 
-// TODO: split into different msg types
 export interface WorkerMessage {
   preload?:string
   platform?:string
@@ -106,7 +107,6 @@ export interface CodeListing {
 
 export type CodeListingMap = {[path:string]:CodeListing};
 
-// TODO
 export type VerilogOutput =
   {program_rom_variable:string, program_rom:Uint8Array, code:string, name:string, ports:any[], signals:any[]};
 

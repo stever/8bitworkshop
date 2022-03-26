@@ -245,7 +245,6 @@ function refreshWindowList() {
       return new AddressHeatMapView();
     });
 
-    // TODO: only if raster
     addWindowItem("#crtheatmap", "CRT Probe", () => {
       return new RasterPCHeatMapView();
     });
@@ -293,7 +292,6 @@ function loadMainWindow(preset_id:string) {
 
 async function loadProject(preset_id:string) {
   // set current file ID
-  // TODO: this is done twice (mainPath and mainpath!)
   current_project.mainPath = preset_id;
 
   // load files from storage or web URLs
@@ -392,7 +390,6 @@ function getErrorElement(err : WorkerError) {
     var link = $('<a/>').text(s);
     var path = err.path;
 
-    // TODO: hack because examples/foo.a only gets listed as foo.a
     if (path == getCurrentMainFilename()) path = current_project.mainPath;
 
     // click link to open file, if it's available...
@@ -472,7 +469,7 @@ async function setCompileOutput(data: WorkerResult) {
     var rom = data.output;
     if (rom != null) {
       try {
-        clearBreakpoint(); // so we can replace memory (TODO: change toolbar btn)
+        clearBreakpoint(); // so we can replace memory
         _resetRecording();
         await platform.loadROM(getCurrentPresetTitle(), rom);
         current_output = rom;

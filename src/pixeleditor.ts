@@ -1,11 +1,9 @@
 import { hex, rgb2bgr, rle_unpack } from "./util";
 import { ProjectWindows } from "./windows";
 import { Toolbar } from "./toolbar";
-import Mousetrap = require('mousetrap');
 
-export type UintArray = number[] | Uint8Array | Uint16Array | Uint32Array; //{[i:number]:number};
+export type UintArray = number[] | Uint8Array | Uint16Array | Uint32Array;
 
-// TODO: separate view/controller
 export interface EditorContext {
   setCurrentEditor(div:JQuery, editing:JQuery, node:PixNode) : void;
   getPalettes(matchlen : number) : SelectablePalette[];
@@ -22,7 +20,7 @@ export type SelectableTilemap = {
   node:PixNode
   name:string
   images:Uint8Array[]
-  rgbimgs:Uint32Array[] // TODO: different palettes?
+  rgbimgs:Uint32Array[]
 }
 
 export type PixelEditorImageFormat = {
@@ -51,16 +49,6 @@ export type PixelEditorPaletteFormat = {
 };
 
 export type PixelEditorPaletteLayout = [string, number, number][];
-
-type PixelEditorMessage = {
-  fmt : PixelEditorImageFormat
-  palfmt : PixelEditorPaletteFormat
-  bytestr : string
-  palstr : string
-};
-
-/////////////////
-
 
 // 0xabcd, #$abcd, 5'010101, 0b010101, etc
 var pixel_re = /([0#]?)([x$%]|\d'h)([0-9a-f]+)(?:[;].*)?|(\d'b|0b)([01]+)/gim;
@@ -107,9 +95,9 @@ export function replaceHexWords(s:string, words:UintArray) : string {
     else if (m[2].startsWith('%'))
       result += m[1] + "%" + words[i++].toString(2);
     else if (m[2].endsWith('b'))
-      result += m[1] + m[2] + words[i++].toString(2); // TODO
+      result += m[1] + m[2] + words[i++].toString(2);
     else if (m[2].endsWith('h'))
-      result += m[1] + m[2] + words[i++].toString(16); // TODO
+      result += m[1] + m[2] + words[i++].toString(16);
     else if (m[2].startsWith('x'))
       result += m[1] + "x" + hex(words[i++]);
     else if (m[2].startsWith('$'))
@@ -202,7 +190,7 @@ export function convertImagesToWords(images:Uint8Array[], fmt:PixelEditorImageFo
   var pofs = fmt.pofs || wordsperline*height*count;
   var skip = fmt.skip || 0;
   var words;
-  if (nplanes > 0 && fmt.sl) // TODO?
+  if (nplanes > 0 && fmt.sl)
     words = new Uint8Array(wordsperline*height*count);
   else if (bitsperword <= 8)
     words = new Uint8Array(wordsperline*height*count*nplanes);
@@ -234,7 +222,6 @@ export function convertImagesToWords(images:Uint8Array[], fmt:PixelEditorImageFo
   return words;
 }
 
-// TODO
 export function convertPaletteBytes(arr:UintArray,r0,r1,g0,g1,b0,b1) : number[] {
   var result = [];
   for (var i=0; i<arr.length; i++) {
@@ -272,7 +259,6 @@ export function convertPaletteFormat(palbytes:UintArray, palfmt: PixelEditorPale
     var rr = Math.floor(Math.abs(pal/100) % 10);
     var gg = Math.floor(Math.abs(pal/10) % 10);
     var bb = Math.floor(Math.abs(pal) % 10);
-    // TODO: n
     if (pal >= 0)
       newpalette = convertPaletteBytes(palbytes, 0, rr, rr, gg, rr+gg, bb);
     else
@@ -288,7 +274,6 @@ export function convertPaletteFormat(palbytes:UintArray, palfmt: PixelEditorPale
   return newpalette;
 }
 
-// TODO: illegal colors?
 const PREDEF_PALETTES = {
   'nes':[
      0x525252, 0xB40000, 0xA00000, 0xB1003D, 0x740069, 0x00005B, 0x00005F, 0x001840, 0x002F10, 0x084A08, 0x006700, 0x124200, 0x6D2800, 0x000000, 0x000000, 0x000000,
@@ -340,8 +325,6 @@ var PREDEF_LAYOUTS : {[id:string]:PixelEditorPaletteLayout} = {
   ],
 };
 
-/////
-
 function equalArrays(a:UintArray, b:UintArray) : boolean {
   if (a == null || b == null)
     return false;
@@ -355,6 +338,7 @@ function equalArrays(a:UintArray, b:UintArray) : boolean {
   }
   return true;
 }
+
 function equalNestedArrays(a:UintArray[], b:UintArray[]) : boolean {
   if (a == null || b == null)
     return false;
@@ -422,14 +406,15 @@ export class FileDataNode extends CodeProjectDataNode {
     this.fileid = fileid;
     this.label = fileid;
   }
+
   updateLeft() {
-    //if (equalArrays(this.words, this.right.words)) return false;
     this.words = this.right.words;
     if (this.project) {
       this.project.updateFile(this.fileid, this.words as Uint8Array);
     }
     return true;
   }
+
   updateRight() {
     if (this.project) {
       this.words = this.project.project.getFile(this.fileid) as Uint8Array;
@@ -443,7 +428,6 @@ export class TextDataNode extends CodeProjectDataNode {
   start : number;
   end : number;
 
-  // TODO: what if file size/layout changes?
   constructor(project:ProjectWindows, fileid:string, label:string, start:number, end:number) {
     super();
     this.project = project;
@@ -452,28 +436,28 @@ export class TextDataNode extends CodeProjectDataNode {
     this.start = start;
     this.end = end;
   }
+
   updateLeft() {
     if (this.right.words.length != this.words.length)
       throw Error("Expected " + this.right.words.length + " bytes; image has " + this.words.length);
     this.words = this.right.words;
-    // TODO: reload editors?
     var datastr = this.text.substring(this.start, this.end);
     datastr = replaceHexWords(datastr, this.words);
     this.text = this.text.substring(0, this.start) + datastr + this.text.substring(this.end);
     if (this.project) {
       this.project.updateFile(this.fileid, this.text);
-      //this.project.replaceTextRange(this.fileid, this.start, this.end, datastr);
     }
     return true;
   }
+
   updateRight() {
     if (this.project) {
       this.text = this.project.project.getFile(this.fileid) as string;
     }
     var datastr = this.text.substring(this.start, this.end);
-    datastr = convertToHexStatements(datastr); // TODO?
+    datastr = convertToHexStatements(datastr);
     var words = parseHexWords(datastr);
-    this.words = words; //new Uint8Array(words); // TODO: 16/32?
+    this.words = words;
     return true;
   }
 }
@@ -483,7 +467,6 @@ export class Compressor extends PixNode {
   words : UintArray;
 
   updateLeft() {
-    // TODO: can't modify length of rle bytes
     return false;
   }
   updateRight() {
@@ -504,7 +487,6 @@ export class Mapper extends PixNode {
     this.fmt = fmt;
   }
   updateLeft() {
-    //if (equalNestedArrays(this.images, this.right.images)) return false;
     this.images = this.right.images;
     this.words = convertImagesToWords(this.images, this.fmt);
     return true;
@@ -539,15 +521,14 @@ export class Palettizer extends PixNode {
   paloptions : SelectablePalette[];
   palindex : number = 0;
 
-// TODO: control to select palette for bitmaps
-
   constructor(context:EditorContext, fmt:PixelEditorImageFormat) {
     super();
     this.context = context;
     this.ncolors = 1 << ((fmt.bpp||1) * (fmt.np||1));
   }
+
   updateLeft() {
-    if (this.right) { this.rgbimgs = this.right.rgbimgs; } // TODO: check is for unit test, remove?
+    if (this.right) { this.rgbimgs = this.right.rgbimgs; }
     var pal = new RGBAPalette(this.palette);
     var newimages = this.rgbimgs.map( (im:Uint32Array) => {
       var out = new Uint8Array(im.length);
@@ -557,10 +538,10 @@ export class Palettizer extends PixNode {
       return out;
     });
     // have to do it this way b/c pixel editor modifies arrays
-    //if (equalNestedArrays(newimages, this.images)) return false;
     this.images = newimages;
     return true;
   }
+
   updateRight() {
     if (!this.updateRefs() && equalNestedArrays(this.images, this.left.images)) return false;
     this.images = this.left.images;
@@ -575,6 +556,7 @@ export class Palettizer extends PixNode {
     });
     return true;
   }
+
   updateRefs() {
     var newpalette;
     if (this.context != null) {
@@ -587,7 +569,7 @@ export class Palettizer extends PixNode {
       if (this.ncolors <= 2)
         newpalette = new Uint32Array([0xff000000, 0xffffffff]);
       else
-        newpalette = new Uint32Array([0xff000000, 0xffff00ff, 0xffffff00, 0xffffffff]); // TODO: more palettes
+        newpalette = new Uint32Array([0xff000000, 0xffff00ff, 0xffffff00, 0xffffffff]);
     }
     if (equalArrays(this.palette, newpalette)) return false;
     this.palette = newpalette;
@@ -622,10 +604,11 @@ export class PaletteFormatToRGB extends PixNode {
     super();
     this.palfmt = palfmt;
   }
+
   updateLeft() {
-    //TODO
     return true;
   }
+
   updateRight() {
     if (equalArrays(this.words, this.left.words)) return false;
     this.words = this.left.words;
@@ -637,6 +620,7 @@ export class PaletteFormatToRGB extends PixNode {
     });
     return true;
   }
+
   getAllColors() {
     var arr = [];
     for (var i=0; i<getPaletteLength(this.palfmt); i++)
@@ -660,6 +644,7 @@ export abstract class Compositor extends PixNode {
     super();
     this.context = context;
   }
+
   updateRefs() : boolean {
     var oldtilemap = this.tilemap;
     if (this.context != null) {
@@ -685,17 +670,16 @@ export class MetaspriteCompositor extends Compositor {
     this.metadefs = metadefs;
   }
   updateLeft() {
-    // TODO
     return false;
   }
   updateRight() {
     this.updateRefs();
-    this.width = 16; // TODO
-    this.height = 16; // TODO
+    this.width = 16;
+    this.height = 16;
     var idata = new Uint8Array(this.width * this.height);
     this.images = [idata];
     this.metadefs.forEach((meta) => {
-      // TODO
+
     });
     return true;
   }
@@ -706,13 +690,15 @@ export class NESNametableConverter extends Compositor {
   cols : number;
   rows : number;
   baseofs : number;
+
   constructor(context:EditorContext) {
     super(context);
   }
+
   updateLeft() {
-    // TODO
     return false;
   }
+
   updateRight() {
     if (!this.updateRefs() && equalArrays(this.words, this.left.words)) return false;
     this.words = this.left.words;
@@ -749,7 +735,7 @@ export class NESNametableConverter extends Compositor {
          a++;
       }
     }
-    // TODO
+
     return true;
   }
 }
@@ -765,15 +751,15 @@ export class ImageChooser {
   recreate(parentdiv:JQuery, onclick) {
     var agrid = $('<div class="asset_grid"/>'); // grid (or 1) of preview images
     parentdiv.empty().append(agrid);
-    var cscale = Math.max(2, Math.ceil(16/this.width)); // TODO
-    var imgsperline = this.width <= 8 ? 16 : 8; // TODO
+    var cscale = Math.max(2, Math.ceil(16/this.width));
+    var imgsperline = this.width <= 8 ? 16 : 8;
     var span = null;
     this.rgbimgs.forEach((imdata, i) => {
       var viewer = new Viewer();
       viewer.width = this.width;
       viewer.height = this.height;
       viewer.recreate();
-      viewer.canvas.style.width = (viewer.width*cscale)+'px'; // TODO
+      viewer.canvas.style.width = (viewer.width*cscale)+'px';
       viewer.canvas.title = '$'+hex(i);
       viewer.updateImage(imdata);
       $(viewer.canvas).addClass('asset_cell');
@@ -838,12 +824,10 @@ export class CharmapEditor extends PixNode {
       this.rgbimgs[index] = viewer.rgbdata;
     });
     // add palette selector
-    // TODO: only view when editing?
     var palizer = this.left;
     if (palizer instanceof Palettizer && palizer.paloptions.length > 1) {
       var palselect = $(document.createElement('select'));
       palizer.paloptions.forEach((palopt, i) => {
-        // TODO: full identifier
         var sel = $(document.createElement('option')).text(palopt.name).val(i).appendTo(palselect);
         if (i == (palizer as Palettizer).palindex)
           sel.attr('selected','selected');
@@ -866,8 +850,8 @@ export class CharmapEditor extends PixNode {
     while (w > 500 || h > 500) {
       w /= 2; h /= 2;
     }
-    im.canvas.style.width = w+'px'; // TODO
-    im.canvas.style.height = h+'px'; // TODO
+    im.canvas.style.width = w+'px';
+    im.canvas.style.height = h+'px';
     im.makeEditable(this, aeditor, this.left.palette);
     return im;
   }
@@ -1066,7 +1050,6 @@ class PixEditor extends Viewer {
     toolbar.add('ctrl+shift+right', 'Move Right', 'glyphicon-arrow-right', this.translate.bind(this, -1, 0));
     toolbar.add('ctrl+shift+up', 'Move Up', 'glyphicon-arrow-up', this.translate.bind(this, 0, 1));
     toolbar.add('ctrl+shift+down', 'Move Down', 'glyphicon-arrow-down', this.translate.bind(this, 0, -1));
-    // TODO: destroy toolbar?
   }
 
   commit() {
@@ -1116,10 +1099,7 @@ class PixEditor extends Viewer {
       return this.getPixel(x+dx, y+dy);
     });
   }
-
 }
-
-// TODO: not yet used
 
 abstract class TwoWayPixelConverter {
 
@@ -1157,12 +1137,13 @@ export class TwoWayMapper extends PixNode {
     super();
     this.pc = pc;
   }
+
   updateLeft() {
-    //if (equalNestedArrays(this.images, this.right.images)) return false;
     this.images = this.right.images;
     this.words = this.pc.imageToWords(this.images[0]);
     return true;
   }
+
   updateRight() {
     if (equalArrays(this.words, this.left.words)) return false;
     // convert each word array to images

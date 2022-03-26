@@ -4,7 +4,6 @@ import { findIntegerFactors, hex, isArray, rgb2bgr } from "./util";
 import { dumpRAM } from "./emu";
 import { current_project } from "./ui";
 
-// TODO: can't call methods from this end (e.g. Palette, Bitmap)
 import * as bitmap from "./bitmap";
 import * as color from "./color";
 import * as scriptui from "./scriptui";
@@ -25,12 +24,10 @@ function sendInteraction(iobj: scriptui.Interactive, type: string, event: Event,
         const y = (event.clientY - rect.top) * scaleY;
         ievent.x = Math.floor(x);
         ievent.y = Math.floor(y);
-        // TODO: pressure, etc.
     } else {
         console.log("Unknown event type", event);
     }
 
-    // TODO: add events to queue?
     current_project.updateDataItems([{
         key: scriptui.EVENT_KEY,
         value: ievent
@@ -50,7 +47,7 @@ class ColorComponent extends Component<ColorComponentProps> {
         return h('div', {
             class: 'scripting-item scripting-color',
             style: `background-color: ${htmlcolor}; color: ${textcolor}`,
-            alt: htmlcolor, // TODO
+            alt: htmlcolor,
         }, []);
     }
 }
@@ -62,7 +59,7 @@ interface BitmapComponentProps {
 }
 
 class BitmapComponent extends Component<BitmapComponentProps> {
-    ref = createRef(); // TODO: can we use the ref?
+    ref = createRef();
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     imageData: ImageData;
@@ -220,7 +217,6 @@ function primitiveToString(obj) {
     var text = "";
 
     // is it a function? call it first, if we are expanded
-    // TODO: only call functions w/ signature
     if (obj && obj.$$ && typeof obj.$$ == 'function' && this._content != null) {
         obj = obj.$$();
     }
@@ -284,8 +280,6 @@ function objectToDiv(object: any, name: string, objpath: string): VNode<any> {
         name = null;
     }
 
-    // TODO: limit # of items
-    // TODO: detect table
     if (object == null) {
         return h('span', { }, object + "");
     } else if (object['uitype']) {
@@ -299,7 +293,6 @@ function objectToDiv(object: any, name: string, objpath: string): VNode<any> {
     } else if (color.isChroma(object)) {
         return h(ColorComponent, { rgbavalue: color.rgb(object) });
     } else if (color.isPalette(object)) {
-        // TODO?
         if (object.colors.length <= 256) {
             let children = [];
             let props = { class: '', key: `${objpath}__obj` };
@@ -320,7 +313,6 @@ function objectToDiv(object: any, name: string, objpath: string): VNode<any> {
 function fixedArrayToDiv(tyarr: Array<number>, bpel: number, objpath: string) {
     const maxBytes = 0x100;
     if (tyarr.length <= maxBytes) {
-        // TODO
         let dumptext = dumpRAM(tyarr, 0, tyarr.length);
         return h('pre', {}, dumptext);
     } else {
@@ -342,8 +334,6 @@ function objectToContentsDiv(object: {} | [], objpath: string) {
     let objectDivs = objectEntries.map(entry => objectToDiv(entry[1], entry[0], `${objpath}.${entry[1]}`));
     return h('div', { class: 'scripting-flex' }, objectDivs);
 }
-
-///
 
 interface UIComponentProps {
     iokey: string;
@@ -455,7 +445,6 @@ class UIButtonComponent extends Component<UIComponentProps> {
 class UIShortcutComponent extends Component<UIComponentProps> {
     render(virtualDom, containerNode, replaceNode) {
         let shortcut = this.props.uiobject as scriptui.ScriptUIShortcut;
-        // TODO: needs to fire on container node
         return h('div', {
             onKeyDown: (e: KeyboardEvent) => {
                 sendInteraction(shortcut, 'key', e, { });

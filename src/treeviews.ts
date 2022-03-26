@@ -70,7 +70,6 @@ class TreeNode {
     this.getDiv();
     var text = "";
     // is it a function? call it first, if we are expanded
-    // TODO: only call functions w/ signature
     if (obj && obj.$$ && typeof obj.$$ == 'function' && this._content != null) {
       obj = obj.$$();
     }
@@ -88,7 +87,7 @@ class TreeNode {
         text = obj;
       else
         text = obj.substring(0, MAX_STRING_LEN) + "...";
-    // typed byte array (TODO: other kinds)
+    // typed byte array
     } else if (obj.buffer && obj.length <= MAX_CHILDREN) {
       text = dumpRAM(obj, 0, obj.length);
     // recurse into object? (or function)
@@ -207,7 +206,6 @@ interface CallGraphNode {
   calls : {[id:string] : CallGraphNode};
 }
 
-// TODO: clear stack data when reset?
 export class CallStackView extends ProbeViewBaseBase implements ProjectView {
   treeroot : TreeNode;
   graph : CallGraphNode;
@@ -230,7 +228,7 @@ export class CallStackView extends ProbeViewBaseBase implements ProjectView {
 
   tick() {
     this.treeroot.update(this.getRootObject());
-    if (this.probe) this.probe.clear(); // clear cumulative data (TODO: doesnt work with seeking or debugging)
+    if (this.probe) this.probe.clear(); // clear cumulative data
   }
 
   clear() {
@@ -262,7 +260,6 @@ export class CallStackView extends ProbeViewBaseBase implements ProjectView {
   }
 
   getRootObject() : Object {
-    // TODO: we don't capture every frame, so if we don't start @ the top frame we may have problems
     this.redraw((op,addr,col,row,clk,value) => {
       switch (op) {
         case ProbeFlags.SP_POP:
@@ -271,7 +268,7 @@ export class CallStackView extends ProbeViewBaseBase implements ProjectView {
           if (this.stack.length) {
             let top = this.stack[this.stack.length-1];
             var delta = this.lastsp - addr;
-            if ((delta == 2 || delta == 3) && addr < top.$$SP) { // TODO: look for opcode?
+            if ((delta == 2 || delta == 3) && addr < top.$$SP) {
               this.jsr = true;
             }
             if ((delta == -2 || delta == -3) && this.stack.length > 1 && addr > top.$$SP) {
@@ -281,8 +278,7 @@ export class CallStackView extends ProbeViewBaseBase implements ProjectView {
           this.lastsp = addr;
           break;
         case ProbeFlags.EXECUTE:
-          // TODO: better check for CALL/RET opcodes
-          if (Math.abs(addr - this.lastpc) >= 4) { // make sure we're jumping a distance (TODO)
+          if (Math.abs(addr - this.lastpc) >= 4) { // make sure we're jumping a distance
             if (this.jsr && this.stack.length) {
               let top = this.stack[this.stack.length-1];
               let sym = this.addr2str(addr);
@@ -344,7 +340,3 @@ export class FrameCallsView extends ProbeViewBaseBase implements ProjectView {
     return frame;
   }
 }
-
-
-///
-

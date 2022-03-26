@@ -25,7 +25,6 @@ export class ProjectWindows {
     this.project = project;
     this.undofiles = [];
   }
-  // TODO: delete windows ever?
 
   isWindow(id:string) : boolean {
     return this.id2createfn[id] != null;
@@ -157,7 +156,7 @@ export class ProjectWindows {
   findWindowWithFilePrefix(filename : string) : string {
     filename = getFilenameForPath(getFilenamePrefix(filename));
     for (var fileid in this.id2createfn) {
-      // ignore include files (TODO)
+      // ignore include files
       if (fileid.toLowerCase().endsWith('.h') || fileid.toLowerCase().endsWith('.inc')  || fileid.toLowerCase().endsWith('.bas'))
         continue;
       if (getFilenameForPath(getFilenamePrefix(fileid)) == filename) return fileid;

@@ -50,8 +50,6 @@ export class InteractionRecord implements io.Loadable {
         this.$$callback = null;
     }
     $$getstate() {
-        //TODO: this isn't always cleared before we serialize (e.g. if exception or move element)
-        //and we do it in checkResult() too
         this.$$callback = null;
         return {interactid: this.interactid};
     }
@@ -62,14 +60,11 @@ export function isInteractive(obj: object): obj is Interactive {
 }
 
 export function interact(object: any, callback) : InteractionRecord {
-    // TODO: limit to Bitmap, etc
     if (typeof object === 'object') {
         return new InteractionRecord(object, callback);
     }
     throw new Error(`This object is not capable of interaction.`);
 }
-
-///
 
 export interface ScriptUIType {
     uitype : string;
@@ -101,8 +96,6 @@ export function slider(min: number, max: number, step?: number) {
     return new ScriptUISlider(min, max, step || 1);
 }
 
-///
-
 export class ScriptUISelectType<T> implements ScriptUIType {
     readonly uitype = 'select';
     value: T;
@@ -130,8 +123,6 @@ export function select(options: any[]) {
     return new ScriptUISelect(options);
 }
 
-///
-
 export class ScriptUIButtonType extends InteractionRecord implements ScriptUIType, Interactive {
     readonly uitype = 'button';
     $$interact: InteractionRecord;
@@ -147,6 +138,7 @@ export class ScriptUIButtonType extends InteractionRecord implements ScriptUITyp
 }
 
 export class ScriptUIButton extends ScriptUIButtonType {
+
 }
 
 export function button(name: string, callback: InteractCallback) {
@@ -171,8 +163,6 @@ export function toggle(name: string) {
         this.enabled = !this.enabled;
     });
 }
-
-///
 
 export class ScriptUIShortcut extends InteractionRecord implements ScriptUIType, Interactive {
     readonly uitype = 'shortcut';

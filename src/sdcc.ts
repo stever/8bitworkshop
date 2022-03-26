@@ -1,6 +1,27 @@
-import { CodeListingMap } from "./workertypes";
-import { BuildStep, BuildStepResult, loadNative, gatherFiles, staleFiles, emglobal, moduleInstFn, populateFiles, execMain, putWorkFile, setupFS, populateExtraFiles, anyTargetChanged, parseListing, print_fn, msvcErrorMatcher, getWorkFileAsString, setupStdin, preprocessMCPP, parseSourceLines } from "./workermain";
-import { EmscriptenModule } from "./workermain"
+import {CodeListingMap} from "./workertypes";
+import {
+    BuildStep,
+    BuildStepResult,
+    loadNative,
+    gatherFiles,
+    staleFiles,
+    emglobal,
+    moduleInstFn,
+    populateFiles,
+    execMain,
+    putWorkFile,
+    setupFS,
+    populateExtraFiles,
+    anyTargetChanged,
+    parseListing,
+    print_fn,
+    msvcErrorMatcher,
+    getWorkFileAsString,
+    setupStdin,
+    preprocessMCPP,
+    parseSourceLines
+} from "./workermain";
+import {EmscriptenModule} from "./workermain"
 
 function hexToArray(s, ofs) {
     var buf = new ArrayBuffer(s.length / 2);
@@ -34,10 +55,7 @@ function parseIHX(ihx, rom_start, rom_size, errors) {
             }
         }
     }
-    // TODO: return ROM anyway?
-    if (high_size > rom_size) {
-        //errors.push({line:0, msg:"ROM size too large: 0x" + high_size.toString(16) + " > 0x" + rom_size.toString(16)});
-    }
+
     return output;
 }
 
@@ -53,8 +71,8 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
         //              <o> .org in REL area or directive / mnemonic error
         // ?ASxxxx-Error-<q> in line 1627 of cosmic.asm
         //    <q> missing or improper operators, terminators, or delimiters
-        var match_asm_re1 = / in line (\d+) of (\S+)/; // TODO
-        var match_asm_re2 = / <\w> (.+)/; // TODO
+        var match_asm_re1 = / in line (\d+) of (\S+)/;
+        var match_asm_re2 = / <\w> (.+)/;
         var errline = 0;
         var errpath = step.path;
         var match_asm_fn = (s: string) => {
@@ -96,7 +114,6 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
         files: [objpath, lstpath],
         args: [objpath]
     };
-    //symout = FS.readFile("main.sym", {encoding:'utf8'});
 }
 
 export function linkSDLDZ80(step: BuildStep) {
@@ -128,13 +145,8 @@ export function linkSDLDZ80(step: BuildStep) {
         setupFS(FS, 'sdcc');
         populateFiles(step, FS);
         populateExtraFiles(step, FS, params.extra_link_files);
-        // TODO: coleco hack so that -u flag works
-        if (step.platform.startsWith("coleco")) {
-            FS.writeFile('crt0.rel', FS.readFile('/share/lib/coleco/crt0.rel', { encoding: 'utf8' }));
-            FS.writeFile('crt0.lst', '\n'); // TODO: needed so -u flag works
-        }
         var args = ['-mjwxyu',
-            '-i', 'main.ihx', // TODO: main?
+            '-i', 'main.ihx',
             '-b', '_CODE=0x' + params.code_start.toString(16),
             '-b', '_DATA=0x' + params.data_start.toString(16),
             '-k', '/share/lib/z80',
@@ -165,7 +177,6 @@ export function linkSDLDZ80(step: BuildStep) {
                 var asmlines = parseListing(rstout, /^\s*([0-9A-F]{4})\s+([0-9A-F][0-9A-F r]*[0-9A-F])\s+\[([0-9 ]+)\]?\s+(\d+) (.*)/i, 4, 1, 2, 3);
                 var srclines = parseSourceLines(rstout, /^\s+\d+ ;<stdin>:(\d+):/i, /^\s*([0-9A-F]{4})/i);
                 putWorkFile(fn, rstout);
-                // TODO: you have to get rid of all source lines to get asm listing
                 listings[fn] = {
                     asmlines: srclines.length ? asmlines : null,
                     lines: srclines.length ? srclines : asmlines,
@@ -184,7 +195,6 @@ export function linkSDLDZ80(step: BuildStep) {
         // build segment map
         var seg_re = /^s__(\w+)$/;
         var segments = [];
-        // TODO: use stack params for stack segment
         for (let ident in symbolmap) {
             let m = seg_re.exec(ident);
             if (m) {
@@ -196,7 +206,7 @@ export function linkSDLDZ80(step: BuildStep) {
                     if (['INITIALIZER', 'GSINIT', 'GSFINAL'].includes(seg)) type = 'rom';
                     else if (seg.startsWith('CODE')) type = 'rom';
                     else if (['DATA', 'INITIALIZED'].includes(seg)) type = 'ram';
-                    if (type == 'rom' || segstart > 0) // ignore HEADER0, CABS0, etc (TODO?)
+                    if (type == 'rom' || segstart > 0) // ignore HEADER0, CABS0, etc
                         segments.push({ name: seg, start: segstart, size: segsize, type: type });
                 }
             }
@@ -272,7 +282,6 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
             args.push.apply(args, params.extra_compile_args);
         }
         execMain(step, SDCC, args);
-        // TODO: preprocessor errors w/ correct file
         if (errors.length /* && nwarnings < msvc_errors.length*/) {
             return { errors: errors };
         }

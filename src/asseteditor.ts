@@ -40,7 +40,6 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       this.rootnodes.forEach((node) => {
         while (node != null) {
           if (node instanceof pixed.PaletteFormatToRGB) {
-            // TODO: move to node class?
             var palette = node.palette;
             // match full palette length?
             if (matchlen == palette.length) {
@@ -81,7 +80,7 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
           if (node instanceof pixed.Palettizer) {
             var rgbimgs = node.rgbimgs;
             if (rgbimgs && rgbimgs.length >= matchlen) {
-              result.push({node:node, name:"Tilemap", images:node.images, rgbimgs:rgbimgs}); // TODO
+              result.push({node:node, name:"Tilemap", images:node.images, rgbimgs:rgbimgs});
             }
           }
           node = node.right;
@@ -109,7 +108,6 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
           this.cureditordiv = div;
           this.cureditordiv.show();
           this.cureditordiv[0].scrollIntoView({behavior: "smooth", block: "center"});
-          //setTimeout(() => { this.cureditordiv[0].scrollIntoView({behavior: "smooth", block: "center"}) }, timeout);
         }
       }
       if (this.cureditelem) {
@@ -128,8 +126,6 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
 
     scanFileTextForAssets(id : string, data : string) {
       // scan file for assets
-      // /*{json}*/ or ;;{json};;
-      // TODO: put before ident, look for = {
       var result = [];
       var re1 = /[/;][*;]([{].+[}])[*;][/;]/g;
       var m;
@@ -141,7 +137,6 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
           try {
             var jsontxt = m[1].replace(/([A-Za-z]+):/g, '"$1":'); // fix lenient JSON
             var json = JSON.parse(jsontxt);
-            // TODO: name?
             result.push({fileid:id,fmt:json,start:start,end:end});
           } catch (e) {
             console.log(e);
@@ -149,7 +144,6 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
         }
       }
       // look for DEF_METASPRITE_2x2(playerRStand, 0xd8, 0)
-      // TODO: could also look in ROM
       var re2 = /DEF_METASPRITE_(\d+)x(\d+)[(](\w+),\s*(\w+),\s*(\w+)/gi;
       while (m = re2.exec(data)) {
         var width = parseInt(m[1]);
@@ -169,11 +163,9 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       return result;
     }
 
-    // TODO: move to pixeleditor.ts?
     addPaletteEditorViews(parentdiv:JQuery, pal2rgb:pixed.PaletteFormatToRGB, callback) {
       var adual = $('<div class="asset_dual"/>').appendTo(parentdiv);
       var aeditor = $('<div class="asset_editor"/>').hide(); // contains editor, when selected
-      // TODO: they need to update when refreshed from right
       var allrgbimgs = [];
       pal2rgb.getAllColors().forEach((rgba) => { allrgbimgs.push(new Uint32Array([rgba])); }); // array of array of 1 rgb color (for picker)
       var atable = $('<table/>').appendTo(adual);
@@ -182,7 +174,7 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       var layout = pal2rgb.layout;
       if (!layout) {
         var len = pal2rgb.palette.length;
-        var imgsperline = len > 32 ? 8 : 4; // TODO: use 'n'?
+        var imgsperline = len > 32 ? 8 : 4;
         layout = [];
         for (var i=0; i<len; i+=imgsperline) {
           layout.push(["", i, Math.min(len-i,imgsperline)]);
@@ -228,7 +220,6 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       // data -> pixels
       fmt.xform = 'scale(2)';
       var mapper = new pixed.Mapper(fmt);
-      // TODO: rotate node?
       firstnode.addRight(mapper);
       // pixels -> RGBA
       var palizer = new pixed.Palettizer(this, fmt);
@@ -241,14 +232,10 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       // palette -> RGBA
       var pal2rgb = new pixed.PaletteFormatToRGB(palfmt);
       firstnode.addRight(pal2rgb);
-      // TODO: refresh twice?
       firstnode.refreshRight();
-      // TODO: add view objects
-      // TODO: show which one is selected?
       this.addPaletteEditorViews(parentdiv, pal2rgb,
         (index, newvalue) => {
           console.log('set entry', index, '=', newvalue);
-          // TODO: this forces update of palette rgb colors and file data
           firstnode.words[index] = newvalue;
           pal2rgb.words = null;
           pal2rgb.updateRight();
@@ -269,9 +256,6 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
 
     refreshAssetsInFile(fileid : string, data : FileData) : number {
       let nassets = 0;
-      // TODO: check fmt w/h/etc limits
-      // TODO: defer editor creation
-      // TODO: only refresh when needed
       if (typeof data === 'string') {
         let textfrags = this.scanFileTextForAssets(fileid, data);
         for (let frag of textfrags) {

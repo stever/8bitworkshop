@@ -2,28 +2,27 @@ import { FileDataCache } from "./util";
 import { FileData, WorkingStore } from "./workertypes";
 
 // remote resource cache
-var $$cache = new FileDataCache(); // TODO: better cache?
+var $$cache = new FileDataCache();
+
 // file read/write interface
 var $$store: WorkingStore;
+
 // backing store for data
 var $$data: {} = {};
+
 // module cache
 var $$modules: Map<string,{}> = new Map();
 
-export function $$setupFS(store: WorkingStore) {
-    $$store = store;
-}
 export function $$getData() {
     return $$data;
-}
-export function $$loadData(data: {}) {
-    Object.assign($$data, data);
 }
 
 // object that can load state from backing store
 export interface Loadable {
+
     // called during script, from io.data.load()
     $$setstate?(newstate: {}) : void;
+
     // called after script, from io.data.save()
     $$getstate() : {};
 }
@@ -55,9 +54,6 @@ export namespace data {
     }
 }
 
-export class IOWaitError extends Error {
-}
-
 export function canonicalurl(url: string) : string {
     // get raw resource URL for github
     if (url.startsWith('https://github.com/')) {
@@ -70,7 +66,6 @@ export function canonicalurl(url: string) : string {
 }
 
 export function fetchurl(url: string, type?: 'binary' | 'text'): FileData {
-    // TODO: only works in web worker
     var xhr = new XMLHttpRequest();
     xhr.responseType = type === 'text' ? 'text' : 'arraybuffer';
     xhr.open("GET", url, false);  // synchronous request
@@ -95,7 +90,6 @@ export function readnocache(url: string, type?: 'binary' | 'text'): FileData {
     }
 }
 
-// TODO: read files too
 export function read(url: string, type?: 'binary' | 'text'): FileData {
     // canonical-ize url
     url = canonicalurl(url);
@@ -136,28 +130,12 @@ export function module(url: string) {
     if (exports == null) {
         let code = readnocache(url, 'text') as string;
         let func = new Function('exports', 'module', code);
-        let module = {}; // TODO?
+        let module = {};
         exports = {};
         func(exports, module);
         $$modules.set(key, exports);
     }
     return exports;
-}
-
-///
-
-// TODO: what if this isn't top level?
-export class Mutable<T> implements Loadable {
-    value : T;
-    constructor(initial : T) {
-        this.value = initial;
-    }
-    $$setstate(newstate) {
-        this.value = newstate.value;
-    }
-    $$getstate() {
-        return { value: this.value };
-    }
 }
 
 export function mutable<T>(obj: object) : object {

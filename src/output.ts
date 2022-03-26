@@ -8,7 +8,7 @@ enum DataType {
     s32,
     f32,
     f64,
-};
+}
 
 function getArrayDataType(value: any) : DataType {
     if (value instanceof Uint8Array) {
@@ -35,8 +35,11 @@ export abstract class OutputFile {
         public readonly path : string,
         public readonly decls : {}
     ) {
+
     }
+
     abstract declToText(label: string, value: any) : string;
+
     toString() : string {
         return Object.entries(this.decls).map(entry => this.declToText(entry[0],entry[1])).join('\n\n');
     }
@@ -46,6 +49,7 @@ export class COutputFile extends OutputFile {
     toString() : string {
         return `#include <stdint.h>\n\n${super.toString()}\n`;
     }
+
     dataTypeToString(dtype: DataType) {
         switch (dtype) {
             case DataType.u8: return 'uint8_t';
@@ -57,13 +61,13 @@ export class COutputFile extends OutputFile {
             case DataType.f32: return 'float';
             case DataType.f64: return 'double';
             default:
-                throw new Error('Cannot convert data type'); // TODO
+                throw new Error('Cannot convert data type');
         }
     }
     valueToString(value, atype: DataType) : string {
-        // TODO: round, check value
         return value+"";
     }
+
     declToText(label: string, value: any) : string {
         if (Array.isArray(value) || value['BYTES_PER_ELEMENT']) {
             let atype = getArrayDataType(value);
@@ -74,11 +78,10 @@ export class COutputFile extends OutputFile {
                 return `${dtypestr} ${label}[${len}] = { ${dtext} };`;
             }
         }
-        throw new Error(`Cannot convert array "${label}"`); // TODO
+        throw new Error(`Cannot convert array "${label}"`);
     }
 }
 
-// TODO: header file, auto-detect tool?
 export function file(path: string, decls: {}) {
     return new COutputFile(path, decls);
 }

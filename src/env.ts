@@ -27,7 +27,7 @@ const IMPORTS = {
     'ui': scriptui,
 }
 
-const LINE_NUMBER_OFFSET = 3; // TODO: shouldnt need?
+const LINE_NUMBER_OFFSET = 3;
 
 const GLOBAL_BADLIST = [
     'eval'
@@ -135,7 +135,7 @@ export class Environment {
                 // error on forbidden keywords
                 case 'Identifier':
                     if (GLOBAL_BADLIST.indexOf(source()) >= 0) {
-                        update(`__FORBIDDEN__KEYWORD__${source()}__`) // TODO? how to preserve line number?
+                        update(`__FORBIDDEN__KEYWORD__${source()}__`)
                     } else {
                         convertTopToPrint();
                     }
@@ -174,7 +174,6 @@ export class Environment {
     }
 
     async run(code: string): Promise<void> {
-        // TODO: split into cells based on "--" linebreaks?
         code = this.preprocess(code);
         this.obj = {};
         const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
@@ -184,7 +183,6 @@ export class Environment {
     }
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
-    // TODO: return initial location of thingie
     checkResult(o, checked: Set<object>, fullkey: string[]) {
         if (o == null) return;
 
@@ -193,7 +191,7 @@ export class Environment {
         if (typeof o === 'object') {
             setConstructorName(o);
 
-            delete o.$$callback; // clear callbacks (TODO? put somewhere else?)
+            delete o.$$callback; // clear callbacks
 
             if (o.length > 100) return; // big array, don't bother
 
@@ -213,17 +211,17 @@ export class Environment {
 
                 if (typeof value === 'function') {
                     if (fullkey.length == 1)
-                        this.error(fullkey[0], `"${prkey()}" is a function. Did you forget to pass parameters?`); // TODO? did you mean (needs to see entire expr)
+                        this.error(fullkey[0], `"${prkey()}" is a function. Did you forget to pass parameters?`);
                     else
-                        this.error(fullkey[0], `This expression may be incomplete, or it contains a function object: ${prkey()}`); // TODO? did you mean (needs to see entire expr)
+                        this.error(fullkey[0], `This expression may be incomplete, or it contains a function object: ${prkey()}`);
                 }
 
                 if (typeof value === 'symbol') {
-                    this.error(fullkey[0], `"${prkey()}" is a Symbol, and can't be used.`) // TODO?
+                    this.error(fullkey[0], `"${prkey()}" is a Symbol, and can't be used.`)
                 }
 
                 if (value instanceof Promise) {
-                    this.error(fullkey[0], `"${prkey()}" is unresolved. Use "await" before expression.`) // TODO?
+                    this.error(fullkey[0], `"${prkey()}" is unresolved. Use "await" before expression.`)
                 }
 
                 this.checkResult(value, checked, fullkey);
@@ -236,12 +234,9 @@ export class Environment {
         var cells = [];
 
         for (var [key, value] of Object.entries(this.obj)) {
-            if (typeof value === 'function') {
-                // TODO: find other values, functions embedded in objects?
-            } else {
-                var cell: Cell = { id: key, object: value };
-                cells.push(cell);
-            }
+            console.assert(typeof value !== 'function')
+            var cell: Cell = { id: key, object: value };
+            cells.push(cell);
         }
 
         return cells;
@@ -268,7 +263,6 @@ export class Environment {
             }]
         }
 
-        // TODO: Cannot parse given Error object?
         let frames = ErrorStackParser.parse(e);
         let frame = frames.findIndex(f => f.functionName === 'anonymous');
         let errors = [];
@@ -313,7 +307,6 @@ export class Environment {
     }
 
     commitLoadableState() {
-        // TODO: visit children?
         for (let [key, value] of Object.entries(this.obj)) {
             let loadable = <any>value as io.Loadable;
             io.data.save(loadable, key);

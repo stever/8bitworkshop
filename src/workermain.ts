@@ -1,12 +1,20 @@
-import type { WorkerResult, WorkerBuildStep, WorkerMessage, WorkerError, SourceLine, WorkerErrorResult, WorkingStore } from "./workertypes";
-import { getBasePlatform, getRootBasePlatform } from "./util";
+import type {
+  WorkerResult,
+  WorkerBuildStep,
+  WorkerMessage,
+  WorkerError,
+  SourceLine,
+  WorkerErrorResult,
+  WorkingStore
+} from "./workertypes";
+import {getBasePlatform, getRootBasePlatform} from "./util";
 import * as sdcc from './sdcc'
 import * as z80 from './z80'
 
 /// <reference types="emscripten" />
 export interface EmscriptenModule {
   callMain: (args: string[]) => void;
-  FS : any; // TODO
+  FS : any;
 }
 
 declare function importScripts(path:string);
@@ -17,7 +25,6 @@ const ENVIRONMENT_IS_WORKER = typeof importScripts === 'function';
 export const emglobal : any = ENVIRONMENT_IS_WORKER ? self : ENVIRONMENT_IS_WEB ? window : global;
 
 // simple CommonJS module loader
-// TODO: relative paths for dependencies
 if (!emglobal['require']) {
   emglobal['require'] = (modpath: string) => {
     if (modpath.endsWith('.js')) modpath = modpath.slice(-3);
@@ -29,18 +36,16 @@ if (!emglobal['require']) {
       importScripts(`${modpath}.js`);
     }
     if (emglobal[modname] == null) {
-      emglobal[modname] = exports; // TODO: always put in global scope?
+      emglobal[modname] = exports;
     }
-    return emglobal[modname]; // TODO
+    return emglobal[modname];
   }
 }
 
 // WebAssembly module cache
-// TODO: leaks memory even when disabled...
 var _WASM_module_cache = {};
 var CACHE_WASM_MODULES = true; // if false, use asm.js only
 
-// TODO: which modules need this?
 var wasmMemory;
 export function getWASMMemory() {
     if (wasmMemory == null) {
@@ -65,6 +70,7 @@ function getWASMModule(module_id:string) {
   }
   return module;
 }
+
 // function for use with instantiateWasm
 export function moduleInstFn(module_id:string) {
   return function(imports,ri) {
@@ -74,8 +80,6 @@ export function moduleInstFn(module_id:string) {
     return inst.exports;
   }
 }
-
-//
 
 var PLATFORM_PARAMS = {
   'zx': {
@@ -112,7 +116,6 @@ type BuildOptions = {
   processFn?: (s:string, d:FileData) => FileData
 };
 
-// TODO
 export type BuildStepResult = WorkerResult | WorkerNextToolResult;
 
 export interface WorkerNextToolResult {
@@ -134,9 +137,7 @@ export interface BuildStep extends WorkerBuildStep {
   code?
   prefix?
   maxts?
-};
-
-///
+}
 
 export class FileWorkingStore implements WorkingStore {
   workfs : {[path:string]:FileEntry} = {};
@@ -146,19 +147,23 @@ export class FileWorkingStore implements WorkingStore {
   constructor() {
     this.reset();
   }
+
   reset() {
     this.workfs = {};
     this.newVersion();
   }
+
   currentVersion() {
     return this.workerseq;
   }
+
   newVersion() {
     let ts = new Date().getTime();
     if (ts <= this.workerseq)
       ts = ++this.workerseq;
     return ts;
   }
+
   putFile(path:string, data:FileData) : FileEntry {
     var encoding = (typeof data === 'string') ? 'utf8' : 'binary';
     var entry = this.workfs[path];
@@ -168,29 +173,28 @@ export class FileWorkingStore implements WorkingStore {
     }
     return entry;
   }
+
   hasFile(path: string) {
     return this.workfs[path] != null;
   }
+
   getFileData(path:string) : FileData {
     return this.workfs[path] && this.workfs[path].data;
   }
+
   getFileAsString(path:string) : string {
     let data = this.getFileData(path);
     if (data != null && typeof data !== 'string')
       throw new Error(`${path}: expected string`)
     return data as string; // TODO
   }
-  getFileEntry(path:string) : FileEntry {
-    return this.workfs[path];
-  }
+
   setItem(key: string, value: object) {
     this.items[key] = value;
   }
 }
 
 export var store = new FileWorkingStore();
-
-///
 
 function errorResult(msg: string) : WorkerErrorResult {
   return { errors:[{ line:0, msg:msg }]};
@@ -217,19 +221,22 @@ class Builder {
         step.result = await toolfn(step);
       } catch (e) {
         console.log("EXCEPTION", e, e.stack);
-        return errorResult(e+""); // TODO: catch errors already generated?
+        return errorResult(e+"");
       }
       if (step.result) {
-        (step.result as any).params = step.params; // TODO: type check
+        (step.result as any).params = step.params;
+
         // errors? return them
         if ('errors' in step.result && step.result.errors.length) {
           applyDefaultErrorPath(step.result.errors, step.path);
           return step.result;
         }
+
         // if we got some output, return it immediately
         if ('output' in step.result && step.result.output) {
           return step.result;
         }
+
         // combine files with a link tool?
         if ('linktool' in step.result) {
           if (linkstep) {
@@ -244,6 +251,7 @@ class Builder {
             };
           }
         }
+
         // process with another tool?
         if ('nexttool' in step.result) {
           var asmstep : BuildStep = {
@@ -253,6 +261,7 @@ class Builder {
           }
           this.steps.push(asmstep);
         }
+
         // process final step?
         if (this.steps.length == 0 && linkstep) {
           this.steps.push(linkstep);
@@ -261,38 +270,42 @@ class Builder {
       }
     }
   }
+
   async handleMessage(data: WorkerMessage) : Promise<WorkerResult> {
     this.steps = [];
+
     // file updates
     if (data.updates) {
       data.updates.forEach((u) => store.putFile(u.path, u.data));
     }
+
     // object update
     if (data.setitems) {
       data.setitems.forEach((i) => store.setItem(i.key, i.value));
     }
+
     // build steps
     if (data.buildsteps) {
       this.steps.push.apply(this.steps, data.buildsteps);
     }
+
     // single-file
     if (data.code) {
-      this.steps.push(data as BuildStep); // TODO: remove cast
+      this.steps.push(data as BuildStep);
     }
+
     // execute build steps
     if (this.steps.length) {
       var result = await this.executeBuildSteps();
       return result ? result : {unchanged:true};
     }
-    // TODO: cache results
+
     // message not recognized
     console.log("Unknown message",data);
   }
 }
 
 var builder = new Builder();
-
-///
 
 function applyDefaultErrorPath(errors:WorkerError[], path:string) {
   if (!path) return;
@@ -308,7 +321,6 @@ function compareData(a:FileData, b:FileData) : boolean {
     return a == b;
   } else {
     for (var i=0; i<a.length; i++) {
-      //if (a[i] != b[i]) console.log('differ at byte',i,a[i],b[i]);
       if (a[i] != b[i]) return false;
     }
     return true;
@@ -328,6 +340,7 @@ export function populateEntry(fs, path:string, entry:FileEntry, options:BuildOpt
   if (options && options.processFn) {
     data = options.processFn(path, data);
   }
+
   // create subfolders
   var toks = path.split('/');
   if (toks.length > 1) {
@@ -336,6 +349,7 @@ export function populateEntry(fs, path:string, entry:FileEntry, options:BuildOpt
         fs.mkdir(toks[i]);
       } catch (e) { }
   }
+
   // write file
   fs.writeFile(path, data, {encoding:entry.encoding});
   var time = new Date(entry.ts);
@@ -446,7 +460,7 @@ export function anyTargetChanged(step:BuildStep, targets:string[]) {
 
 export function execMain(step:BuildStep, mod, args:string[]) {
   starttime();
-  var run = mod.callMain || mod.run; // TODO: run?
+  var run = mod.callMain || mod.run;
   run(args);
   endtime(step.tool);
 }
@@ -482,6 +496,7 @@ export function load(modulename:string, debug?:boolean) {
     loaded[modulename] = 1;
   }
 }
+
 export function loadWASM(modulename:string, debug?:boolean) {
   if (!loaded[modulename]) {
     importScripts(PWORKER+"wasm/" + modulename+(debug?"."+debug+".js":".js"));
@@ -498,6 +513,7 @@ export function loadWASM(modulename:string, debug?:boolean) {
     }
   }
 }
+
 export function loadNative(modulename:string) {
   // detect WASM
   if (CACHE_WASM_MODULES && typeof WebAssembly === 'object') {
@@ -510,10 +526,10 @@ export function loadNative(modulename:string) {
 // mount the filesystem at /share
 export function setupFS(FS, name:string) {
   var WORKERFS = FS.filesystems['WORKERFS'];
-  if (name === '65-vector') name = '65-none'; // TODO
-  if (name === '65-atari7800') name = '65-none'; // TODO
-  if (name === '65-devel') name = '65-none'; // TODO
-  if (name === '65-vcs') name = '65-none'; // TODO
+  if (name === '65-vector') name = '65-none';
+  if (name === '65-atari7800') name = '65-none';
+  if (name === '65-devel') name = '65-none';
+  if (name === '65-vcs') name = '65-none';
   if (!fsMeta[name]) throw Error("No filesystem for '" + name + "'");
   FS.mkdir('/share');
   FS.mount(WORKERFS, {
@@ -542,7 +558,6 @@ export function setupFS(FS, name:string) {
 
 export var print_fn = function(s:string) {
   console.log(s);
-  //console.log(new Error().stack);
 }
 
 // test.c(6) : warning 85: in function main unreferenced local variable : 'x'
@@ -630,7 +645,6 @@ export function parseListing(code:string,
       }
     } else {
       let m = re_lineoffset.exec(line);
-      // TODO: check filename too
       if (m) {
         lineofs = parseInt(m[2]) - parseInt(m[1]) - parseInt(m[3]);
       }
@@ -678,50 +692,6 @@ export function setupStdin(fs, code:string) {
   );
 }
 
-export function fixParamsWithDefines(path:string, params){
-  var libargs = params.libargs;
-  if (path && libargs) {
-    var code = getWorkFileAsString(path);
-    if (code) {
-      var oldcfgfile = params.cfgfile;
-      var ident2index = {};
-      // find all lib args "IDENT=VALUE"
-      for (var i=0; i<libargs.length; i++) {
-        var toks = libargs[i].split('=');
-        if (toks.length == 2) {
-          ident2index[toks[0]] = i;
-        }
-      }
-      // find #defines and replace them
-      var re = /^[;]?#define\s+(\w+)\s+(\S+)/gmi; // TODO: empty string?
-      var m;
-      while (m = re.exec(code)) {
-        var ident = m[1];
-        var value = m[2];
-        var index = ident2index[ident];
-        if (index >= 0) {
-          libargs[index] = ident + "=" + value;
-          console.log('Using libargs', index, libargs[index]);
-          // TODO: MMC3 mapper switch
-          if (ident == 'NES_MAPPER' && value == '4') {
-            params.cfgfile = 'nesbanked.cfg';
-            console.log("using config file", params.cfgfile);
-          }
-        } else if (ident == 'CFGFILE' && value) {
-          params.cfgfile = value;
-        } else if (ident == 'LIBARGS' && value) {
-          params.libargs = value.split(',').filter((s) => { return s!=''; });
-          console.log('Using libargs', params.libargs);
-        } else if (ident == 'CC65_FLAGS' && value) {
-          params.extra_compiler_args = value.split(',').filter((s) => { return s!=''; });
-          console.log('Using compiler flags', params.extra_compiler_args);
-        }
-      }
-    }
-  }
-}
-
-
 function makeCPPSafe(s:string) : string {
   return s.replace(/[^A-Za-z0-9_]/g,'_');
 }
@@ -744,7 +714,6 @@ export function preprocessMCPP(step:BuildStep, filesys:string) {
   if (filesys) setupFS(FS, filesys);
   populateFiles(step, FS);
   populateExtraFiles(step, FS, params.extra_compile_files);
-  // TODO: make configurable by other compilers
   var args = [
     "-D", "__8BITWORKSHOP__",
     "-D", "__SDCC_z80",
@@ -805,8 +774,6 @@ var TOOL_PRELOADFS = {
   'sccz80': 'sccz80',
 }
 
-//const waitFor = delay => new Promise(resolve => setTimeout(resolve, delay)); // for testing
-
 async function handleMessage(data : WorkerMessage) : Promise<WorkerResult> {
   // preload file system
   if (data.preload) {
@@ -819,7 +786,7 @@ async function handleMessage(data : WorkerMessage) : Promise<WorkerResult> {
       loadFilesystem(fs);
     return;
   }
-  // clear filesystem? (TODO: buildkey)
+  // clear filesystem?
   if (data.reset) {
     store.reset();
     return;

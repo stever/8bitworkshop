@@ -100,7 +100,6 @@ export class StateRecorderImpl implements EmuRecorder {
         if (seekframe == this.lastSeekFrame && seekstep == this.lastSeekStep) {
             return seekframe; // already set to this frame
         }
-        // TODO: what if < 1?
         let {frame,state} = this.getStateAtOrBefore(seekframe-1);
         if (state) {
             var numSteps = 0;
@@ -112,15 +111,13 @@ export class StateRecorderImpl implements EmuRecorder {
                     this.loadControls(frame);
                 }
                 frame++;
-                numSteps = this.platform.advance(frame < seekframe); // TODO: infinite loop?
+                numSteps = this.platform.advance(frame < seekframe);
             }
-            // TODO: if first frame, we must figure out # of steps
             if (frame == 0) {
               numSteps = this.platform.advance(true);
               this.platform.loadState(state);
             }
             // seek to step index
-            // TODO: what if advance() returns clocks, but steps use insns?
             if (seekstep > 0 && this.platform.advanceFrameClock) {
               seekstep = this.platform.advanceFrameClock(null, seekstep);
             }
@@ -139,13 +136,7 @@ export class StateRecorderImpl implements EmuRecorder {
             this.platform.loadControlsState(this.framerecs[frame].controls);
         setNoiseSeed(this.framerecs[frame].seed);
     }
-
-    getLastCheckpoint() : EmuState {
-        return this.checkpoints.length && this.checkpoints[this.checkpoints.length-1];
-    }
 }
-
-/////
 
 import { Probeable, ProbeAll } from "./devices";
 
@@ -165,11 +156,6 @@ export enum ProbeFlags {
   SP_POP	  = 0x0b000000,
   SCANLINE	= 0x7e000000,
   FRAME		  = 0x7f000000,
-}
-
-class ProbeFrame {
-  data : Uint32Array;
-  len : number;
 }
 
 export class ProbeRecorder implements ProbeAll {
@@ -204,7 +190,6 @@ export class ProbeRecorder implements ProbeAll {
     this.log(a);
   }
   log(a:number) {
-    // TODO: coalesce READ and EXECUTE and PUSH/POP
     if (this.idx >= this.buf.length) return;
     this.buf[this.idx++] = a;
   }
@@ -304,5 +289,4 @@ export class ProbeRecorder implements ProbeAll {
     }
     return count;
   }
-
 }

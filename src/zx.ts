@@ -1,17 +1,32 @@
-import { KeyFlags } from "./emu";
-import { TrapCondition } from "./devices";
-import { CPU, SampledAudioSink, ProbeAll, NullProbe } from "./devices";
-import { EmuHalt } from "./emu";
-import { RasterVideo, AnimationTimer, ControllerPoller } from "./emu";
-import { hex, printFlags, invertMap, byteToASCII } from "./util";
-import { Segment, FileData } from "./workertypes";
-import { disassembleZ80 } from "./disasmz80";
-import { Z80 } from "./ZilogZ80";
-import { Bus, Resettable, FrameBased, VideoSource, SampledAudioSource, AcceptsROM, AcceptsBIOS, AcceptsKeyInput, SavesState, SavesInputState, HasCPU, HasSerialIO, SerialIOInterface, AcceptsJoyInput } from "./devices";
-import { Probeable, RasterFrameBased, AcceptsPaddleInput } from "./devices";
-import { SampledAudio } from "./audio";
-import { ProbeRecorder } from "./recorder";
-import { ZX_WASMMachine as BaseWASMMachine } from "./zx";
+import {KeyFlags} from "./emu";
+import {TrapCondition} from "./devices";
+import {CPU, SampledAudioSink, ProbeAll, NullProbe} from "./devices";
+import {EmuHalt} from "./emu";
+import {RasterVideo, AnimationTimer, ControllerPoller} from "./emu";
+import {hex, printFlags, invertMap, byteToASCII} from "./util";
+import {Segment, FileData} from "./workertypes";
+import {disassembleZ80} from "./disasmz80";
+import {Z80} from "./ZilogZ80";
+import {
+  Bus,
+  Resettable,
+  FrameBased,
+  VideoSource,
+  SampledAudioSource,
+  AcceptsROM,
+  AcceptsBIOS,
+  AcceptsKeyInput,
+  SavesState,
+  SavesInputState,
+  HasCPU,
+  HasSerialIO,
+  SerialIOInterface,
+  AcceptsJoyInput
+} from "./devices";
+import {Probeable, RasterFrameBased, AcceptsPaddleInput} from "./devices";
+import {SampledAudio} from "./audio";
+import {ProbeRecorder} from "./recorder";
+import {ZX_WASMMachine as BaseWASMMachine} from "./zx";
 
 export interface OpcodeMetadata {
   minCycles: number;
@@ -59,7 +74,6 @@ export class DebugSymbols {
     this.symbolmap = symbolmap;
     this.debuginfo = debuginfo;
     this.addr2symbol = invertMap(symbolmap);
-    //// TODO: shouldn't be necc.
     if (!this.addr2symbol[0x0]) this.addr2symbol[0x0] = '$00'; // needed for ...
     this.addr2symbol[0x10000] = '__END__'; // ... dump memory to work
   }
@@ -85,7 +99,7 @@ export interface Platform {
   getPresets?() : Preset[];
   pause() : void;
   resume() : void;
-  loadROM(title:string, rom:any); // TODO: Uint8Array
+  loadROM(title:string, rom:any);
   loadBIOS?(title:string, rom:Uint8Array);
   getROMExtension?(rom:FileData) : string;
 
@@ -114,7 +128,7 @@ export interface Platform {
   stepOver?() : void;
   restartAtPC?(pc:number) : boolean;
 
-  getOpcodeMetadata?(opcode:number, offset:number) : OpcodeMetadata; //TODO
+  getOpcodeMetadata?(opcode:number, offset:number) : OpcodeMetadata;
   getSP?() : number;
   getPC?() : number;
   getOriginPC?() : number;
@@ -193,8 +207,6 @@ export interface EmuRecorder {
   frameRequested() : boolean;
   recordFrame(state : EmuState);
 }
-
-/////
 
 export abstract class BasePlatform {
   recorder : EmuRecorder = null;
@@ -374,7 +386,7 @@ export abstract class BaseDebugPlatform extends BasePlatform {
   runUntilReturn() {
     var SP0 = this.getSP();
     this.runEval( (c:CpuState) : boolean => {
-      return c.SP > SP0; // TODO: check for RTS/RET opcode
+      return c.SP > SP0;
     });
   }
 
@@ -393,7 +405,7 @@ export abstract class BaseDebugPlatform extends BasePlatform {
     var prevClock;
     var clock0 = this.debugTargetClock;
     this.restartDebugging();
-    this.debugTargetClock = clock0 - 25; // TODO: depends on CPU
+    this.debugTargetClock = clock0 - 25;
     this.runEval( (c:CpuState) : boolean => {
       if (this.debugClock < clock0) {
         prevState = this.saveState();
@@ -456,44 +468,13 @@ export abstract class BaseZ80Platform extends BaseDebugPlatform {
   _cpu;
   waitCycles : number = 0;
 
-  newCPU(membus : MemoryBus, iobus : MemoryBus) {
-    this._cpu = new Z80();
-    this._cpu.connectMemoryBus(membus);
-    this._cpu.connectIOBus(iobus);
-    return this._cpu;
-  }
-
   getPC() { return this._cpu.getPC(); }
   getSP() { return this._cpu.getSP(); }
   isStable() { return true; }
 
-  // TODO: refactor other parts into here
-  runCPU(cpu, cycles:number) : number {
-    this._cpu = cpu; // TODO?
-    this.waitCycles = 0; // TODO: needs to spill over betwenn calls
-    if (this.wasBreakpointHit())
-      return 0;
-    var debugCond = this.getDebugCallback();
-    var n = 0;
-    this.waitCycles += cycles;
-    while (this.waitCycles > 0) {
-      if (debugCond && debugCond()) {
-        debugCond = null;
-        break;
-      }
-      var cyc = cpu.advanceInsn();
-      n += cyc;
-      this.waitCycles -= cyc;
-    }
-    return n;
-  }
-
   getToolForFilename = getToolForFilename_z80;
 
   getDefaultExtension() { return ".c"; };
-
-  // TODO: Z80 opcode metadata
-  //this.getOpcodeMetadata = function() { }
 
   getDebugCategories() {
     return ['CPU','Stack'];
@@ -512,6 +493,7 @@ export abstract class BaseZ80Platform extends BaseDebugPlatform {
       }
     }
   }
+
   disassemble(pc:number, read:(addr:number)=>number) : DisasmLine {
     return disassembleZ80(pc, read(pc), read(pc+1), read(pc+2), read(pc+3));
   }
@@ -528,20 +510,18 @@ export function getToolForFilename_z80(fn:string) : string {
   return "zmac";
 }
 
-
-//TODO: how to get stack_end?
 export function dumpStackToString(platform:Platform, mem:Uint8Array|number[], start:number, end:number, sp:number, jsrop:number) : string {
   var s = "";
   var nraw = 0;
-  //s = dumpRAM(mem.slice(start,start+end+1), start, end-start+1);
+
   function read(addr) {
     if (addr < mem.length) return mem[addr];
     else return platform.readAddress(addr);
   }
+
   while (sp < end) {
     sp++;
     // see if there's a JSR on the stack here
-    // TODO: make work with roms and memory maps
     var addr = read(sp) + read(sp+1)*256;
     var jsrofs = jsrop==0x20 ? -2 : -3; // 6502 vs Z80
     var opcode = read(addr + jsrofs); // might be out of bounds
@@ -560,7 +540,6 @@ export function dumpStackToString(platform:Platform, mem:Uint8Array|number[], st
   return s+"\n";
 }
 
-// TODO: slow, funky, uses global
 export function lookupSymbol(platform:Platform, addr:number, extra:boolean) {
   var start = addr;
   var addr2symbol = platform.debugSymbols && platform.debugSymbols.addr2symbol;
@@ -592,10 +571,6 @@ export function hasAudio(arg:any): arg is SampledAudioSource {
 
 export function hasKeyInput(arg:any): arg is AcceptsKeyInput {
   return typeof arg.setKeyInput === 'function';
-}
-
-export function hasJoyInput(arg:any): arg is AcceptsJoyInput {
-  return typeof arg.setJoyInput === 'function';
 }
 
 export function hasPaddleInput(arg:any): arg is AcceptsPaddleInput {
@@ -681,7 +656,6 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
             aspect: vp.aspect});
       this.video.create();
       m.connectVideo(this.video.getFrameData());
-      // TODO: support keyboard w/o video?
       if (hasKeyInput(m)) {
         this.video.setKeyboardEvents(m.setKeyInput.bind(m));
         this.poller = new ControllerPoller(m.setKeyInput.bind(m));
@@ -741,7 +715,6 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
       this.machine.setPaddleInput(0, this.video.paddle_x);
       this.machine.setPaddleInput(1, this.video.paddle_y);
     }
-    // TODO: put into interface
     if (this.machine['pollControls']) {
       this.machine['pollControls']();
     }
@@ -783,7 +756,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
     }
   }
 
-  // so probe views stick around TODO: must be a better way?
+  // so probe views stick around
   runToVsync() {
     if (this.probeRecorder) {
       this.probeRecorder.clear();
@@ -792,7 +765,6 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
     super.runToVsync();
   }
 
-  // TODO: reset target clock counter
   getRasterScanline() {
     return isRaster(this.machine) && this.machine.getRasterY();
   }
@@ -810,11 +782,8 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
   }
 }
 
-// TODO: move debug info into CPU?
-
 export abstract class BaseZ80MachinePlatform<T extends Machine> extends BaseMachinePlatform<T> {
 
-  //getOpcodeMetadata = getOpcodeMetadata_z80;
   getToolForFilename = getToolForFilename_z80;
 
   getDebugCategories() {
@@ -844,12 +813,9 @@ export abstract class BaseZ80MachinePlatform<T extends Machine> extends BaseMach
   }
 }
 
-///
-
 class SerialIOVisualizer {
 
   textarea : HTMLTextAreaElement;
-  //vlist: VirtualTextScroller;
   device: HasSerialIO;
   lastOutCount = -1;
   lastInCount = -1;
@@ -861,12 +827,6 @@ class SerialIOVisualizer {
     this.textarea.classList.add('transcript-style-2');
     this.textarea.style.display = 'none';
     parentElement.appendChild(this.textarea);
-    /*
-    this.vlist = new VirtualTextScroller(parentElement);
-    this.vlist.create(parentElement, 1024, this.getMemoryLineAt.bind(this));
-    this.vlist.maindiv.style.height = '8em';
-    this.vlist.maindiv.style.overflow = 'clip';
-    */
   }
 
   reset() {
@@ -986,14 +946,12 @@ export class ZX_WASMMachine implements Machine {
     this.audioarr = new Float32Array(this.exports.memory.buffer, this.exports.machine_get_sample_buffer(), sampbufsize);
     // create ROM buffer
     this.romarr = new Uint8Array(this.exports.memory.buffer, this.romptr, this.maxROMSize);
-    // enable c64 joystick map to arrow keys (TODO)
-    //this.exports.c64_set_joystick_type(this.sys, 1);
     console.log('machine_init', this.sys, statesize, ctrlstatesize, cpustatesize, sampbufsize);
   }
 
   async loadWASM() {
     await this.fetchWASM();
-    this.exports.memory.grow(96); // TODO: need more when probing?
+    this.exports.memory.grow(96);
     await this.fetchBIOS();
     await this.initWASM();
   }
@@ -1015,19 +973,12 @@ export class ZX_WASMMachine implements Machine {
     this.romarr.set(rom);
     this.romlen = rom.length;
     console.log('load rom', rom.length, 'bytes');
-    this.reset(); // TODO?
+    this.reset();
   }
 
-  // TODO: can't load after machine_init
   loadBIOS(srcArray: Uint8Array) {
     this.biosarr.set(srcArray);
   }
-
-  /* TODO: we don't need this because c64_exec does this?
-  pollControls() {
-    this.exports.machine_start_frame(this.sys);
-  }
-  */
 
   read(address: number) : number {
     return this.exports.machine_mem_read(this.sys, address & 0xffff);
@@ -1089,7 +1040,6 @@ export class ZX_WASMMachine implements Machine {
     }
   }
 
-  // TODO: tick might advance 1 instruction
   advanceFrameClock(trap, cpf:number) : number {
     var i : number;
     if (trap) {
@@ -1112,9 +1062,8 @@ export class ZX_WASMMachine implements Machine {
     if (this.probe && !(this.probe instanceof NullProbe)) {
       var datalen = this.exports.machine_get_probe_buffer_size();
       var dataaddr = this.exports.machine_get_probe_buffer_address();
-      // TODO: more efficient way to put into probe
       var databuf = new Uint32Array(this.exports.memory.buffer, dataaddr, datalen);
-      this.probe.logNewFrame(); // TODO: machine should do this
+      this.probe.logNewFrame();
       this.probe.addLogBuffer(databuf);
     }
   }
@@ -1136,20 +1085,11 @@ export class ZX_WASMMachine implements Machine {
     this.exports.machine_reset(this.sys);
 
     // advance bios
-    this.exports.machine_exec(this.sys, 500000); // TODO?
+    this.exports.machine_exec(this.sys, 500000);
 
     // load rom (Z80 header: https://worldofspectrum.org/faq/reference/z80format.htm)
     if (this.romptr && this.romlen) {
-
-      // TODO
       this.exports.machine_load_rom(this.sys, this.romptr, this.romlen);
-
-      /*
-      var romstart = 0x5ccb;
-      for (var i=0; i<this.romlen; i++) {
-        this.exports.machine_mem_write(this.sys, romstart+i, this.romarr[i]);
-      }
-      */
     }
 
     // clear keyboard
@@ -1159,25 +1099,24 @@ export class ZX_WASMMachine implements Machine {
   }
 
   advanceFrame(trap: TrapCondition) : number {
-    //var scanline = this.exports.machine_get_raster_line(this.sys);
     var probing = this.probe != null;
     if (probing) this.exports.machine_reset_probe_buffer();
-    var clocks = this.advanceFrameClock(trap, Math.floor(1000000 / 50)); // TODO: use ticks, not msec
+    var clocks = this.advanceFrameClock(trap, Math.floor(1000000 / 50));
     if (probing) this.copyProbeData();
     return clocks;
   }
 
   /*
-    z80_tick_t tick_cb; // 0
-    uint64_t bc_de_hl_fa; // 8
-    uint64_t bc_de_hl_fa_; // 16
-    uint64_t wz_ix_iy_sp; // 24
-    uint64_t im_ir_pc_bits; // 32
-    uint64_t pins;          // 48
-    void* user_data;
-    z80_trap_t trap_cb;
-    void* trap_user_data;
-    int trap_id;
+  z80_tick_t tick_cb; // 0
+  uint64_t bc_de_hl_fa; // 8
+  uint64_t bc_de_hl_fa_; // 16
+  uint64_t wz_ix_iy_sp; // 24
+  uint64_t im_ir_pc_bits; // 32
+  uint64_t pins;          // 48
+  void* user_data;
+  z80_trap_t trap_cb;
+  void* trap_user_data;
+  int trap_id;
   */
 
   getCPUState() {
@@ -1228,12 +1167,9 @@ export class ZX_WASMMachine implements Machine {
 
   setKeyInput(key: number, code: number, flags: number): void {
 
-    // TODO: handle shifted keys
     if (key == 16 || key == 17 || key == 18 || key == 224) return; // meta keys
 
     //console.log(key, code, flags);
-    //if (flags & KeyFlags.Shift) { key += 64; }
-    // convert to c64 (TODO: zx)
 
     var mask = 0;
     var mask2 = 0;

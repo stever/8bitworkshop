@@ -6,14 +6,6 @@ import { VirtualList } from "./vlist"
 
 var _random_state = 1;
 
-export function noise() {
-	let x = _random_state;
-	x ^= x << 13;
-	x ^= x >> 17;
-	x ^= x << 5;
-	return (_random_state = x) & 0xff;
-}
-
 export function getNoiseSeed() {
   return _random_state;
 }
@@ -243,14 +235,11 @@ export class AnimationTimer {
   }
 }
 
-// TODO: move to util?
-
 export function dumpRAM(ram:ArrayLike<number>, ramofs:number, ramlen:number) : string {
   var s = "";
   var bpel = ram['BYTES_PER_ELEMENT'] || 1;
   var perline = Math.ceil(16 / bpel);
   var isFloat = ram instanceof Float32Array || ram instanceof Float64Array;
-  // TODO: show scrollable RAM for other platforms
   for (var ofs=0; ofs<ramlen; ofs+=perline) {
     s += '$' + hex(ofs+ramofs) + ':';
     for (var i=0; i<perline; i++) {
@@ -460,7 +449,6 @@ export class ControllerPoller {
   }
   handleStateChange(gpi:number, k:number) {
     var axis = k - this.AXIS0;
-    // TODO: this is slow
     for (var def of DEFAULT_CONTROLLER_KEYS) {
       // is this a gamepad entry? same player #?
       if (def && def.plyr == gpi) {
@@ -499,35 +487,6 @@ export function padBytes(data:Uint8Array|number[], len:number, padstart?:boolean
   return r.mem;
 }
 
-type AddressReadWriteFn = ((a:number) => number) | ((a:number,v:number) => void);
-type AddressDecoderEntry = [number, number, number, AddressReadWriteFn];
-type AddressDecoderOptions = {gmask?:number};
-
-// TODO: better performance, check values
-export function AddressDecoder(table : AddressDecoderEntry[], options?:AddressDecoderOptions) {
-  var self = this;
-  function makeFunction() {
-    var s = "";
-    if (options && options.gmask) {
-      s += "a&=" + options.gmask + ";";
-    }
-    for (var i=0; i<table.length; i++) {
-      var entry = table[i];
-      var start = entry[0]|0;
-      var end = entry[1]|0;
-      var mask = entry[2]|0;
-      var func = entry[3];
-      self['__fn'+i] = func;
-      s += "if (a>=" + start + " && a<="+end + "){";
-      if (mask) s += "a&="+mask+";";
-      s += "return this.__fn"+i+"(a,v)&0xff;}\n";
-    }
-    s += "return 0;"; // TODO: noise()?
-    return new Function('a', 'v', s);
-  }
-  return makeFunction().bind(self);
-}
-
 // https://stackoverflow.com/questions/17130395/real-mouse-position-in-canvas
 export function getMousePos(canvas : HTMLCanvasElement, evt) : {x:number,y:number} {
   var rect = canvas.getBoundingClientRect(), // abs. size of element
@@ -539,8 +498,6 @@ export function getMousePos(canvas : HTMLCanvasElement, evt) : {x:number,y:numbe
     y: (evt.clientY - rect.top) * scaleY     // been adjusted to be relative to element
   }
 }
-
-///
 
 // TODO: https://stackoverflow.com/questions/10463518/converting-em-to-px-in-javascript-and-getting-default-font-size
 export function getVisibleEditorLineHeight() : number{
@@ -582,7 +539,6 @@ export class VirtualTextScroller {
     $(this.maindiv).append(this.memorylist.container);
   }
 
-  // TODO: refactor with elsewhere
   refresh() {
     if (this.memorylist) {
       $(this.maindiv).find('[data-index]').each( (i,e) => {
@@ -604,4 +560,3 @@ export class VirtualTextScroller {
     }
   }
 }
-

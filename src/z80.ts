@@ -1,5 +1,21 @@
-import { CodeListingMap } from "./workertypes";
-import { anyTargetChanged, BuildStep, BuildStepResult, emglobal, EmscriptenModule, execMain, gatherFiles, loadNative, makeErrorMatcher, moduleInstFn, parseListing, populateFiles, print_fn, putWorkFile, staleFiles } from "./workermain"
+import {CodeListingMap} from "./workertypes";
+import {
+  anyTargetChanged,
+  BuildStep,
+  BuildStepResult,
+  emglobal,
+  EmscriptenModule,
+  execMain,
+  gatherFiles,
+  loadNative,
+  makeErrorMatcher,
+  moduleInstFn,
+  parseListing,
+  populateFiles,
+  print_fn,
+  putWorkFile,
+  staleFiles
+} from "./workermain"
 
 export function assembleZMAC(step: BuildStep): BuildStepResult {
   loadNative("zmac");
