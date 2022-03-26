@@ -343,7 +343,6 @@ function _downloadROMImage(e) {
 
 function populateExamples(sel) {
   var files = {};
-  sel.append($("<option />").text("--------- Examples ---------").attr('disabled','true'));
   for (var i=0; i<PRESETS.length; i++) {
     var preset = PRESETS[i];
     var name = preset.chapter ? (preset.chapter + ". " + preset.name) : preset.name;
