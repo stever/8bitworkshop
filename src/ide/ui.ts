@@ -29,7 +29,6 @@ interface UIQueryString {
   platform? : string;
   options?: string;
   file? : string;
-  electron? : string;
   importURL? : string;
   localfs? : string;
   newfile? : string;
@@ -44,7 +43,6 @@ interface UIQueryString {
 
 export var qs : UIQueryString = decodeQueryString(window.location.search||'?') as UIQueryString;
 
-const isElectron = parseBool(qs.electron);
 const isEmbed = parseBool(qs.embed);
 
 /// GLOBALS (TODO: remove)
@@ -182,10 +180,7 @@ function getCurrentPresetTitle() : string {
 
 async function newFilesystem() {
   var basefs : ProjectFilesystem = new WebPresetsFileSystem(platform_id);
-  if (isElectron) {
-    console.log('using electron with local filesystem', alternateLocalFilesystem);
-    return new OverlayFilesystem(basefs, alternateLocalFilesystem);
-  } else if (qs.localfs != null) {
+  if (qs.localfs != null) {
     return new OverlayFilesystem(basefs, await getLocalFilesystem(qs.localfs));
   } else {
     return new OverlayFilesystem(basefs, new LocalForageFilesystem(store));
@@ -979,7 +974,6 @@ async function setCompileOutput(data: WorkerResult) {
         current_output = rom;
         if (!userPaused) _resume();
         measureBuildTime();
-        writeOutputROMFile();
       } catch (e) {
         console.log(e);
         toolbar.addClass("has-errors");
@@ -1732,20 +1726,6 @@ async function showWelcomeMessage() {
         content: "Get some books that explain how to program all of this stuff, and write some games!"
       });
     }
-    if (isElectron) {
-      steps.unshift({
-        element: "#dropdownMenuButton",
-        placement: 'right',
-        title: "Developer Analytics",
-        content: 'BTW, we send stack traces to sentry.io when exceptions are thrown. Hope that\'s ok.'
-      });
-      steps.unshift({
-        element: "#dropdownMenuButton",
-        placement: 'right',
-        title: "Welcome to 8bitworkshop Desktop!",
-        content: 'The directory "~/8bitworkshop" contains all of your file edits and built ROM images. You can create new projects under the platform directories (e.g. "c64/myproject")'
-      });
-    }
     var tour = new Tour({
       autoscroll:false,
       //storage:false,
@@ -2107,20 +2087,6 @@ function redirectToHTTPS() {
 // redirect to HTTPS after script loads?
 redirectToHTTPS();
 
-//// ELECTRON (and other external) STUFF
-
-export function setTestInput(path: string, data: FileData) {
-  platform.writeFile(path, data);
-}
-
-export function getTestOutput(path: string) : FileData {
-  return platform.readFile(path);
-}
-
-export function getSaveState() {
-  return platform.saveState();
-}
-
 export function emulationHalted(err: EmuHalt) {
   var msg = (err && err.message) || msg;
   showExceptionAsError(err, msg);
@@ -2136,14 +2102,6 @@ export async function reloadWorkspaceFile(path: string) {
   if (oldval != null) {
     projectWindows.updateFile(path, await alternateLocalFilesystem.getFileData(path));
     console.log('updating file', path);
-  }
-}
-function writeOutputROMFile() {
-  if (isElectron && current_output instanceof Uint8Array) {
-    var prefix = getFilenamePrefix(getCurrentMainFilename());
-    var suffix = (platform.getROMExtension && platform.getROMExtension(current_output))
-      || "-" + getBasePlatform(platform_id) + ".bin";
-    alternateLocalFilesystem.setFileData(`bin/${prefix}${suffix}`, current_output);
   }
 }
 export function highlightSearch(query: string) { // TODO: filename?
