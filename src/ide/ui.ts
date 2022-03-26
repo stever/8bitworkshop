@@ -27,7 +27,6 @@ import {
   getBasePlatform,
   getRootBasePlatform,
   hex,
-  loadScript,
   decodeQueryString
 } from "../common/util";
 import {StateRecorderImpl} from "../common/recorder";
@@ -50,7 +49,6 @@ import {saveAs} from "file-saver";
 import {ZXWASMPlatform} from "../machine/zx";
 
 // external libs
-declare var GIF;
 declare var $ : JQueryStatic; // use browser jquery
 
 // query string
@@ -339,17 +337,6 @@ function getCurrentMainFilename() : string {
 
 function getCurrentEditorFilename() : string {
   return getFilenameForPath(projectWindows.getActiveID());
-}
-
-function getCookie(name) : string {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-    }
-    return null;
 }
 
 function _downloadROMImage(e) {
@@ -873,61 +860,6 @@ function setWaitProgress(prog : number) {
   $("#pleaseWaitProgressBar").css('width', (prog*100)+'%').show();
 }
 
-var recordingVideo = false;
-function _recordVideo() {
-  if (recordingVideo) return;
- loadScript("dist/gif.js").then( () => {
-  var canvas = $("#emulator").find("canvas")[0] as HTMLElement;
-  if (!canvas) {
-    alertError("Could not find canvas element to record video!");
-    return;
-  }
-  var rotate = 0;
-  if (canvas.style && canvas.style.transform) {
-    if (canvas.style.transform.indexOf("rotate(-90deg)") >= 0)
-      rotate = -1;
-    else if (canvas.style.transform.indexOf("rotate(90deg)") >= 0)
-      rotate = 1;
-  }
-  var gif = new GIF({
-    workerScript: 'dist/gif.worker.js',
-    workers: 4,
-    quality: 10,
-    rotate: rotate
-  });
-  var img = $('#videoPreviewImage');
-  gif.on('progress', (prog) => {
-    setWaitProgress(prog);
-  });
-  gif.on('finished', (blob) => {
-    img.attr('src', URL.createObjectURL(blob));
-    setWaitDialog(false);
-    _resume();
-    $("#videoPreviewModal").modal('show');
-  });
-  var intervalMsec = 20;
-  var maxFrames = 300;
-  var nframes = 0;
-  console.log("Recording video", canvas);
-  $("#emulator").css('backgroundColor', '#cc3333');
-  var f = () => {
-    if (nframes++ > maxFrames) {
-      console.log("Rendering video");
-      $("#emulator").css('backgroundColor', 'inherit');
-      setWaitDialog(true);
-      _pause();
-      gif.render();
-      recordingVideo = false;
-    } else {
-      gif.addFrame(canvas, {delay: intervalMsec, copy: true});
-      setTimeout(f, intervalMsec);
-      recordingVideo = true;
-    }
-  };
-  f();
- });
-}
-
 export function setFrameRateUI(fps:number) {
   platform.setFrameRate(fps);
   if (fps > 0.01)
@@ -1054,7 +986,6 @@ function setupDebugControls() {
   $("#item_download_rom").click(_downloadROMImage);
   $("#item_download_file").click(_downloadSourceFile);
   $("#item_download_zip").click(_downloadProjectZipFile);
-  $("#item_record_video").click(_recordVideo);
 
   if (platform.setFrameRate && platform.getFrameRate) {
     $("#dbg_slower").click(_slowerFrameRate);
