@@ -1,6 +1,6 @@
 
-import { FileDataCache } from "../../util";
-import { FileData, WorkingStore } from "../../workertypes";
+import { FileDataCache } from "../util";
+import { FileData, WorkingStore } from "../workertypes";
 
 // remote resource cache
 var $$cache = new FileDataCache(); // TODO: better cache?

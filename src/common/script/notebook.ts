@@ -1,13 +1,13 @@
 import { Component, h, createRef, VNode } from 'preact';
-import { PROP_CONSTRUCTOR_NAME } from "../env";
-import { findIntegerFactors, hex, isArray, rgb2bgr } from "../../util";
-import { dumpRAM } from "../../emu";
-import { current_project } from "../../../ide/ui";
+import { PROP_CONSTRUCTOR_NAME } from "./env";
+import { findIntegerFactors, hex, isArray, rgb2bgr } from "../util";
+import { dumpRAM } from "../emu";
+import { current_project } from "../../ide/ui";
 
 // TODO: can't call methods from this end (e.g. Palette, Bitmap)
-import * as bitmap from "../lib/bitmap";
-import * as color from "../lib/color";
-import * as scriptui from "../lib/scriptui";
+import * as bitmap from "./bitmap";
+import * as color from "./color";
+import * as scriptui from "./scriptui";
 
 const MAX_STRING_LEN = 100;
 const DEFAULT_ASPECT = 1;

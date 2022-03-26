@@ -1,11 +1,11 @@
 import { WorkerError } from "../workertypes";
 import ErrorStackParser = require("error-stack-parser");
 import yufka from 'yufka';
-import * as bitmap from "./lib/bitmap";
-import * as io from "./lib/io";
-import * as output from "./lib/output";
-import * as color from "./lib/color";
-import * as scriptui from "./lib/scriptui";
+import * as bitmap from "./bitmap";
+import * as io from "./io";
+import * as output from "./output";
+import * as color from "./color";
+import * as scriptui from "./scriptui";
 
 export const PROP_CONSTRUCTOR_NAME = "$$consname";
 

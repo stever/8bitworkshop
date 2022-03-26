@@ -1,6 +1,6 @@
 
 import _chroma from 'chroma-js'
-import { isArray, rgb2bgr } from '../../util';
+import { isArray, rgb2bgr } from '../util';
 
 export type Chroma = { _rgb: [number,number,number,number] };
 

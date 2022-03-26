@@ -4,7 +4,7 @@ import * as fastpng from 'fast-png';
 import { Palette } from './color';
 import * as io from './io'
 import * as color from './color'
-import { coerceToArray, findIntegerFactors, RGBA } from '../../util';
+import { coerceToArray, findIntegerFactors, RGBA } from '../util';
 
 export type PixelMapFunction = (x: number, y: number) => number;
 
@@ -49,7 +49,7 @@ export abstract class AbstractBitmap<T> {
         dest.assign((x, y) => this.get(x + srcx, y + srcy));
         return dest;
     }
-    blit(src: BitmapType, 
+    blit(src: BitmapType,
         destx: number, desty: number,
         srcx: number, srcy: number)
     {
@@ -154,7 +154,7 @@ export class IndexedBitmap extends MappedBitmap {
     ) {
         super(width, height, getbpp(bppOrPalette), initial);
         this.palette = bppOrPalette instanceof Palette
-            ? bppOrPalette 
+            ? bppOrPalette
             : color.palette.colors(1 << this.bpp);
     }
     getrgba(x: number, y: number): number {
@@ -432,7 +432,7 @@ export type PixelEditorImageFormat = {
     }
     return y;
   }
-  
+
   export function convertWordsToImages(words:ArrayLike<number>, fmt:PixelEditorImageFormat) : Uint8Array[] {
     var width = fmt.w;
     var height = fmt.h;
@@ -471,4 +471,3 @@ export type PixelEditorImageFormat = {
     }
     return images;
   }
-  
