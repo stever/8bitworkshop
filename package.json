@@ -21,7 +21,7 @@
     "build:tsc": "tsc --build tsconfig.json",
     "build:es": "run-s build:es:worker build:es:ui",
     "build:es:worker": "esbuild src/worker/main.ts --bundle --sourcemap --target=es2017 --outfile=./public/dist/worker/bundle.js",
-    "build:es:ui": "esbuild src/ui.ts --splitting --format=esm --bundle --minify --sourcemap --target=es2017 --outdir=./public/dist/ --external:path --external:fs",
+    "build:es:ui": "esbuild src/main.ts --splitting --format=esm --bundle --minify --sourcemap --target=es2017 --outdir=./public/dist/ --external:path --external:fs",
     "watch:tsc": "tsc -w --preserveWatchOutput",
     "watch:es:worker": "npm run esbuild-worker -- --watch",
     "watch:es:ui": "npm run esbuild-ui -- --watch"

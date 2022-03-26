@@ -1293,8 +1293,7 @@ function setupSplits() {
     });
 }
 
-// start
-async function startUI() {
+export async function start() {
     setupSplits();
 
     // create store
@@ -1331,5 +1330,3 @@ function emulationHalted(err: EmuHalt) {
         showDebugInfo(platform.saveState());
     }
 }
-
-startUI();
