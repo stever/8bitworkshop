@@ -12,9 +12,6 @@ function ignoreSymbol(sym:string) {
   || sym.startsWith('l__') || sym.startsWith('s__') || sym.startsWith('.__.');
 }
 
-// TODO: make it use debug state
-// TODO: make it safe (load/restore state?)
-// TODO: refactor w/ VirtualTextLine
 export class MemoryView implements ProjectView {
   memorylist;
   dumplines;
@@ -191,8 +188,6 @@ export class VRAMMemoryView extends MemoryView {
   }
 }
 
-///
-
 export class BinaryFileView implements ProjectView {
   vlist : VirtualTextScroller;
   maindiv : HTMLElement;
@@ -232,8 +227,6 @@ export class BinaryFileView implements ProjectView {
 
   getPath() { return this.path; }
 }
-
-///
 
 export class MemoryMapView implements ProjectView {
   maindiv : JQuery;
@@ -295,8 +288,6 @@ export class MemoryMapView implements ProjectView {
     }
   }
 }
-
-// TODO: clear buffer when scrubbing
 
 export abstract class ProbeViewBaseBase {
   probe : ProbeRecorder;
@@ -706,9 +697,7 @@ export class ProbeSymbolView extends ProbeViewBaseBase {
   dumplines;
   cumulativeData = true;
 
-  // TODO: auto resize
   createDiv(parent : HTMLElement) {
-    // TODO: what if symbol list changes?
     if (platform.debugSymbols && platform.debugSymbols.symbolmap) {
       this.keys = Array.from(Object.keys(platform.debugSymbols.symbolmap).filter(sym => !ignoreSymbol(sym)));
     } else {
