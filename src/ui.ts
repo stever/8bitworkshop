@@ -37,7 +37,6 @@ import {
   MemoryView,
   ProbeLogView,
   ProbeSymbolView,
-  RasterPCHeatMapView,
   ScanlineIOView,
   VRAMMemoryView
 } from "./debugviews";
@@ -242,10 +241,6 @@ function refreshWindowList() {
   if (platform.startProbing) {
     addWindowItem("#memheatmap", "Memory Probe", () => {
       return new AddressHeatMapView();
-    });
-
-    addWindowItem("#crtheatmap", "CRT Probe", () => {
-      return new RasterPCHeatMapView();
     });
 
     addWindowItem("#probelog", "Probe Log", () => {

@@ -580,18 +580,6 @@ export class AddressHeatMapView extends ProbeBitmapViewBase implements ProjectVi
   }
 }
 
-export class RasterPCHeatMapView extends ProbeBitmapViewBase implements ProjectView {
-
-  drawEvent(op, addr, col, row) {
-    var iofs = col + row * this.canvas.width;
-    var rgb = this.getOpRGB(op);
-    if (!rgb) return;
-    var data = this.datau32[iofs];
-    data = data | rgb | 0xff000000;
-    this.datau32[iofs] = data;
-  }
-}
-
 export class ProbeLogView extends ProbeViewBaseBase {
   vlist : VirtualTextScroller;
   maindiv : HTMLElement;
