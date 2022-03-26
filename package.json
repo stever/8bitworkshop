@@ -5,19 +5,20 @@
   "description": "8bitworkshop.com retro programming IDE",
   "license": "GPL-3.0",
   "scripts": {
-    "build": "npm run clean && npm run cp && npm run build:tsc && npm run build:es && npm run clean:build",
-    "clean": "npm run clean:build && npm run clean:dist",
+    "build": "run-s clean cp build:tsc build:es clean:build",
+    "clean": "run-s clean:build clean:dist",
     "clean:build": "del-cli build",
     "clean:dist": "del-cli public/dist",
-    "cp": "npm run cp:jquery && npm run cp:bootstrap && npm run cp:bootbox && npm run cp:codemirror",
+    "cp": "run-s cp:jquery cp:bootstrap cp:bootbox cp:codemirror",
     "cp:jquery": "copyfiles -u 3 node_modules/jquery/dist/jquery.min.js ./public/dist/",
     "cp:bootstrap": "copyfiles -u 3 \"node_modules/bootstrap/dist/**/*\" ./public/dist/bootstrap/",
     "cp:bootbox": "copyfiles -u 3 node_modules/bootbox/dist/bootbox.all.min.js ./public/dist/",
-    "cp:codemirror": "copyfiles -u 3 \"node_modules/codemirror/lib/*\" ./public/dist/codemirror/ && npm run cp:codemirror:modes && npm run cp:codemirror:addons",
+    "cp:codemirror": "run-s cp:codemirror:lib cp:codemirror:modes cp:codemirror:addons",
+    "cp:codemirror:lib": "copyfiles -u 3 \"node_modules/codemirror/lib/*\" ./public/dist/codemirror/",
     "cp:codemirror:modes": "copyfiles -u 3 \"node_modules/codemirror/mode/**/*\" ./public/dist/codemirror/mode/",
     "cp:codemirror:addons": "copyfiles -u 3 \"node_modules/codemirror/addon/**/*\" ./public/dist/codemirror/addon/",
     "build:tsc": "tsc --build tsconfig.json",
-    "build:es": "npm run build:es:worker && npm run build:es:ui",
+    "build:es": "run-s build:es:worker build:es:ui",
     "build:es:worker": "esbuild src/workermain.ts --bundle --sourcemap --target=es2017 --outfile=./public/dist/worker/bundle.js",
     "build:es:ui": "esbuild src/ui.ts --splitting --format=esm --bundle --minify --sourcemap --target=es2017 --outdir=./public/dist/ --external:path --external:fs",
     "watch:tsc": "tsc -w --preserveWatchOutput",
@@ -50,6 +51,7 @@
     "copyfiles": "^2.4.1",
     "del-cli": "^4.0.1",
     "esbuild": "^0.12.16",
+    "npm-run-all": "^4.1.5",
     "typescript": "^4.4.4"
   }
 }
