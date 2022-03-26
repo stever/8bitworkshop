@@ -1,7 +1,7 @@
 
 import { isMobileDevice, ProjectView } from "./baseviews";
 import { SourceFile, WorkerError, SourceLocation } from "../../common/workertypes";
-import { platform, current_project, lastDebugState, runToPC, qs } from "../ui";
+import { platform, current_project, lastDebugState, runToPC } from "../ui";
 import { hex, rpad } from "../../common/util";
 
 declare var CodeMirror;

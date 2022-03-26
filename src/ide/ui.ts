@@ -56,7 +56,7 @@ interface UIQueryString {
   file? : string;
 }
 
-export var qs : UIQueryString = decodeQueryString(window.location.search||'?') as UIQueryString;
+var qs : UIQueryString = decodeQueryString(window.location.search||'?') as UIQueryString;
 
 var PRESETS : Preset[];
 
@@ -815,7 +815,7 @@ function setWaitProgress(prog : number) {
   $("#pleaseWaitProgressBar").css('width', (prog*100)+'%').show();
 }
 
-export function setFrameRateUI(fps:number) {
+function setFrameRateUI(fps:number) {
   platform.setFrameRate(fps);
   if (fps > 0.01)
     $("#fps_label").text(fps.toFixed(2));
@@ -1035,8 +1035,7 @@ function globalErrorHandler(msgevent) {
   }
 }
 
-export function haltEmulation(err?: EmuHalt) {
-  console.log("haltEmulation");
+function haltEmulation(err?: EmuHalt) {
   _pause();
   emulationHalted(err);
 }
@@ -1127,7 +1126,7 @@ function revealTopBar() {
   setTimeout(() => { $("#controls_dynamic").css('visibility','inherit'); }, 250);
 }
 
-export function setupSplits() {
+function setupSplits() {
   Split(['#sidebar', '#workspace', '#emulator'], {
     sizes: [12, 44, 44],
     minSize: [0, 250, 250],
@@ -1141,7 +1140,7 @@ export function setupSplits() {
 }
 
 // start
-export async function startUI() {
+async function startUI() {
   setupSplits();
 
   // create store
@@ -1168,25 +1167,11 @@ async function loadAndStartPlatform() {
   }
 }
 
-export function emulationHalted(err: EmuHalt) {
+function emulationHalted(err: EmuHalt) {
   var msg = (err && err.message) || msg;
   showExceptionAsError(err, msg);
   projectWindows.refresh(false); // don't mess with cursor
   if (platform.saveState) showDebugInfo(platform.saveState());
 }
 
-// get remote file from local fs
-declare var alternateLocalFilesystem : ProjectFilesystem;
-
-export async function reloadWorkspaceFile(path: string) {
-  var oldval = current_project.filedata[path];
-  if (oldval != null) {
-    projectWindows.updateFile(path, await alternateLocalFilesystem.getFileData(path));
-    console.log('updating file', path);
-  }
-}
-
-/// start UI if in browser (not node)
-if (typeof process === 'undefined') {
-  startUI();
-}
+startUI();
