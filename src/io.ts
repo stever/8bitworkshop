@@ -13,10 +13,6 @@ var $$data: {} = {};
 // module cache
 var $$modules: Map<string,{}> = new Map();
 
-export function $$getData() {
-    return $$data;
-}
-
 // object that can load state from backing store
 export interface Loadable {
 

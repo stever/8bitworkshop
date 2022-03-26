@@ -9,10 +9,6 @@ export interface Bus {
     readConst?(a:number) : number;
 }
 
-export interface ClockBased {
-    advanceClock() : void;
-}
-
 export interface InstructionBased {
     advanceInsn() : number;
 }
@@ -41,8 +37,6 @@ export interface VideoParams {
     videoFrequency? : number; // default = 60
     aspect? : number;
 }
-
-// TODO: frame buffer optimization (apple2, etc)
 
 export interface SampledAudioParams {
     sampleRate : number;
@@ -105,7 +99,6 @@ export interface AcceptsPaddleInput {
     setPaddleInput(controller:number, value:number) : void;
 }
 
-// TODO: interface not yet used (setKeyInput() handles joystick)
 export interface AcceptsJoyInput {
   setJoyInput(joy:number, bitmask:number) : void;
 }
@@ -118,7 +111,6 @@ export interface SerialEvent {
   nbits: number;
 }
 
-// TODO: all these needed?
 export interface SerialIOInterface {
   // from machine to platform
   clearToSend() : boolean;
@@ -129,7 +121,6 @@ export interface SerialIOInterface {
   // implement these too
   reset() : void;
   advance(clocks: number) : void;
-//  refresh() : void;
 }
 
 export interface HasSerialIO {

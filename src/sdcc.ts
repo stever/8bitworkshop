@@ -42,6 +42,7 @@ function parseIHX(ihx, rom_start, rom_size, errors) {
             var address = (arr[1] << 8) + arr[2] - rom_start;
             var rectype = arr[3];
             //console.log(rectype,address.toString(16),count,arr);
+
             if (rectype == 0) {
                 for (var i = 0; i < count; i++) {
                     var b = arr[4 + i];
@@ -61,11 +62,15 @@ function parseIHX(ihx, rom_start, rom_size, errors) {
 
 export function assembleSDASZ80(step: BuildStep): BuildStepResult {
     loadNative("sdasz80");
+
     var objout, lstout, symout;
     var errors = [];
+
     gatherFiles(step, { mainFilePath: "main.asm" });
+
     var objpath = step.prefix + ".rel";
     var lstpath = step.prefix + ".lst";
+
     if (staleFiles(step, [objpath, lstpath])) {
         //?ASxxxx-Error-<o> in line 1 of main.asm null
         //              <o> .org in REL area or directive / mnemonic error
@@ -75,6 +80,7 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
         var match_asm_re2 = / <\w> (.+)/;
         var errline = 0;
         var errpath = step.path;
+
         var match_asm_fn = (s: string) => {
             var m = match_asm_re1.exec(s);
             if (m) {
@@ -91,6 +97,7 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
                 }
             }
         }
+
         var ASZ80: EmscriptenModule = emglobal.sdasz80({
             instantiateWasm: moduleInstFn('sdasz80'),
             noInitialRun: true,
@@ -98,17 +105,23 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
             print: match_asm_fn,
             printErr: match_asm_fn,
         });
+
         var FS = ASZ80.FS;
+
         populateFiles(step, FS);
         execMain(step, ASZ80, ['-plosgffwy', step.path]);
+
         if (errors.length) {
             return { errors: errors };
         }
+
         objout = FS.readFile(objpath, { encoding: 'utf8' });
         lstout = FS.readFile(lstpath, { encoding: 'utf8' });
+
         putWorkFile(objpath, objout);
         putWorkFile(lstpath, lstout);
     }
+
     return {
         linktool: "sdldz80",
         files: [objpath, lstpath],
@@ -118,12 +131,16 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
 
 export function linkSDLDZ80(step: BuildStep) {
     loadNative("sdldz80");
+
     var errors = [];
+
     gatherFiles(step);
+
     var binpath = "main.ihx";
+
     if (staleFiles(step, [binpath])) {
-        //?ASlink-Warning-Undefined Global '__divsint' referenced by module 'main'
         var match_aslink_re = /\?ASlink-(\w+)-(.+)/;
+
         var match_aslink_fn = (s: string) => {
             var matches = match_aslink_re.exec(s);
             if (matches) {
@@ -133,7 +150,9 @@ export function linkSDLDZ80(step: BuildStep) {
                 });
             }
         }
+
         var params = step.params;
+
         var LDZ80: EmscriptenModule = emglobal.sdldz80({
             instantiateWasm: moduleInstFn('sdldz80'),
             noInitialRun: true,
@@ -141,33 +160,44 @@ export function linkSDLDZ80(step: BuildStep) {
             print: match_aslink_fn,
             printErr: match_aslink_fn,
         });
+
         var FS = LDZ80.FS;
+
         setupFS(FS, 'sdcc');
         populateFiles(step, FS);
         populateExtraFiles(step, FS, params.extra_link_files);
+
         var args = ['-mjwxyu',
             '-i', 'main.ihx',
             '-b', '_CODE=0x' + params.code_start.toString(16),
             '-b', '_DATA=0x' + params.data_start.toString(16),
             '-k', '/share/lib/z80',
             '-l', 'z80'];
+
         if (params.extra_link_args)
             args.push.apply(args, params.extra_link_args);
+
         args.push.apply(args, step.args);
         //console.log(args);
+
         execMain(step, LDZ80, args);
+
         var hexout = FS.readFile("main.ihx", { encoding: 'utf8' });
         var noiout = FS.readFile("main.noi", { encoding: 'utf8' });
+
         putWorkFile("main.ihx", hexout);
         putWorkFile("main.noi", noiout);
+
         // return unchanged if no files changed
         if (!anyTargetChanged(step, ["main.ihx", "main.noi"]))
             return;
+
         // parse binary file
         var binout = parseIHX(hexout, params.rom_start !== undefined ? params.rom_start : params.code_start, params.rom_size, errors);
         if (errors.length) {
             return { errors: errors };
         }
+
         // parse listings
         var listings: CodeListingMap = {};
         for (var fn of step.files) {
@@ -184,6 +214,7 @@ export function linkSDLDZ80(step: BuildStep) {
                 };
             }
         }
+
         // parse symbol map
         var symbolmap = {};
         for (var s of noiout.split("\n")) {
@@ -192,6 +223,7 @@ export function linkSDLDZ80(step: BuildStep) {
                 symbolmap[toks[1]] = parseInt(toks[2], 16);
             }
         }
+
         // build segment map
         var seg_re = /^s__(\w+)$/;
         var segments = [];
@@ -211,6 +243,7 @@ export function linkSDLDZ80(step: BuildStep) {
                 }
             }
         }
+
         return {
             output: binout,
             listings: listings,
@@ -222,10 +255,10 @@ export function linkSDLDZ80(step: BuildStep) {
 }
 
 export function compileSDCC(step: BuildStep): BuildStepResult {
-
     gatherFiles(step, {
         mainFilePath: "main.c" // not used
     });
+
     var outpath = step.prefix + ".asm";
     if (staleFiles(step, [outpath])) {
         var errors = [];
@@ -239,8 +272,11 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
             printErr: msvcErrorMatcher(errors),
             //TOTAL_MEMORY:256*1024*1024,
         });
+
         var FS = SDCC.FS;
+
         populateFiles(step, FS);
+
         // load source file and preprocess
         var code = getWorkFileAsString(step.path);
         var preproc = preprocessMCPP(step, 'sdcc');
@@ -248,9 +284,11 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
             return { errors: preproc.errors };
         }
         else code = preproc.code;
+
         // pipe file to stdin
         setupStdin(FS, code);
         setupFS(FS, 'sdcc');
+
         var args = ['--vc', '--std-sdcc99', '-mz80', //'-Wall',
             '--c1mode',
             //'--debug',
@@ -270,6 +308,7 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
             //'--nojtbound',
             //'--noloopreverse',
             '-o', outpath];
+
         // if "#pragma opt_code" found do not disable optimziations
         if (!/^\s*#pragma\s+opt_code/m.exec(code)) {
             args.push.apply(args, [
@@ -278,18 +317,24 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
                 '--nolospre'
             ]);
         }
+
         if (params.extra_compile_args) {
             args.push.apply(args, params.extra_compile_args);
         }
+
         execMain(step, SDCC, args);
+
         if (errors.length /* && nwarnings < msvc_errors.length*/) {
             return { errors: errors };
         }
+
         // massage the asm output
         var asmout = FS.readFile(outpath, { encoding: 'utf8' });
         asmout = " .area _HOME\n .area _CODE\n .area _INITIALIZER\n .area _DATA\n .area _INITIALIZED\n .area _BSEG\n .area _BSS\n .area _HEAP\n" + asmout;
+
         putWorkFile(outpath, asmout);
     }
+
     return {
         nexttool: "sdasz80",
         path: outpath,

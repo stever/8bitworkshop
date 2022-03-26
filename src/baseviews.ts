@@ -27,4 +27,3 @@ export function newDiv(parent?, cls?: string) {
     if (cls) div.addClass(cls);
     return div;
 }
-

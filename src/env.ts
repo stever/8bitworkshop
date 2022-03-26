@@ -166,6 +166,7 @@ export class Environment {
                     break;
             }
         });
+
         return result.toString();
     }
 
@@ -300,13 +301,5 @@ export class Environment {
         }
 
         return errors;
-    }
-
-    commitLoadableState() {
-        for (let [key, value] of Object.entries(this.obj)) {
-            let loadable = <any>value as io.Loadable;
-            io.data.save(loadable, key);
-        }
-        return io.$$getData();
     }
 }

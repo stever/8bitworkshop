@@ -159,17 +159,17 @@ export class CodeProject {
     files.push(fn);
     // look for files in current (main file) folder
     var dir = getFolderForPath(this.mainPath);
-    if (dir.length > 0 && dir != 'local') // TODO
+    if (dir.length > 0 && dir != 'local')
       files.push(dir + '/' + fn);
   }
 
   parseIncludeDependencies(text:string):string[] {
     let files = [];
     let m;
-    if (this.platform_id.startsWith('script')) { // TODO
+    if (this.platform_id.startsWith('script')) {
       let re1 = /\b\w+[.]read\(["'](.+?)["']/gmi;
       while (m = re1.exec(text)) {
-        if (m[1] && m[1].indexOf(':/') < 0) // TODO: ignore URLs
+        if (m[1] && m[1].indexOf(':/') < 0)
           this.pushAllFiles(files, m[1]);
       }
     } else if (this.platform_id.startsWith('verilog')) {
@@ -188,7 +188,7 @@ export class CodeProject {
       while (m = re2.exec(text)) {
         this.pushAllFiles(files, m[2]+".json");
       }
-      // include $readmem[bh] (TODO)
+      // include $readmem[bh]
       let re3 = /\$readmem[bh]\("(.+?)"/gmi;
       while (m = re3.exec(text)) {
         this.pushAllFiles(files, m[1]);

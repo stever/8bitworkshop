@@ -29,6 +29,7 @@ export class InteractionRecord implements io.Loadable {
     readonly interacttarget: Interactive;
     interactid : number;
     lastevent : {} = null;
+
     constructor(
         interacttarget: Interactive,
         private $$callback: InteractCallback
@@ -36,6 +37,7 @@ export class InteractionRecord implements io.Loadable {
         this.interacttarget = interacttarget || (<any>this as Interactive);
         this.interactid = ++$$seq;
     }
+
     $$setstate(newstate: {interactid: number}) {
         this.interactid = newstate.interactid;
         this.interacttarget.$$interact = this;
@@ -49,6 +51,7 @@ export class InteractionRecord implements io.Loadable {
         }
         this.$$callback = null;
     }
+
     $$getstate() {
         this.$$callback = null;
         return {interactid: this.interactid};
@@ -63,6 +66,7 @@ export function interact(object: any, callback) : InteractionRecord {
     if (typeof object === 'object') {
         return new InteractionRecord(object, callback);
     }
+
     throw new Error(`This object is not capable of interaction.`);
 }
 
@@ -73,6 +77,7 @@ export interface ScriptUIType {
 export class ScriptUISliderType implements ScriptUIType {
     readonly uitype = 'slider';
     value: number;
+
     constructor(
         readonly min: number,
         readonly max: number,
@@ -87,6 +92,7 @@ export class ScriptUISlider extends ScriptUISliderType implements io.Loadable {
         this.value = value;
         return this;
     }
+
     $$getstate() {
         return { value: this.value };
     }
@@ -114,6 +120,7 @@ export class ScriptUISelect<T> extends ScriptUISelectType<T> implements io.Loada
         this.value = this.options[index];
         return this;
     }
+
     $$getstate() {
         return { value: this.value, index: this.index };
     }
@@ -152,6 +159,7 @@ export class ScriptUIToggle extends ScriptUIButton implements io.Loadable {
         state.enabled = this.enabled;
         return state;
     }
+
     $$setstate(newstate: any) {
         this.enabled = newstate.enabled;
         super.$$setstate(newstate);

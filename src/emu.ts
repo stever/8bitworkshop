@@ -49,7 +49,7 @@ export function _setKeyboardEvents(canvas:HTMLElement, callback:KeyboardCallback
   canvas.onkeypress = (e) => {
     callback(e.which, e.charCode, KeyFlags.KeyPress|_metakeyflags(e));
   };
-};
+}
 
 type VideoCanvasOptions = {rotate?:number, overscan?:boolean, aspect?:number};
 
@@ -79,7 +79,6 @@ export class RasterVideo {
   setRotate(rotate:number) {
     var canvas = this.canvas;
     if (rotate) {
-      // TODO: aspect ratio?
       canvas.style.transform = "rotate("+rotate+"deg)";
       if (canvas.width < canvas.height)
         canvas.style.paddingLeft = canvas.style.paddingRight = "10%";
@@ -216,9 +215,11 @@ export class AnimationTimer {
       this.pulsing = false;
     }
   }
+
   isRunning() {
     return this.running;
   }
+
   start() {
     if (!this.running) {
       this.running = true;
@@ -230,6 +231,7 @@ export class AnimationTimer {
       }
     }
   }
+
   stop() {
     this.running = false;
   }
@@ -414,6 +416,7 @@ export class ControllerPoller {
   state = new Int8Array(32);
   lastState = new Int8Array(32);
   AXIS0 = 24; // first joystick axis index
+
   constructor(handler:(key,code,flags) => void) {
     this.handler = handler;
     window.addEventListener("gamepadconnected", (event) => {
@@ -424,6 +427,7 @@ export class ControllerPoller {
       console.log("Gamepad disconnected:", event);
     });
   }
+
   poll() {
     if (!this.active) return;
     var gamepads = navigator.getGamepads();
@@ -447,6 +451,7 @@ export class ControllerPoller {
       }
     }
   }
+
   handleStateChange(gpi:number, k:number) {
     var axis = k - this.AXIS0;
     for (var def of DEFAULT_CONTROLLER_KEYS) {
@@ -527,7 +532,7 @@ export class VirtualTextScroller {
       w: $(workspace).width(),
       h: $(workspace).height(),
       itemHeight: getVisibleEditorLineHeight(),
-      totalRows: maxRowCount, // TODO?
+      totalRows: maxRowCount,
       generatorFn: (row : number) => {
         var line = fn(row);
         var linediv = document.createElement("div");

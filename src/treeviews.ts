@@ -29,6 +29,7 @@ class TreeNode {
     this.level = parent ? (parent.level+1) : -1;
     this.view = parent ? parent.view : null;
   }
+
   getDiv() {
     if (this._div == null) {
       this._div = document.createElement("div");
@@ -47,35 +48,44 @@ class TreeNode {
         this.toggleExpanded();
       };
     }
+
     if (this.expanded && this._content == null) {
       this._content = document.createElement("div");
       this._div.append(this._content);
     }
+
     else if (!this.expanded && this._content != null) {
       this._content.remove();
       this._content = null;
       this.children.clear();
     }
+
     return this._div;
   }
+
   toggleExpanded() {
     this.expanded = !this.expanded;
     this.view.tick();
   }
+
   remove() {
     this._div.remove();
     this._div = null;
   }
+
   update(obj : any) {
     this.getDiv();
     var text = "";
+
     // is it a function? call it first, if we are expanded
     if (obj && obj.$$ && typeof obj.$$ == 'function' && this._content != null) {
       obj = obj.$$();
     }
+
     // check null first
     if (obj == null) {
       text = obj+"";
+
     // primitive types
     } else if (typeof obj == 'number') {
       if (obj != (obj|0)) text = obj.toString(); // must be a float
@@ -121,10 +131,13 @@ class TreeNode {
           obj = newobj;
           names = Object.getOwnPropertyNames(obj);
         }
+
         // track deletions
         let orphans = new Set(this.children.keys());
+
         // visit all children
         names.forEach((name) => {
+
           // hide $xxx idents?
           var hidden = !TREE_SHOW_DOLLAR_IDENTS && typeof name === 'string' && name.startsWith("$$");
           if (!hidden) {
@@ -137,12 +150,14 @@ class TreeNode {
           }
           orphans.delete(name);
         });
+
         // remove orphans
         orphans.forEach((delname) => {
           let childnode = this.children.get(delname);
           childnode.remove();
           this.children.delete(delname);
         });
+
         this._header.classList.add("tree-expanded");
         this._header.classList.remove("tree-collapsed");
       } else {
@@ -152,6 +167,7 @@ class TreeNode {
     } else {
       text = typeof obj; // fallthrough
     }
+
     // change DOM object if needed
     if (this._inline.innerText != text) {
       this._inline.innerText = text;

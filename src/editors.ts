@@ -476,12 +476,15 @@ export class DisassemblerView implements ProjectView {
       }
       return s;
     }
+
     var startpc = pc < 0 ? pc-disasmWindow : Math.max(0, pc-disasmWindow); // for 32-bit PCs w/ hi bit set
     let text = disassemble(startpc, pc-startpc) + disassemble(pc, disasmWindow);
     this.disasmview.setValue(text);
+
     if (moveCursor) {
       this.disasmview.setCursor(selline, 0);
     }
+
     jumpToLine(this.disasmview, selline);
   }
 
@@ -494,6 +497,7 @@ export class DisassemblerView implements ProjectView {
         if (pc >= 0) return pc;
       }
     }
+
     return -1;
   }
 }
@@ -515,11 +519,13 @@ export class ListingView extends DisassemblerView implements ProjectView {
 
   refresh(moveCursor: boolean) {
     this.refreshListing();
+
     // load listing text into editor
     if (!this.assemblyfile) return;
     var asmtext = this.assemblyfile.text;
     var disasmview = this.getDisasmView();
     disasmview.setValue(asmtext);
+
     // go to PC
     if (!platform.saveState) return;
     var state = lastDebugState || platform.saveState();
@@ -527,10 +533,12 @@ export class ListingView extends DisassemblerView implements ProjectView {
     if (pc >= 0 && this.assemblyfile) {
       var res = this.assemblyfile.findLineForOffset(pc, 15);
       if (res) {
+
         // set cursor while debugging
         if (moveCursor) {
           disasmview.setCursor(res.line-1, 0);
         }
+
         jumpToLine(disasmview, res.line-1);
       }
     }
