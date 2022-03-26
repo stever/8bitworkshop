@@ -45,12 +45,12 @@ export var qs : UIQueryString = decodeQueryString(window.location.search||'?') a
 
 const isEmbed = parseBool(qs.embed);
 
-/// GLOBALS (TODO: remove)
+/// GLOBALS
 
 var PRESETS : Preset[];			// presets array
 
 export var platform_id : string;	// platform ID string (platform)
-export var store_id : string;		// store ID string (platform) TODO: Replace with platform_id.
+export var store_id : string;		// store ID string (platform)
 export var platform : Platform;		// emulator object
 
 var toolbar = $("#controls_top");
