@@ -1,5 +1,3 @@
-// 8bitworkshop IDE user interface
-
 import {
   CodeProject,
   createNewPersistentStore,
@@ -52,51 +50,45 @@ import {
 import {saveAs} from "file-saver";
 import {ZXWASMPlatform} from "../machine/zx";
 
-// external libs
-declare var $ : JQueryStatic; // use browser jquery
+declare var $ : JQueryStatic;
 
-// query string
 interface UIQueryString {
   file? : string;
 }
 
 export var qs : UIQueryString = decodeQueryString(window.location.search||'?') as UIQueryString;
 
-/// GLOBALS
+var PRESETS : Preset[];
 
-var PRESETS : Preset[];			// presets array
-
-export var platform : Platform;		// emulator object
+export var platform : Platform; // emulator object
 
 var toolbar = $("#controls_top");
 
 var uitoolbar : Toolbar;
 
-export var current_project : CodeProject;	// current CodeProject object
+export var current_project : CodeProject;
 
 export var projectWindows : ProjectWindows;	// window manager
 
 var stateRecorder : StateRecorderImpl;
 
-var userPaused : boolean;		// did user explicitly pause?
+var userPaused : boolean; // did user explicitly pause?
 
-var current_output : any;     // current ROM (or other object)
-var current_preset : Preset;	// current preset object (if selected)
-var store : LocalForage;			// persistent store
+var current_output : any; // current ROM (or other object)
+var current_preset : Preset; // current preset object (if selected)
+var store : LocalForage; // persistent store
 
-export var compparams;			// received build params from worker
-export var lastDebugState : EmuState;	// last debug state (object)
+export var compparams; // received build params from worker
+export var lastDebugState : EmuState; // last debug state (object)
 
-var lastDebugInfo;		// last debug info (CPU text)
-var debugCategory;		// current debug category
+var lastDebugInfo; // last debug info (CPU text)
+var debugCategory; // current debug category
 var debugTickPaused = false;
 var recorderActive = false;
 var lastViewClicked = null;
 var errorWasRuntime = false;
 var lastBreakExpr = "c.PC == 0x6000";
 
-// TODO: codemirror multiplex support?
-// TODO: move to views.ts?
 const TOOL_TO_SOURCE_STYLE = {
   'z80asm': 'z80',
   'sdasz80': 'z80',
@@ -310,16 +302,12 @@ function loadMainWindow(preset_id:string) {
 async function loadProject(preset_id:string) {
   // set current file ID
   // TODO: this is done twice (mainPath and mainpath!)
-
   current_project.mainPath = preset_id;
 
   // load files from storage or web URLs
   var result = await current_project.loadFiles([preset_id]);
   console.assert(result && result.length);
-
   measureTimeLoad = new Date(); // for timing calc.
-
-  // file found; continue
   loadMainWindow(preset_id);
 }
 
@@ -755,7 +743,7 @@ function resetAndDebug() {
   if (!checkRunReady()) return;
   var wasRecording = recorderActive;
   _disableRecording();
-  if (platform.setupDebug && platform.runEval) { // TODO??
+  if (platform.setupDebug && platform.runEval) {
     clearBreakpoint();
     _resume();
     resetPlatform();
@@ -891,7 +879,7 @@ function _toggleRecording() {
 function _lookupHelp() {
   if (platform.showHelp) {
     let tool = platform.getToolForFilename(current_project.mainPath);
-    platform.showHelp(tool); // TODO: tool, identifier
+    platform.showHelp(tool);
   }
 }
 
@@ -978,7 +966,7 @@ function setupReplaySlider() {
     var replayframeno = $("#replay_frame");
     var clockno = $("#replay_clock");
 
-    if (!platform.advanceFrameClock) $("#clockdiv").hide(); // TODO: put this test in recorder?
+    if (!platform.advanceFrameClock) $("#clockdiv").hide();
 
     var updateFrameNo = () => {
       replayframeno.text(stateRecorder.lastSeekFrame+"");
@@ -1040,8 +1028,6 @@ function setupReplaySlider() {
     uitoolbar.add('ctrl+alt+0', 'Start/Stop Replay Recording', 'glyphicon-record', _toggleRecording).prop('id','dbg_record');
 }
 
-///////////////////////////////////////////////////
-
 function globalErrorHandler(msgevent) {
   var err = msgevent.error || msgevent.reason;
   if (err != null && err instanceof EmuHalt) {
@@ -1053,10 +1039,8 @@ export function haltEmulation(err?: EmuHalt) {
   console.log("haltEmulation");
   _pause();
   emulationHalted(err);
-  // TODO: reset platform?
 }
 
-// catch errors
 function installErrorHandler() {
   window.addEventListener('error', globalErrorHandler);
   window.addEventListener('unhandledrejection', globalErrorHandler);
