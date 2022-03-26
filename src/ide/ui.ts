@@ -63,7 +63,6 @@ interface UIQueryString {
   file? : string;
   options?: string;
   embed? : string;
-  highlight? : string;
 }
 
 export var qs : UIQueryString = decodeQueryString(window.location.search||'?') as UIQueryString;
@@ -324,16 +323,6 @@ function refreshWindowList() {
   });
 }
 
-function highlightLines(path:string, hispec:string) {
-  if (hispec) {
-    var toks = qs.highlight.split(',');
-    var start = parseInt(toks[0]) - 1;
-    var end = parseInt(toks[1]) - 1;
-    var editor = projectWindows.createOrShow(path) as SourceEditor;
-    editor.highlightLines(start, end);
-  }
-}
-
 function loadMainWindow(preset_id:string) {
   // we need this to build create functions for the editor
   refreshWindowList();
@@ -341,8 +330,6 @@ function loadMainWindow(preset_id:string) {
   projectWindows.createOrShow(preset_id);
   // build project
   current_project.setMainFile(preset_id);
-  // highlighting?
-  highlightLines(preset_id, qs.highlight);
 }
 
 async function loadProject(preset_id:string) {
