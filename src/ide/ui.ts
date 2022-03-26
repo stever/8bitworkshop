@@ -1,6 +1,5 @@
 // 8bitworkshop IDE user interface
 
-import * as localforage from "localforage";
 import {
   CodeProject,
   createNewPersistentStore,
@@ -27,9 +26,6 @@ import {
   highlightDifferences,
   byteArrayToString,
   compressLZG,
-  stringToByteArray,
-  isProbablyBinary,
-  getWithBinary,
   getBasePlatform,
   getRootBasePlatform,
   hex,
@@ -66,16 +62,8 @@ interface UIQueryString {
   platform? : string;
   file? : string;
   options?: string;
-  importURL? : string;
-  localfs? : string;
-  newfile? : string;
   embed? : string;
-  ignore? : string;
-  force? : string;
   highlight? : string;
-  file0_name? : string;
-  file0_data? : string;
-  file0_type? : string;
 }
 
 export var qs : UIQueryString = decodeQueryString(window.location.search||'?') as UIQueryString;
@@ -161,11 +149,7 @@ function getCurrentPresetTitle() : string {
 
 async function newFilesystem() {
   var basefs : ProjectFilesystem = new WebPresetsFileSystem(platform_id);
-  if (qs.localfs != null) {
-    return new OverlayFilesystem(basefs, await getLocalFilesystem(qs.localfs));
-  } else {
-    return new OverlayFilesystem(basefs, new LocalForageFilesystem(store));
-  }
+  return new OverlayFilesystem(basefs, new LocalForageFilesystem(store));
 }
 
 async function initProject() {
@@ -398,57 +382,6 @@ function checkEnteredFilename(fn : string) : boolean {
     return false;
   }
   return true;
-}
-
-async function promptUser(message: string) : Promise<string> {
-  return new Promise( (resolve, reject) => {
-    bootbox.prompt(message, (result) => {
-      resolve(result);
-    });
-  });
-}
-
-async function getLocalFilesystem(repoid: string) : Promise<ProjectFilesystem> {
-  const options = {mode:'readwrite'};
-  var storekey = '__localfs__' + repoid;
-
-  var lstore = localforage.createInstance({
-    name: storekey,
-    version: 2.0
-  });
-
-  var fsdata : any = await lstore.getItem(storekey);
-  var dirHandle = fsdata.handle as any;
-  console.log(fsdata, dirHandle);
-
-  var granted = await dirHandle.queryPermission(options);
-  console.log(granted);
-
-  if (granted !== 'granted') {
-    await promptUser(`Request permissions to access filesystem?`);
-    granted = await dirHandle.requestPermission(options);
-  }
-
-  if (granted !== 'granted') {
-      bootbox.alert(`Could not get permission to access filesystem.`);
-      return;
-  }
-
-  return {
-    getFileData: async (path) => {
-      console.log('getFileData', path);
-      let fileHandle = await dirHandle.getFileHandle(path, { create: false });
-      console.log('getFileData', fileHandle);
-      let file = await fileHandle.getFile();
-      console.log('getFileData', file);
-      let contents = await (isProbablyBinary(path) ? file.binary() : file.text());
-      console.log(fileHandle, file, contents);
-      return contents;
-    },
-    setFileData: async (path, data) => {
-      //let vh = await dirHandle.getFileHandle(path, { create: true });
-    }
-  }
 }
 
 function getCurrentMainFilename() : string {
@@ -1614,68 +1547,6 @@ export function setupSplits() {
   });
 }
 
-function loadImportedURL(url : string) {
-  // TODO: zip file?
-  const ignore = parseBool(qs.ignore) || isEmbed;
-  setWaitDialog(true);
-  getWithBinary(url, async (data) => {
-    if (data) {
-      var path = getFilenameForPath(url);
-      console.log("Importing " + data.length + " bytes as " + path);
-      try {
-        var olddata = await store.getItem(path);
-        setWaitDialog(false);
-        if (olddata != null && ignore) {
-          // ignore=1, do nothing
-        } else if (olddata == null || confirm("Replace existing file '" + path + "'?")) {
-          await store.setItem(path, data);
-        }
-        delete qs.importURL;
-        qs.file = path;
-        replaceURLState();
-        loadAndStartPlatform();
-      } finally {
-        setWaitDialog(false);
-      }
-    } else {
-      alertError("Could not load source code from URL: " + url);
-      setWaitDialog(false);
-    }
-  }, 'text');
-}
-
-async function loadFormDataUpload() {
-  var ignore = parseBool(qs.ignore);
-  var force = parseBool(qs.force);
-  if (isEmbed) {
-    ignore = !force; // ignore is default when embed=1 unless force=1
-  } else {
-    force = false; // can't use force w/o embed=1
-  }
-  for (var i=0; i<20; i++) {
-    let path = qs['file'+i+'_name'];
-    let dataenc = qs['file'+i+'_data'];
-    if (path == null || dataenc == null) break;
-    var olddata = await store.getItem(path);
-    if (!(ignore && olddata)) {
-      let value = dataenc;
-      if (qs['file'+i+'_type'] == 'binary') {
-        value = stringToByteArray(atob(value));
-      }
-      if (!olddata || force || confirm("Replace existing file '" + path + "'?")) {
-        await store.setItem(path, value);
-      }
-    }
-    if (i == 0) { qs.file = path; } // set main filename
-    delete qs['file'+i+'_name'];
-    delete qs['file'+i+'_data'];
-    delete qs['file'+i+'_type'];
-  }
-  delete qs.ignore;
-  delete qs.force;
-  replaceURLState();
-}
-
 function setPlatformUI() {
   var name = platform.getPlatformName && platform.getPlatformName();
   var menuitem = $('a[href="?platform='+platform_id+'"]');
@@ -1702,17 +1573,6 @@ export async function startUI() {
 
   // create store
   store = createNewPersistentStore(store_id);
-
-  // is this an importURL?
-  if (qs.importURL) {
-    loadImportedURL(qs.importURL);
-    return; // TODO: make async
-  }
-
-  // is this a file POST?
-  if (qs.file0_name) {
-    await loadFormDataUpload();
-  }
 
   // load and start platform object
   loadAndStartPlatform();
