@@ -62,7 +62,6 @@ export var qs : UIQueryString = decodeQueryString(window.location.search||'?') a
 
 var PRESETS : Preset[];			// presets array
 
-export var store_id : string;		// store ID string (platform)
 export var platform : Platform;		// emulator object
 
 var toolbar = $("#controls_top");
@@ -1159,11 +1158,8 @@ export function setupSplits() {
 export async function startUI() {
   setupSplits();
 
-  // get store ID, platform id
-  store_id = getBasePlatform('zx');
-
   // create store
-  store = createNewPersistentStore(store_id);
+  store = createNewPersistentStore('zx');
 
   // load and start platform object
   await loadAndStartPlatform();
