@@ -62,7 +62,6 @@ export var qs : UIQueryString = decodeQueryString(window.location.search||'?') a
 
 var PRESETS : Preset[];			// presets array
 
-export var platform_id : string;	// platform ID string (platform)
 export var store_id : string;		// store ID string (platform)
 export var platform : Platform;		// emulator object
 
@@ -122,13 +121,13 @@ function getCurrentPresetTitle() : string {
 }
 
 async function newFilesystem() {
-  var basefs : ProjectFilesystem = new WebPresetsFileSystem(platform_id);
+  var basefs : ProjectFilesystem = new WebPresetsFileSystem('zx');
   return new OverlayFilesystem(basefs, new LocalForageFilesystem(store));
 }
 
 async function initProject() {
   var filesystem = await newFilesystem();
-  current_project = new CodeProject(newWorker(), platform_id, platform, filesystem);
+  current_project = new CodeProject(newWorker(), 'zx', platform, filesystem);
   projectWindows = new ProjectWindows($("#workspace")[0] as HTMLElement, current_project);
   current_project.callbackBuildResult = (result:WorkerResult) => {
     setCompileOutput(result);
@@ -346,10 +345,10 @@ function _downloadROMImage(e) {
   } else if (current_output instanceof Uint8Array) {
     var blob = new Blob([current_output], {type: "application/octet-stream"});
     var suffix = (platform.getROMExtension && platform.getROMExtension(current_output))
-      || "-" + getBasePlatform(platform_id) + ".bin";
+      || "-" + getBasePlatform('zx') + ".bin";
     saveAs(blob, prefix + suffix);
   } else {
-    alertError(`The "${platform_id}" platform doesn't have downloadable ROMs.`);
+    alertError(`The platform doesn't have downloadable ROMs.`);
   }
 }
 
@@ -516,7 +515,7 @@ async function setCompileOutput(data: WorkerResult) {
 
 async function loadBIOSFromProject() {
   if (platform.loadBIOS) {
-    var biospath = platform_id + '.rom';
+    var biospath = 'zx.rom';
     var biosdata = await store.getItem(biospath);
     if (biosdata instanceof Uint8Array) {
       console.log('loading BIOS', biospath, biosdata.length + " bytes")
@@ -1159,22 +1158,20 @@ export function setupSplits() {
 
 function setPlatformUI() {
   var name = platform.getPlatformName && platform.getPlatformName();
-  var menuitem = $('a[href="?platform='+platform_id+'"]');
+  var menuitem = $('a[href="?platform=zx"]');
   if (menuitem.length) {
     menuitem.addClass("dropdown-item-checked");
     name = name || menuitem.text() || name;
   }
-  $(".platform_name").text(name || platform_id);
+  $(".platform_name").text(name || 'zx');
 }
 
 // start
 export async function startUI() {
-  platform_id = 'zx';
-
   setupSplits();
 
   // get store ID, platform id
-  store_id = getBasePlatform(platform_id);
+  store_id = getBasePlatform('zx');
 
   // create store
   store = createNewPersistentStore(store_id);
@@ -1185,16 +1182,16 @@ export async function startUI() {
 
 async function loadAndStartPlatform() {
   try {
-    console.assert(getRootBasePlatform(platform_id) === 'zx', getRootBasePlatform(platform_id));
+    console.assert(getRootBasePlatform('zx') === 'zx', getRootBasePlatform('zx'));
     await import("../machine/zx")
 
-    console.log("starting platform", platform_id); // loaded required <platform_id>.js file
+    console.log("starting platform", 'zx');
     await startPlatform();
 
-    document.title = document.title + " [" + platform_id + "] - " + current_project.mainPath;
+    document.title = document.title + " [zx] - " + current_project.mainPath;
   } catch (e) {
     console.log(e);
-    alertError('Platform "' + platform_id + '" failed to load.');
+    alertError('Platform zx failed to load.');
   } finally {
     revealTopBar();
   }

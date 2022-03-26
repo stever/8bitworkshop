@@ -1,6 +1,6 @@
 
 import { newDiv, ProjectView } from "./baseviews";
-import { platform_id, current_project, projectWindows } from "../ui";
+import { current_project, projectWindows } from "../ui";
 import { FileData } from "../../common/workertypes";
 import { hex, safeident, rgb2bgr } from "../../common/util";
 import * as pixed from "../pixeleditor";
@@ -13,17 +13,17 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
     cureditnode : pixed.PixNode;
     rootnodes : pixed.PixNode[];
     deferrednodes : pixed.PixNode[];
-  
+
     createDiv(parent : HTMLElement) {
       this.maindiv = newDiv(parent, "vertical-scroll");
       return this.maindiv[0];
     }
-  
+
     clearAssets() {
       this.rootnodes = [];
       this.deferrednodes = [];
     }
-  
+
     registerAsset(type:string, node:pixed.PixNode, deferred:number) {
       this.rootnodes.push(node);
       if (deferred) {
@@ -35,7 +35,7 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
         node.refreshRight();
       }
     }
-  
+
     getPalettes(matchlen : number) : pixed.SelectablePalette[] {
       var result = [];
       this.rootnodes.forEach((node) => {
@@ -74,7 +74,7 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       });
       return result;
     }
-  
+
     getTilemaps(matchlen : number) : pixed.SelectableTilemap[] {
       var result = [];
       this.rootnodes.forEach((node) => {
@@ -90,15 +90,15 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       });
       return result;
     }
-    
+
     isEditing() {
       return this.cureditordiv != null;
     }
-    
+
     getCurrentEditNode() {
       return this.cureditnode;
     }
-  
+
     setCurrentEditor(div:JQuery, editing:JQuery, node:pixed.PixNode) {
       const timeout = 250;
       if (this.cureditordiv != div) {
@@ -126,7 +126,7 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       }
       this.cureditnode = node;
     }
-  
+
     scanFileTextForAssets(id : string, data : string) {
       // scan file for assets
       // /*{json}*/ or ;;{json};;
@@ -136,15 +136,7 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       var m;
       while (m = re1.exec(data)) {
         var start = m.index + m[0].length;
-        var end;
-        // TODO: verilog end
-        if (platform_id.includes('verilog')) {
-          end = data.indexOf("end", start); // asm
-        } else if (m[0].startsWith(';;')) {
-          end = data.indexOf(';;', start); // asm
-        } else {
-          end = data.indexOf(';', start); // C
-        }
+        var end = data.indexOf(';', start); // C
         //console.log(id, start, end, m[1], data.substring(start,end));
         if (end > start) {
           try {
@@ -177,7 +169,7 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       }
       return result;
     }
-  
+
     // TODO: move to pixeleditor.ts?
     addPaletteEditorViews(parentdiv:JQuery, pal2rgb:pixed.PaletteFormatToRGB, callback) {
       var adual = $('<div class="asset_dual"/>').appendTo(parentdiv);
@@ -232,7 +224,7 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
         }
       });
     }
-  
+
     addPixelEditor(parentdiv:JQuery, firstnode:pixed.PixNode, fmt:pixed.PixelEditorImageFormat) {
       // data -> pixels
       fmt.xform = 'scale(2)';
@@ -245,7 +237,7 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       // add view objects
       palizer.addRight(new pixed.CharmapEditor(this, newDiv(parentdiv), fmt));
     }
-  
+
     addPaletteEditor(parentdiv:JQuery, firstnode:pixed.PixNode, palfmt?) {
       // palette -> RGBA
       var pal2rgb = new pixed.PaletteFormatToRGB(palfmt);
@@ -264,7 +256,7 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
           pal2rgb.refreshLeft();
         });
     }
-  
+
     ensureFileDiv(fileid : string) : JQuery<HTMLElement> {
       var divid = this.getFileDivId(fileid);
       var body = $(document.getElementById(divid));
@@ -275,27 +267,13 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       }
       return body;
     }
-  
+
     refreshAssetsInFile(fileid : string, data : FileData) : number {
       let nassets = 0;
       // TODO: check fmt w/h/etc limits
       // TODO: defer editor creation
       // TODO: only refresh when needed
-      if (platform_id.startsWith('nes') && fileid.endsWith('.chr') && data instanceof Uint8Array) {
-        // is this a NES CHR?
-        let node = new pixed.FileDataNode(projectWindows, fileid);
-        const neschrfmt = {w:8,h:8,bpp:1,count:(data.length>>4),brev:true,np:2,pofs:8,remap:[0,1,2,4,5,6,7,8,9,10,11,12]}; // TODO
-        this.addPixelEditor(this.ensureFileDiv(fileid), node, neschrfmt);
-        this.registerAsset("charmap", node, 1);
-        nassets++;
-      } else if (platform_id.startsWith('nes') && fileid.endsWith('.pal') && data instanceof Uint8Array) {
-        // is this a NES PAL?
-        let node = new pixed.FileDataNode(projectWindows, fileid);
-        const nespalfmt = {pal:"nes",layout:"nes"};
-        this.addPaletteEditor(this.ensureFileDiv(fileid), node, nespalfmt);
-        this.registerAsset("palette", node, 0);
-        nassets++;
-      } else if (typeof data === 'string') {
+      if (typeof data === 'string') {
         let textfrags = this.scanFileTextForAssets(fileid, data);
         for (let frag of textfrags) {
           if (frag.fmt) {
@@ -335,11 +313,11 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
       }
       return nassets;
     }
-  
+
     getFileDivId(id : string) {
       return '__asset__' + safeident(id);
     }
-  
+
   // TODO: recreate editors when refreshing
   // TODO: look for changes, not moveCursor
     refresh(moveCursor : boolean) {
@@ -375,7 +353,7 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
         }
       }
     }
-  
+
     setVisible?(showing : boolean) : void {
       // TODO: make into toolbar?
       if (showing) {
@@ -384,6 +362,6 @@ export class AssetEditorView implements ProjectView, pixed.EditorContext {
         if (Mousetrap.unbind) Mousetrap.unbind('ctrl+z');
       }
     }
-  
+
   }
-  
+
