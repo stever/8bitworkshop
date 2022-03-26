@@ -100,10 +100,12 @@ function alertError(s:string) {
     message: s
   });
 }
+
 function alertInfo(s:string) {
   setWaitDialog(false);
   bootbox.alert(s);
 }
+
 function fatalError(s:string) {
   alertError(s);
   throw new Error(s);
@@ -127,21 +129,25 @@ const hasLocalStorage : boolean = function() {
 
 // wrapper for localstorage
 class UserPrefs {
+
   setLastPreset(id:string) {
     if (hasLocalStorage && !isEmbed) {
       localStorage.setItem("__lastplatform", platform_id);
       localStorage.setItem("__lastid_" + store_id, id);
     }
   }
+
   unsetLastPreset() {
     if (hasLocalStorage && !isEmbed) {
       delete qs.file;
       localStorage.removeItem("__lastid_"+store_id);
     }
   }
+
   getLastPreset() {
     return hasLocalStorage && !isEmbed && localStorage.getItem("__lastid_"+store_id);
   }
+
   getLastPlatformID() {
     return hasLocalStorage && !isEmbed && localStorage.getItem("__lastplatform");
   }
@@ -211,23 +217,30 @@ function refreshWindowList() {
       ul.append(document.createElement("hr"));
       separate = false;
     }
+
     var li = document.createElement("li");
     var a = document.createElement("a");
+
     a.setAttribute("class", "dropdown-item");
     a.setAttribute("href", "#");
+
     a.setAttribute("data-wndid", id);
     if (id == projectWindows.getActiveID())
       $(a).addClass("dropdown-item-checked");
+
     a.appendChild(document.createTextNode(name));
     li.appendChild(a);
     ul.append(li);
+
     if (createfn) {
       var onopen = (id, wnd) => {
         ul.find('a').removeClass("dropdown-item-checked");
         $(a).addClass("dropdown-item-checked");
       };
+
       projectWindows.setCreateFunc(id, createfn);
       projectWindows.setShowFunc(id, onopen);
+
       $(a).click( (e) => {
         projectWindows.createOrShow(id);
         lastViewClicked = id;
@@ -283,52 +296,64 @@ function refreshWindowList() {
       return new DisassemblerView();
     });
   }
+
   if (platform.readAddress) {
     addWindowItem("#memory", "Memory Browser", () => {
       return new MemoryView();
     });
   }
+
   if (current_project.segments && current_project.segments.length) {
     addWindowItem("#memmap", "Memory Map", () => {
       return new MemoryMapView();
     });
   }
+
   if (platform.readVRAMAddress) {
     addWindowItem("#memvram", "VRAM Browser", () => {
       return new VRAMMemoryView();
     });
   }
+
   if (platform.startProbing) {
     addWindowItem("#memheatmap", "Memory Probe", () => {
       return new AddressHeatMapView();
     });
+
     // TODO: only if raster
     addWindowItem("#crtheatmap", "CRT Probe", () => {
       return new RasterPCHeatMapView();
     });
+
     addWindowItem("#probelog", "Probe Log", () => {
       return new ProbeLogView();
     });
+
     addWindowItem("#scanlineio", "Scanline I/O", () => {
       return new ScanlineIOView();
     });
+
     addWindowItem("#symbolprobe", "Symbol Profiler", () => {
       return new ProbeSymbolView();
     });
+
     addWindowItem("#callstack", "Call Stack", () => {
       return new CallStackView();
     });
+
     /*
     addWindowItem("#framecalls", "Frame Profiler", () => {
       return new FrameCallsView();
     });
     */
   }
+
   if (platform.getDebugTree) {
     addWindowItem("#debugview", "Debug Tree", () => {
       return new DebugBrowserView();
     });
   }
+
   addWindowItem('#asseteditor', 'Asset Editor', () => {
     return new AssetEditorView();
   });
@@ -512,23 +537,29 @@ async function promptUser(message: string) : Promise<string> {
 async function getLocalFilesystem(repoid: string) : Promise<ProjectFilesystem> {
   const options = {mode:'readwrite'};
   var storekey = '__localfs__' + repoid;
+
   var lstore = localforage.createInstance({
     name: storekey,
     version: 2.0
   });
+
   var fsdata : any = await lstore.getItem(storekey);
   var dirHandle = fsdata.handle as any;
   console.log(fsdata, dirHandle);
+
   var granted = await dirHandle.queryPermission(options);
   console.log(granted);
+
   if (granted !== 'granted') {
     await promptUser(`Request permissions to access filesystem?`);
     granted = await dirHandle.requestPermission(options);
   }
+
   if (granted !== 'granted') {
       bootbox.alert(`Could not get permission to access filesystem.`);
       return;
   }
+
   return {
     getFileData: async (path) => {
       console.log('getFileData', path);
@@ -570,10 +601,12 @@ function _shareEmbedLink(e) {
     alertError("Please fix errors before sharing.");
     return true;
   }
+
   if (!(current_output instanceof Uint8Array)) {
     alertError("Can't share a Verilog executable yet. (It's not actually a ROM...)");
     return true;
   }
+
   loadClipboardLibrary();
   loadScript('dist/liblzg.js').then( () => {
     // TODO: Module is bad var name (conflicts with MAME)
@@ -596,6 +629,7 @@ function _shareEmbedLink(e) {
     if (fulllink.length >= 65536) $("#embedAdviceWarnAll").show();
     else if (fulllink.length >= 5120) $("#embedAdviceWarnIE").show();
   });
+
   return true;
 }
 
@@ -627,6 +661,7 @@ function _downloadCassetteFile_apple2(e) {
       print:print_fn,
       printErr:print_fn
     });
+
     var FS = c2t['FS'];
     var rompath = getCurrentMainFilename() + ".bin";
     var audpath = getCurrentMainFilename() + ".wav";
@@ -634,6 +669,7 @@ function _downloadCassetteFile_apple2(e) {
     var args = ["-2bc", rompath+','+addr.toString(16), audpath];
     c2t.callMain(args);
     var audout = FS.readFile(audpath, {'encoding':'binary'});
+
     if (audout) {
       var blob = new Blob([audout], {type: "audio/wav"});
       saveAs(blob, audpath);
@@ -660,6 +696,7 @@ function _downloadCassetteFile_vcs(e) {
         FS.writeFile(rompath, current_output, {encoding:'binary'});
       }
     });
+
     _makewav.ready.then((makewav) => {
       let args = [rompath];
       makewav.run(args);
@@ -681,15 +718,18 @@ function _downloadCassetteFile(e) {
     alertError("Please fix errors before exporting.");
     return true;
   }
+
   var fn;
   switch (getBasePlatform(platform_id)) {
     case 'vcs': fn = _downloadCassetteFile_vcs; break;
     case 'apple2': fn = _downloadCassetteFile_apple2; break;
   }
+
   if (fn === undefined) {
     alertError("Cassette export is not supported on this platform.");
     return true;
   }
+
   fn(e);
 }
 
@@ -769,6 +809,7 @@ function _downloadROMImage(e) {
     alertError("Please finish compiling with no errors before downloading ROM.");
     return true;
   }
+
   var prefix = getFilenamePrefix(getCurrentMainFilename());
   if (platform.getDownloadFile) {
     var dl = platform.getDownloadFile();
@@ -798,11 +839,13 @@ async function newJSZip() {
 
 async function _downloadProjectZipFile(e) {
   var zip = await newJSZip();
+
   current_project.iterateFiles( (id, data) => {
     if (data) {
       zip.file(getFilenameForPath(id), data);
     }
   });
+
   zip.generateAsync({type:"blob"}).then( (content) => {
     saveAs(content, getCurrentMainFilename() + "-" + getBasePlatform(platform_id) + ".zip");
   });
@@ -811,7 +854,9 @@ async function _downloadProjectZipFile(e) {
 async function _downloadAllFilesZipFile(e) {
   var zip = await newJSZip();
   var keys = await store.keys();
+
   setWaitDialog(true);
+
   try {
     var i = 0;
     await Promise.all(keys.map( (path) => {
@@ -822,6 +867,7 @@ async function _downloadAllFilesZipFile(e) {
         }
       });
     }));
+
     var content = await zip.generateAsync({type:"blob"});
     saveAs(content, getBasePlatform(platform_id) + "-all.zip");
   } finally {
@@ -869,10 +915,13 @@ function finishSelector(sel) {
 
 async function updateSelector() {
   var sel = $("#preset_select").empty();
+
   // normal: examples, and local files
+
   var foundFiles = populateExamples(sel);
   await populateFiles(sel, "Local Files", "", foundFiles);
   finishSelector(sel);
+
   // set click handlers
   sel.off('change').change(function(e) {
     reloadProject($(this).val().toString());
@@ -885,8 +934,10 @@ function getErrorElement(err : WorkerError) {
     var s = err.line ? err.label ? `(${err.path} @ ${err.label})` : `(${err.path}:${err.line})` : `(${err.path})`
     var link = $('<a/>').text(s);
     var path = err.path;
+
     // TODO: hack because examples/foo.a only gets listed as foo.a
     if (path == getCurrentMainFilename()) path = current_project.mainPath;
+
     // click link to open file, if it's available...
     if (projectWindows.isWindow(path)) {
       link.click((ev) => {
@@ -896,9 +947,11 @@ function getErrorElement(err : WorkerError) {
         }
       });
     }
+
     span.append(link);
     span.append('&nbsp;');
   }
+
   span.append($('<span/>').text(err.msg));
   return span;
 }
@@ -1446,6 +1499,7 @@ function addFileToProject(type, ext, linefn) {
     alertError("Can't insert text in this window -- switch back to main file");
   }
 }
+
 // TODO: lwtools and smaller c
 function _addIncludeFile() {
   var fn = getCurrentMainFilename();
@@ -1578,11 +1632,14 @@ function setupReplaySlider() {
     var clockslider = $("#clockslider");
     var replayframeno = $("#replay_frame");
     var clockno = $("#replay_clock");
+
     if (!platform.advanceFrameClock) $("#clockdiv").hide(); // TODO: put this test in recorder?
+
     var updateFrameNo = () => {
       replayframeno.text(stateRecorder.lastSeekFrame+"");
       clockno.text(stateRecorder.lastSeekStep+"");
     };
+
     var sliderChanged = (e) => {
       _pause();
       var frame : number = parseInt(replayslider.val().toString());
@@ -1594,6 +1651,7 @@ function setupReplaySlider() {
         uiDebugCallback(platform.saveState());
       }
     };
+
     var setFrameTo = (frame:number) => {
       _pause();
       if (stateRecorder.loadFrame(frame) >= 0) {
@@ -1602,6 +1660,7 @@ function setupReplaySlider() {
         uiDebugCallback(platform.saveState());
       }
     };
+
     var setClockTo = (clock:number) => {
       _pause();
       var frame : number = parseInt(replayslider.val().toString());
@@ -1611,6 +1670,7 @@ function setupReplaySlider() {
         uiDebugCallback(platform.saveState());
       }
     };
+
     stateRecorder.callbackStateChanged = () => {
       replayslider.attr('min', 0);
       replayslider.attr('max', stateRecorder.numFrames());
@@ -1619,9 +1679,11 @@ function setupReplaySlider() {
       updateFrameNo();
       showDebugInfo(platform.saveState());
     };
+
     replayslider.on('input', sliderChanged);
     clockslider.on('input', sliderChanged);
     //replayslider.on('change', sliderChanged);
+
     $("#replay_min").click(() => { setFrameTo(1) });
     $("#replay_max").click(() => { setFrameTo(stateRecorder.numFrames()); });
     $("#replay_back").click(() => { setFrameTo(parseInt(replayslider.val().toString()) - 1); });
@@ -1629,6 +1691,7 @@ function setupReplaySlider() {
     $("#clock_back").click(() => { setClockTo(parseInt(clockslider.val().toString()) - 1); });
     $("#clock_fwd").click(() => { setClockTo(parseInt(clockslider.val().toString()) + 1); });
     $("#replay_bar").show();
+
     uitoolbar.add('ctrl+alt+0', 'Start/Stop Replay Recording', 'glyphicon-record', _toggleRecording).prop('id','dbg_record');
 }
 
@@ -1649,6 +1712,7 @@ function isLandscape() {
       }
     }
   } catch (e) { }
+
   // fallback to comparing width to height
   return window.innerWidth > window.innerHeight;
 }
@@ -1657,6 +1721,7 @@ function isLandscape() {
 
 function globalErrorHandler(msgevent) {
   var msg = (msgevent.message || msgevent.error || msgevent)+"";
+
   // storage quota full? (Chrome) try to expand it
   if (msg.indexOf("QuotaExceededError") >= 0) {
     requestPersistPermission(false, false);
@@ -1702,6 +1767,7 @@ function replaceURLState() {
 
 function addPageFocusHandlers() {
   var hidden = false;
+
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState == 'hidden' && platform && platform.isRunning()) {
       _pause();
@@ -1711,18 +1777,21 @@ function addPageFocusHandlers() {
       hidden = false;
     }
   });
+
   $(window).on("focus", () => {
     if (hidden) {
       _resume();
       hidden = false;
     }
   });
+
   $(window).on("blur", () => {
     if (platform && platform.isRunning()) {
       _pause();
       hidden = true;
     }
   });
+
   $(window).on("orientationchange", () => {
     if (platform && platform.resize) setTimeout(platform.resize.bind(platform), 200);
   });
@@ -1762,10 +1831,7 @@ async function startPlatform() {
       alertError("There is no default main file for this project. Try selecting one from the pulldown.");
     }
   }
-  // legacy vcs stuff
-  if (platform_id == 'vcs' && qs.file.startsWith('examples/') && !qs.file.endsWith('.a')) {
-    qs.file += '.a';
-  }
+
   // start platform and load file
   replaceURLState();
   installErrorHandler();
@@ -1777,11 +1843,13 @@ async function startPlatform() {
   setupDebugControls();
   addPageFocusHandlers();
   showInstructions();
+
   if (isEmbed) {
     hideControlsForEmbed();
   } else {
     updateSelector();
   }
+
   revealTopBar();
 }
 
@@ -1909,23 +1977,29 @@ export function getPlatform() {
 export async function startUI() {
   getPlatform();
   setupSplits();
+
   // get store ID, platform id
   store_id = getBasePlatform(platform_id);
+
   // are we embedded?
   if (isEmbed) {
     store_id = (document.referrer || document.location.href) + store_id;
   }
+
   // create store
   store = createNewPersistentStore(store_id);
+
   // is this an importURL?
   if (qs.importURL) {
     loadImportedURL(qs.importURL);
     return; // TODO: make async
   }
+
   // is this a file POST?
   if (qs.file0_name) {
     await loadFormDataUpload();
   }
+
   // load and start platform object
   loadAndStartPlatform();
 }
@@ -1956,14 +2030,17 @@ function setHTTPSCookie(val : number) {
 }
 
 function shouldRedirectHTTPS() : boolean {
+
   // cookie set? either true or false
   var shouldRedir = getCookie(useHTTPSCookieName);
   if (typeof shouldRedir === 'string') {
     return !!shouldRedir; // convert to bool
   }
+
   // set a 10yr cookie, value depends on if it's our first time here
   var val = hasLocalStorage && !localStorage.getItem("__lastplatform") ? 1 : 0;
   setHTTPSCookie(val);
+
   return !!val;
 }
 
@@ -2009,6 +2086,7 @@ export async function reloadWorkspaceFile(path: string) {
     console.log('updating file', path);
   }
 }
+
 export function highlightSearch(query: string) { // TODO: filename?
   var wnd = projectWindows.getActive();
   if (wnd instanceof SourceEditor) {
