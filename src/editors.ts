@@ -64,9 +64,8 @@ export class SourceEditor implements ProjectView {
         parent.appendChild(div);
 
         var text = current_project.getFile(this.path) as string;
-        var asmOverride = text && this.mode == 'verilog' && /__asm\b([\s\S]+?)\b__endasm\b/.test(text);
 
-        this.newEditor(div, asmOverride);
+        this.newEditor(div);
 
         if (text) {
             this.setText(text);
@@ -87,9 +86,9 @@ export class SourceEditor implements ProjectView {
         }
     }
 
-    newEditor(parent: HTMLElement, isAsmOverride?: boolean) {
+    newEditor(parent: HTMLElement) {
         var modedef = MODEDEFS[this.mode] || MODEDEFS.default;
-        var isAsm = isAsmOverride || modedef.isAsm;
+        var isAsm = modedef.isAsm;
         var lineWrap = !!modedef.lineWrap;
         var theme = modedef.theme || MODEDEFS.default.theme;
         var lineNums = !modedef.noLineNumbers && !isMobileDevice;
