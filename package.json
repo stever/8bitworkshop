@@ -5,8 +5,10 @@
   "description": "8bitworkshop.com retro programming IDE",
   "license": "GPL-3.0",
   "scripts": {
-    "build": "npm run build:clean && npm run cp && npm run build:tsc && npm run build:es",
-    "build:clean": "del-cli public/dist",
+    "build": "npm run clean && npm run cp && npm run build:tsc && npm run build:es && npm run clean:build",
+    "clean": "npm run clean:build && npm run clean:dist",
+    "clean:build": "del-cli build",
+    "clean:dist": "del-cli public/dist",
     "cp": "npm run cp:jquery && npm run cp:bootstrap && npm run cp:bootbox && npm run cp:codemirror",
     "cp:jquery": "copyfiles -u 3 node_modules/jquery/dist/jquery.min.js ./public/dist/",
     "cp:bootstrap": "copyfiles -u 3 \"node_modules/bootstrap/dist/**/*\" ./public/dist/bootstrap/",
