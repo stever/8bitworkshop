@@ -18,7 +18,7 @@ import {
     getBasePlatform,
     getWithBinary
 } from "./util";
-import {Platform} from "./emulator/zx";
+import {Platform} from "./emulator/zx_interfaces";
 import localforage from "localforage";
 
 export interface ProjectFilesystem {

@@ -1,4 +1,4 @@
-import {Platform, EmuState, EmuControlsState, EmuRecorder} from "./zx";
+import {Platform, EmuState, EmuControlsState, EmuRecorder} from "./zx_interfaces";
 
 let _random_state = 1;
 

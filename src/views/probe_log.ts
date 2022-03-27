@@ -1,6 +1,6 @@
 import {lpad, rpad} from "../util";
 import {platform} from "../ui";
-import {BaseZ80MachinePlatform, BaseZ80Platform} from "../emulator/zx";
+import {BaseZ80MachinePlatform, BaseZ80Platform} from "../emulator/zx_classes";
 import {ProbeFlags} from "../emulator/recorder";
 import {ProbeViewBaseBase, VirtualTextLine, VirtualTextScroller} from "../views";
 

@@ -1,0 +1,17 @@
+import {Segment} from "../worker/types";
+import {CpuState, EmuState} from "./zx_interfaces";
+
+export type DisasmLine = {
+    line: string,
+    nbytes: number,
+    isaddr: boolean
+};
+
+export type SymbolMap = { [ident: string]: number };
+export type AddrSymbolMap = { [address: number]: string };
+
+export type MemoryMap = { [type: string]: Segment[] };
+
+export type DebugCondition = () => boolean;
+export type DebugEvalCondition = (c: CpuState) => boolean;
+export type BreakpointCallback = (s: EmuState, msg?: string) => void;
