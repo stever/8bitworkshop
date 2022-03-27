@@ -74,50 +74,6 @@ export class BreakpointList {
     }
 }
 
-export abstract class BasePlatform {
-    recorder: EmuRecorder = null;
-    debugSymbols: DebugSymbols;
-    internalFiles: { [path: string]: FileData } = {};
-
-    abstract loadState(state: EmuState): void;
-
-    abstract saveState(): EmuState;
-
-    abstract pause(): void;
-
-    abstract resume(): void;
-
-    abstract advance(novideo?: boolean): number;
-
-    setRecorder(recorder: EmuRecorder): void {
-        this.recorder = recorder;
-    }
-
-    updateRecorder() {
-        // are we recording and do we need to save a frame?
-        if (this.recorder && (<Platform><any>this).isRunning() && this.recorder.frameRequested()) {
-            this.recorder.recordFrame(this.saveState());
-        }
-    }
-
-    inspect(sym: string): string {
-        return inspectSymbol((this as any) as Platform, sym);
-    }
-
-    getDebugTree(): {} {
-        return this.saveState();
-    }
-
-    readFile(path: string): FileData {
-        return this.internalFiles[path];
-    }
-
-    writeFile(path: string, data: FileData): boolean {
-        this.internalFiles[path] = data;
-        return true;
-    }
-}
-
 export class SerialIOVisualizer {
 
     textarea: HTMLTextAreaElement;
@@ -559,7 +515,12 @@ export class ZX_WASMMachine implements Machine {
     }
 }
 
-export class ZXWASMPlatform extends BasePlatform implements Platform {
+export class ZXWASMPlatform implements Platform {
+    recorder: EmuRecorder = null;
+    debugSymbols: DebugSymbols;
+    internalFiles: { [path: string]: FileData } = {};
+
+
     onBreakpointHit: BreakpointCallback;
     debugCallback: DebugCondition;
 
@@ -584,8 +545,35 @@ export class ZXWASMPlatform extends BasePlatform implements Platform {
     stopProbing;
 
     constructor(mainElement: HTMLElement) {
-        super();
         this.mainElement = mainElement;
+    }
+
+    setRecorder(recorder: EmuRecorder): void {
+        this.recorder = recorder;
+    }
+
+    updateRecorder() {
+        // are we recording and do we need to save a frame?
+        if (this.recorder && (<Platform><any>this).isRunning() && this.recorder.frameRequested()) {
+            this.recorder.recordFrame(this.saveState());
+        }
+    }
+
+    inspect(sym: string): string {
+        return inspectSymbol((this as any) as Platform, sym);
+    }
+
+    getDebugTree(): {} {
+        return this.saveState();
+    }
+
+    readFile(path: string): FileData {
+        return this.internalFiles[path];
+    }
+
+    writeFile(path: string, data: FileData): boolean {
+        this.internalFiles[path] = data;
+        return true;
     }
 
     setBreakpoint(id: string, cond: DebugCondition) {
