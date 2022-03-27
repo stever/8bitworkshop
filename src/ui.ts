@@ -29,19 +29,20 @@ import {
 } from "./util";
 import {StateRecorderImpl} from "./emulator/recorder";
 import Split = require('split.js');
-import {DisassemblerView, ListingView, SourceEditor} from "./editors";
+import {ListingView, SourceEditor} from "./editors";
+import {DisassemblerView} from "./views/disassembler";
 import {
     AddressHeatMapView,
     ProbeLogView,
     ProbeSymbolView,
     ScanlineIOView
-} from "./debug/views";
+} from "./views/views";
 import {
     BinaryFileView,
     MemoryMapView,
     MemoryView,
     VRAMMemoryView
-} from "./debug/memory";
+} from "./views/memory";
 import {
     DebugBrowserView,
     FrameCallsView

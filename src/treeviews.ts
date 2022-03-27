@@ -3,7 +3,7 @@ import {ProbeFlags} from "./emulator/recorder";
 import {hex} from "./util";
 import {platform} from "./ui";
 import {ProjectView} from "./baseviews";
-import {ProbeViewBaseBase} from "./debug/views";
+import {ProbeViewBaseBase} from "./views/views";
 
 const MAX_CHILDREN = 256;
 const MAX_STRING_LEN = 100;
@@ -221,25 +221,10 @@ export abstract class TreeViewBase implements ProjectView {
     abstract getRootObject(): Object;
 }
 
-export class StateBrowserView extends TreeViewBase implements ProjectView {
-    getRootObject() {
-        return platform.saveState();
-    }
-}
-
 export class DebugBrowserView extends TreeViewBase implements ProjectView {
     getRootObject() {
         return platform.getDebugTree();
     }
-}
-
-interface CallGraphNode {
-    $$SP: number;
-    $$PC: number;
-    count: number;
-    startLine: number;
-    endLine: number;
-    calls: { [id: string]: CallGraphNode };
 }
 
 export class FrameCallsView extends ProbeViewBaseBase implements ProjectView {
