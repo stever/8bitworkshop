@@ -1,25 +1,6 @@
 import {hex, printFlags} from "../util";
 import {ZXWASMPlatform} from "./zx_platform";
 
-export function inspectSymbol(platform: ZXWASMPlatform, sym: string): string {
-    if (!platform.debugSymbols) return;
-    var symmap = platform.debugSymbols.symbolmap;
-    var addr2sym = platform.debugSymbols.addr2symbol;
-    if (!symmap || !platform.readAddress) return null;
-    var addr = symmap["_" + sym] || symmap[sym]; // look for C or asm symbol
-    if (!(typeof addr == 'number')) return null;
-    var b = platform.readAddress(addr);
-
-    // don't show 2 bytes if there's a symbol at the next address
-    if (addr2sym && addr2sym[addr + 1] != null) {
-        return "$" + hex(addr, 4) + " = $" + hex(b, 2) + " (" + b + " decimal)"; // unsigned
-    } else {
-        let b2 = platform.readAddress(addr + 1);
-        let w = b | (b2 << 8);
-        return "$" + hex(addr, 4) + " = $" + hex(b, 2) + " $" + hex(b2, 2) + " (" + ((w << 16) >> 16) + " decimal)"; // signed
-    }
-}
-
 export function cpuStateToLongString_Z80(c) {
     function decodeFlags(flags) {
         return printFlags(flags, ["S", "Z", "H", "V", "N", "C"], true);

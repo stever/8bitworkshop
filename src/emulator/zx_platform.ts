@@ -14,11 +14,11 @@ import {ProbeRecorder} from "./recorder";
 import {
     cpuStateToLongString_Z80,
     dumpStackToString,
-    getToolForFilename_z80,
-    inspectSymbol,
+    getToolForFilename_z80
 } from "./zx_functions";
 import {ZXWASMMachine} from "./zx_machine";
 import {disassemble} from "./disassemble";
+import {hex} from "../util";
 
 export class ZXWASMPlatform {
     recorder: EmuRecorder = null;
@@ -434,5 +434,24 @@ export class ZXWASMPlatform {
 
     showHelp() {
         window.open("https://worldofspectrum.org/faq/reference/reference.htm", "_help");
+    }
+}
+
+function inspectSymbol(platform: ZXWASMPlatform, sym: string): string {
+    if (!platform.debugSymbols) return;
+    var symmap = platform.debugSymbols.symbolmap;
+    var addr2sym = platform.debugSymbols.addr2symbol;
+    if (!symmap || !platform.readAddress) return null;
+    var addr = symmap["_" + sym] || symmap[sym]; // look for C or asm symbol
+    if (!(typeof addr == 'number')) return null;
+    var b = platform.readAddress(addr);
+
+    // don't show 2 bytes if there's a symbol at the next address
+    if (addr2sym && addr2sym[addr + 1] != null) {
+        return "$" + hex(addr, 4) + " = $" + hex(b, 2) + " (" + b + " decimal)"; // unsigned
+    } else {
+        let b2 = platform.readAddress(addr + 1);
+        let w = b | (b2 << 8);
+        return "$" + hex(addr, 4) + " = $" + hex(b, 2) + " $" + hex(b2, 2) + " (" + ((w << 16) >> 16) + " decimal)"; // signed
     }
 }
