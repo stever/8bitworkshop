@@ -1,7 +1,7 @@
 import {KeyFlags} from "./keys";
 import {TrapCondition} from "./devices";
 import {CPU, SampledAudioSink, ProbeAll, NullProbe} from "./devices";
-import {EmuHalt} from "./emu";
+import {EmuHalt} from "./error";
 import {RasterVideo, AnimationTimer} from "./video";
 import {ControllerPoller} from "./joystick";
 import {hex, printFlags, invertMap, byteToASCII} from "../util";

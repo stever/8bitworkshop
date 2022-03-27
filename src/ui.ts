@@ -17,7 +17,7 @@ import {
     EmuState,
     ZXWASMPlatform
 } from "./emulator/zx";
-import {EmuHalt} from "./emulator/emu";
+import {EmuHalt} from "./emulator/error";
 import {Toolbar} from "./toolbar";
 import {
     getFilenameForPath,
