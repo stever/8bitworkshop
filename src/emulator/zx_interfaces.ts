@@ -1,14 +1,6 @@
 import {FileData} from "../worker/types";
 import {ProbeRecorder} from "./recorder";
 import {
-    AcceptsROM,
-    Bus,
-    FrameBased,
-    HasCPU,
-    Resettable, SavesInputState,
-    SavesState
-} from "./devices";
-import {
     BreakpointCallback,
     DebugCondition,
     DebugEvalCondition,
@@ -26,16 +18,13 @@ export interface OpcodeMetadata {
 export interface CpuState {
     PC: number;
     EPC?: number; // effective PC (for bankswitching)
-    o?: number;/*opcode*/
+    o?: number; // opcode
     SP?: number
-    /*
-    A:number, X:number, Y:number, SP:number, R:boolean,
-    N,V,D,Z,C:boolean*/
 }
 
 export interface EmuState {
-    c?: CpuState,	// CPU state
-    b?: Uint8Array | number[], 	// RAM
+    c?: CpuState, // CPU state
+    b?: Uint8Array | number[], // RAM
     ram?: Uint8Array,
 }
 
@@ -168,13 +157,6 @@ export interface Preset {
     name: string;
     chapter?: number;
     title?: string;
-}
-
-export interface MemoryBus {
-    read: (address: number) => number;
-    write: (address: number, value: number) => void;
-    contend?: (address: number, cycles: number) => number;
-    isContended?: (address: number) => boolean;
 }
 
 export interface Breakpoint {

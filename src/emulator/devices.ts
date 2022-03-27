@@ -12,10 +12,6 @@ export interface Bus {
     readConst?(a: number): number;
 }
 
-export interface InstructionBased {
-    advanceInsn(): number;
-}
-
 export type TrapCondition = () => boolean;
 
 export interface FrameBased {
@@ -58,10 +54,6 @@ export interface SampledAudioSource {
     connectAudio(audio: SampledAudioSink): void;
 }
 
-export interface AcceptsROM {
-    loadROM(data: Uint8Array, title?: string): void;
-}
-
 export interface AcceptsBIOS {
     loadBIOS(data: Uint8Array, title?: string): void;
 }
@@ -74,10 +66,6 @@ export interface MemoryBusConnected {
     connectMemoryBus(bus: Bus): void;
 }
 
-export interface IOBusConnected {
-    connectIOBus(bus: Bus): void;
-}
-
 export interface CPU extends MemoryBusConnected, Resettable, SavesState<any> {
     getPC(): number;
 
@@ -86,30 +74,12 @@ export interface CPU extends MemoryBusConnected, Resettable, SavesState<any> {
     isStable(): boolean;
 }
 
-export interface HasCPU extends Resettable {
-    cpu: CPU;
-}
-
-export interface Interruptable<IT> {
-    interrupt(type: IT): void;
-}
-
-export interface SavesInputState<CS> {
-    loadControlsState(cs: CS): void;
-
-    saveControlsState(): CS;
-}
-
 export interface AcceptsKeyInput {
     setKeyInput(key: number, code: number, flags: number): void;
 }
 
 export interface AcceptsPaddleInput {
     setPaddleInput(controller: number, value: number): void;
-}
-
-export interface AcceptsJoyInput {
-    setJoyInput(joy: number, bitmask: number): void;
 }
 
 // SERIAL I/O
