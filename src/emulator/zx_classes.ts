@@ -17,7 +17,6 @@ import {
     NullProbe,
     ProbeAll,
     SampledAudioSink,
-    SerialIOInterface,
     TrapCondition
 } from "./devices";
 import {ProbeRecorder} from "./recorder";
@@ -163,19 +162,17 @@ export class ZXWASMMachine {
         }
     }
 
-    getImports(wmod: WebAssembly.Module) {
-        return {};
-    }
-
     async fetchWASM() {
         var wasmResponse = await fetch('wasm/zx.wasm');
         if (wasmResponse.status == 200 || (wasmResponse as any as Blob).size) {
             var wasmBinary = await wasmResponse.arrayBuffer();
             var wasmCompiled = await WebAssembly.compile(wasmBinary);
-            var wasmResult = await WebAssembly.instantiate(wasmCompiled, this.getImports(wasmCompiled));
+            var wasmResult = await WebAssembly.instantiate(wasmCompiled, {});
             this.instance = wasmResult;
             this.exports = wasmResult.exports;
-        } else throw new Error('could not load WASM file');
+        } else {
+            throw new Error('could not load WASM file');
+        }
     }
 
     async fetchBIOS() {
@@ -185,7 +182,9 @@ export class ZXWASMMachine {
             this.biosptr = this.exports.malloc(biosBinary.byteLength);
             this.biosarr = new Uint8Array(this.exports.memory.buffer, this.biosptr, biosBinary.byteLength);
             this.loadBIOS(new Uint8Array(biosBinary));
-        } else throw new Error('could not load BIOS file');
+        } else {
+            throw new Error('could not load BIOS file');
+        }
     }
 
     async initWASM() {
@@ -343,10 +342,6 @@ export class ZXWASMMachine {
         this.probe = probe;
     }
 
-    getDebugTree() {
-        return this.saveState();
-    }
-
     numTotalScanlines = 312;
     cpuCyclesPerLine = 224;
 
@@ -376,19 +371,6 @@ export class ZXWASMMachine {
         if (probing) this.copyProbeData();
         return clocks;
     }
-
-    /*
-    z80_tick_t tick_cb; // 0
-    uint64_t bc_de_hl_fa; // 8
-    uint64_t bc_de_hl_fa_; // 16
-    uint64_t wz_ix_iy_sp; // 24
-    uint64_t im_ir_pc_bits; // 32
-    uint64_t pins;          // 48
-    void* user_data;
-    z80_trap_t trap_cb;
-    void* trap_user_data;
-    int trap_id;
-    */
 
     getCPUState() {
         this.exports.machine_save_cpu_state(this.sys, this.cpustateptr);
@@ -494,7 +476,6 @@ export class ZXWASMPlatform {
     video: RasterVideo;
     audio: SampledAudio;
     poller: ControllerPoller;
-    serialIOInterface: SerialIOInterface;
     serialVisualizer: SerialIOVisualizer;
 
     probeRecorder: ProbeRecorder;
@@ -546,10 +527,6 @@ export class ZXWASMPlatform {
         delete this.breakpoints.id2bp[id];
     }
 
-    hasBreakpoint(id: string) {
-        return this.breakpoints.id2bp[id] != null;
-    }
-
     getDebugCallback(): DebugCondition {
         return this.breakpoints.getDebugCondition();
     }
@@ -578,6 +555,7 @@ export class ZXWASMPlatform {
         } else {
             this.debugSavedState = this.saveState();
         }
+
         this.debugClock = 0;
         this.debugCallback = this.getDebugCallback();
         this.debugBreakState = null;
@@ -587,6 +565,7 @@ export class ZXWASMPlatform {
     preFrame() {
         // save state before frame, to record any inputs that happened pre-frame
         if (this.debugCallback && !this.debugBreakState) {
+
             // save state every frame and rewind debug clocks
             this.debugSavedState = this.saveState();
             this.debugTargetClock -= this.debugClock;
@@ -599,6 +578,7 @@ export class ZXWASMPlatform {
         if (this.debugCallback && this.debugBreakState) {
             this.loadState(this.debugBreakState);
         }
+
         this.frameCount++;
     }
 
@@ -611,16 +591,14 @@ export class ZXWASMPlatform {
         return steps;
     }
 
-    wasBreakpointHit(): boolean {
-        return this.debugBreakState != null;
-    }
-
     breakpointHit(targetClock: number, reason?: string) {
         console.log(this.debugTargetClock, targetClock, this.debugClock, this.isStable());
         this.debugTargetClock = targetClock;
         this.debugBreakState = this.saveState();
         console.log("Breakpoint at clk", this.debugClock, "PC", this.debugBreakState.c.PC.toString(16));
+
         this.pause();
+
         if (this.onBreakpointHit) {
             this.onBreakpointHit(this.debugBreakState, reason);
         }
@@ -630,6 +608,7 @@ export class ZXWASMPlatform {
         this.setDebugCondition(() => {
             if (++this.debugClock >= this.debugTargetClock && this.isStable()) {
                 var cpuState = this.getCPUState();
+
                 if (evalfunc(cpuState)) {
                     this.breakpointHit(this.debugClock);
                     return true;
@@ -642,6 +621,7 @@ export class ZXWASMPlatform {
 
     runToPC(pc: number) {
         this.debugTargetClock++;
+
         this.runEval((c) => {
             return c.PC == pc;
         });
@@ -649,6 +629,7 @@ export class ZXWASMPlatform {
 
     runUntilReturn() {
         var SP0 = this.getSP();
+
         this.runEval((c: CpuState): boolean => {
             return c.SP > SP0;
         });
@@ -657,6 +638,7 @@ export class ZXWASMPlatform {
     runToFrameClock(clock: number): void {
         this.restartDebugging();
         this.debugTargetClock = clock;
+
         this.runEval((): boolean => {
             return true;
         });
@@ -672,6 +654,7 @@ export class ZXWASMPlatform {
         var clock0 = this.debugTargetClock;
         this.restartDebugging();
         this.debugTargetClock = clock0 - 25;
+
         this.runEval((c: CpuState): boolean => {
             if (this.debugClock < clock0) {
                 prevState = this.saveState();
@@ -682,6 +665,7 @@ export class ZXWASMPlatform {
                     this.loadState(prevState);
                     this.debugClock = prevClock;
                 }
+
                 return true;
             }
         });
@@ -689,7 +673,10 @@ export class ZXWASMPlatform {
 
     reset() {
         this.machine.reset();
-        if (this.serialVisualizer != null) this.serialVisualizer.reset();
+
+        if (this.serialVisualizer != null) {
+            this.serialVisualizer.reset();
+        }
     }
 
     loadState(s) {
@@ -702,10 +689,6 @@ export class ZXWASMPlatform {
 
     getSP() {
         return this.machine.cpu.getSP();
-    }
-
-    getPC() {
-        return this.machine.cpu.getPC();
     }
 
     isStable() {
@@ -727,19 +710,23 @@ export class ZXWASMPlatform {
     async start() {
         this.machine = this.newMachine();
         const m = this.machine;
-        // block on WASM loading
 
+        // block on WASM loading
         if (m instanceof ZXWASMMachine) {
             await m.loadWASM();
         }
 
         var videoFrequency;
         var vp = m.getVideoParams();
+
         this.video = new RasterVideo(this.mainElement, vp.width, vp.height, {overscan: !!vp.overscan});
         this.video.create();
+
         m.connectVideo(this.video.getFrameData());
+
         this.video.setKeyboardEvents(m.setKeyInput.bind(m));
         this.poller = new ControllerPoller(m.setKeyInput.bind(m));
+
         videoFrequency = vp.videoFrequency;
 
         this.timer = new AnimationTimer(videoFrequency || 60, this.nextFrame.bind(this));
@@ -750,10 +737,12 @@ export class ZXWASMPlatform {
         m.connectAudio(this.audio);
 
         this.probeRecorder = new ProbeRecorder(m);
+
         this.startProbing = () => {
             m.connectProbe(this.probeRecorder);
             return this.probeRecorder;
         };
+
         this.stopProbing = () => {
             m.connectProbe(null);
         };
@@ -779,13 +768,23 @@ export class ZXWASMPlatform {
 
     advance(novideo: boolean) {
         var steps = this.machine.advanceFrame(this.getDebugCallback());
-        if (!novideo && this.video) this.video.updateFrame();
-        if (!novideo && this.serialVisualizer) this.serialVisualizer.refresh();
+
+        if (!novideo && this.video) {
+            this.video.updateFrame();
+        }
+
+        if (!novideo && this.serialVisualizer) {
+            this.serialVisualizer.refresh();
+        }
+
         return steps;
     }
 
     advanceFrameClock(trap, step) {
-        if (!(step > 0)) return;
+        if (!(step > 0)) {
+            return;
+        }
+
         return this.machine.advanceFrameClock(trap, step);
     }
 
@@ -801,13 +800,12 @@ export class ZXWASMPlatform {
     pause() {
         this.timer.stop();
         this.audio && this.audio.stop();
-        // i guess for runToVsync()?
+
         if (this.probeRecorder) {
             this.probeRecorder.singleFrame = true;
         }
     }
 
-    // so probe views stick around
     runToVsync() {
         if (this.probeRecorder) {
             this.probeRecorder.clear();
@@ -815,6 +813,7 @@ export class ZXWASMPlatform {
         }
 
         this.restartDebugging();
+
         var frame0 = this.frameCount;
 
         this.runEval((): boolean => {
@@ -825,10 +824,11 @@ export class ZXWASMPlatform {
     getToolForFilename = getToolForFilename_z80;
 
     getDebugCategories() {
-        if (isDebuggable(this.machine))
+        if (isDebuggable(this.machine)) {
             return this.machine.getDebugCategories();
-        else
+        } else {
             return ['CPU', 'Stack'];
+        }
     }
 
     getDebugInfo(category: string, state: EmuState): string {
@@ -859,10 +859,6 @@ export class ZXWASMPlatform {
     getPresets() {
         return ZX_PRESETS;
     }
-
-    getDefaultExtension() {
-        return ".asm";
-    };
 
     readAddress(a) {
         return this.machine.readConst(a);
