@@ -1,4 +1,4 @@
-import {dumpRAM} from "./emulator/emu";
+import {dumpRAM} from "./emulator/ram";
 import {ProbeFlags} from "./emulator/recorder";
 import {hex} from "./util";
 import {platform} from "./ui";

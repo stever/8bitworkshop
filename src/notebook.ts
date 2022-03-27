@@ -1,7 +1,7 @@
 import {Component, h, createRef, VNode} from 'preact';
 import {PROP_CONSTRUCTOR_NAME} from "./env";
 import {hex, isArray} from "./util";
-import {dumpRAM} from "./emulator/emu";
+import {dumpRAM} from "./emulator/ram";
 import {current_project} from "./ui";
 
 import * as scriptui from "./scriptui";
