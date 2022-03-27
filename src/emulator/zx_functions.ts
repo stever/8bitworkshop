@@ -2,7 +2,10 @@ import {hex, printFlags} from "../util";
 import {
     AcceptsBIOS,
     AcceptsKeyInput,
-    AcceptsPaddleInput, HasSerialIO, Probeable, RasterFrameBased,
+    AcceptsPaddleInput,
+    HasSerialIO,
+    Probeable,
+    RasterFrameBased,
     SampledAudioSource,
     VideoSource
 } from "./devices";
