@@ -31,7 +31,7 @@ import {StateRecorderImpl} from "./emulator/recorder";
 import Split = require('split.js');
 import {ListingView, SourceEditor} from "./editors";
 import {DisassemblerView} from "./views/disassembly";
-import {BinaryFileView, VRAMMemoryView} from "./views";
+import {BinaryFileView} from "./views";
 import {MemoryView} from "./views/memory_browser";
 import {MemoryMapView} from "./views/memory_map";
 import {AddressHeatMapView} from "./views/memory_probe";
@@ -231,12 +231,6 @@ function refreshWindowList() {
     if (current_project.segments && current_project.segments.length) {
         addWindowItem("#memmap", "Memory Map", () => {
             return new MemoryMapView();
-        });
-    }
-
-    if (platform.readVRAMAddress) {
-        addWindowItem("#memvram", "VRAM Browser", () => {
-            return new VRAMMemoryView();
         });
     }
 
@@ -872,10 +866,6 @@ function getDebugExprExamples(): string {
 
     if (platform.readAddress) {
         s += "this.readAddress(0x1234) == 0x0\n";
-    }
-
-    if (platform.readVRAMAddress) {
-        s += "this.readVRAMAddress(0x1234) != 0x80\n";
     }
 
     if (platform['getRasterScanline']) {

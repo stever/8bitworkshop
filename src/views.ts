@@ -262,22 +262,6 @@ export abstract class ProbeViewBaseBase {
     }
 }
 
-export class VRAMMemoryView extends MemoryView {
-    totalRows = 0x800;
-
-    readAddress(n: number) {
-        return platform.readVRAMAddress(n);
-    }
-
-    getMemorySegment(a: number): string {
-        return 'video';
-    }
-
-    getDumpLines() {
-        return null;
-    }
-}
-
 export class BinaryFileView implements ProjectView {
     vlist: VirtualTextScroller;
     maindiv: HTMLElement;

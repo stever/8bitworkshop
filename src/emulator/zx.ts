@@ -126,8 +126,6 @@ export interface Platform {
 
     readAddress?(addr: number): number;
 
-    readVRAMAddress?(addr: number): number;
-
     setFrameRate?(fps: number): void;
 
     getFrameRate?(): number;
