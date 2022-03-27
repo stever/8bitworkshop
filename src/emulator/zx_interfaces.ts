@@ -186,7 +186,3 @@ export interface EmuRecorder {
 
     recordFrame(state: EmuState);
 }
-
-export interface Machine extends Bus, Resettable, FrameBased, AcceptsROM, HasCPU, SavesState<EmuState>, SavesInputState<any> {
-
-}

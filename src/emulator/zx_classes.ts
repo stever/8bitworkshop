@@ -28,7 +28,6 @@ import {
     CpuState,
     EmuRecorder,
     EmuState,
-    Machine,
     Platform
 } from "./zx_interfaces";
 import {
@@ -125,7 +124,7 @@ export class SerialIOVisualizer {
     }
 }
 
-export class ZXWASMMachine implements Machine {
+export class ZXWASMMachine {
     prefix: string;
     instance: WebAssembly.Instance;
     exports: any;
