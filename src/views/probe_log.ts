@@ -7,7 +7,6 @@ import {ProbeViewBaseBase, VirtualTextLine, VirtualTextScroller} from "../views"
 export class ProbeLogView extends ProbeViewBaseBase {
     vlist: VirtualTextScroller;
     maindiv: HTMLElement;
-    recreateOnResize = true;
     dumplines;
 
     createDiv(parent: HTMLElement) {
