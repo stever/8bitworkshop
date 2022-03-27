@@ -550,39 +550,6 @@ export abstract class BaseMachinePlatform extends BaseDebugPlatform implements P
     }
 }
 
-export abstract class BaseZ80MachinePlatform extends BaseMachinePlatform {
-
-    getToolForFilename = getToolForFilename_z80;
-
-    getDebugCategories() {
-        if (isDebuggable(this.machine))
-            return this.machine.getDebugCategories();
-        else
-            return ['CPU', 'Stack'];
-    }
-
-    getDebugInfo(category: string, state: EmuState): string {
-        switch (category) {
-            case 'CPU':
-                return cpuStateToLongString_Z80(state.c);
-            case 'Stack': {
-                var sp = (state.c.SP - 1) & 0xffff;
-                var start = sp & 0xff00;
-                var end = start + 0xff;
-                if (sp == 0) sp = 0x10000;
-                console.log(sp, start, end);
-                return dumpStackToString(<Platform><any>this, [], start, end, sp, 0xcd);
-            }
-            default:
-                return isDebuggable(this.machine) && this.machine.getDebugInfo(category, state);
-        }
-    }
-
-    disassemble(pc: number, read: (addr: number) => number): DisasmLine {
-        return disassemble(pc, read(pc), read(pc + 1), read(pc + 2), read(pc + 3));
-    }
-}
-
 export class SerialIOVisualizer {
 
     textarea: HTMLTextAreaElement;
@@ -1024,7 +991,38 @@ export class ZX_WASMMachine implements Machine {
     }
 }
 
-export class ZXWASMPlatform extends BaseZ80MachinePlatform implements Platform {
+export class ZXWASMPlatform extends BaseMachinePlatform implements Platform {
+
+    getToolForFilename = getToolForFilename_z80;
+
+    getDebugCategories() {
+        if (isDebuggable(this.machine))
+            return this.machine.getDebugCategories();
+        else
+            return ['CPU', 'Stack'];
+    }
+
+    getDebugInfo(category: string, state: EmuState): string {
+        switch (category) {
+            case 'CPU':
+                return cpuStateToLongString_Z80(state.c);
+            case 'Stack': {
+                var sp = (state.c.SP - 1) & 0xffff;
+                var start = sp & 0xff00;
+                var end = start + 0xff;
+                if (sp == 0) sp = 0x10000;
+                console.log(sp, start, end);
+                return dumpStackToString(<Platform><any>this, [], start, end, sp, 0xcd);
+            }
+            default:
+                return isDebuggable(this.machine) && this.machine.getDebugInfo(category, state);
+        }
+    }
+
+    disassemble(pc: number, read: (addr: number) => number): DisasmLine {
+        return disassemble(pc, read(pc), read(pc + 1), read(pc + 2), read(pc + 3));
+    }
+
     newMachine() {
         return new ZX_WASMMachine('zx');
     }
