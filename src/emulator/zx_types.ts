@@ -1,4 +1,3 @@
-import {Segment} from "../worker/types";
 import {CpuState, EmuState} from "./zx_interfaces";
 
 export type DisasmLine = {
