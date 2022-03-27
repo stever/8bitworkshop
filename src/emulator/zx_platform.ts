@@ -332,10 +332,6 @@ export class ZXWASMPlatform {
         this.stopProbing = () => {
             m.connectProbe(null);
         };
-
-        this.loadBIOS = (data) => {
-            m.loadBIOS(data);
-        };
     }
 
     loadROM(title, data) {
@@ -343,7 +339,9 @@ export class ZXWASMPlatform {
         this.reset();
     }
 
-    loadBIOS: (data) => void; // only set if hasBIOS() is true
+    loadBIOS(data) {
+        this.machine.loadBIOS(data);
+    }
 
     pollControls() {
         this.poller && this.poller.poll();
