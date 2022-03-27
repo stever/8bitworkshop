@@ -30,7 +30,7 @@ import {
 import {StateRecorderImpl} from "./emulator/recorder";
 import Split = require('split.js');
 import {ListingView, SourceEditor} from "./editors";
-import {DisassemblerView} from "./views/disassembler";
+import {DisassemblerView} from "./views/disassembly";
 import {
     AddressHeatMapView,
     ProbeLogView,

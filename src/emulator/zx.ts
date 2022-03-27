@@ -6,7 +6,7 @@ import {RasterVideo, AnimationTimer} from "./video";
 import {ControllerPoller} from "./joystick";
 import {hex, printFlags, invertMap, byteToASCII} from "../util";
 import {Segment, FileData} from "../worker/types";
-import {disassembleZ80} from "./disasmz80";
+import {disassembleZ80} from "./disassemble";
 import {
     Bus,
     Resettable,
