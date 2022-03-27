@@ -446,69 +446,20 @@ export class ZXWASMMachine {
         var mask = 0;
         var mask2 = 0;
 
-        if (key == 37) {
-            key = 0x8;
-            mask = 0x4;
-        } // LEFT
-
-        if (key == 38) {
-            key = 0xb;
-            mask = 0x1;
-        } // UP
-
-        if (key == 39) {
-            key = 0x9;
-            mask = 0x8;
-        } // RIGHT
-
-        if (key == 40) {
-            key = 0xa;
-            mask = 0x2;
-        } // DOWN
-
-        if (key == 32) {
-            mask = 0x10;
-        } // FIRE
-
-        if (key == 65) {
-            key = 65;
-            mask2 = 0x4;
-        } // LEFT
-
-        if (key == 87) {
-            key = 87;
-            mask2 = 0x1;
-        } // UP
-
-        if (key == 68) {
-            key = 68;
-            mask2 = 0x8;
-        } // RIGHT
-
-        if (key == 83) {
-            key = 83;
-            mask2 = 0x2;
-        } // DOWN
-
-        if (key == 69) {
-            mask2 = 0x10;
-        } // FIRE
-
-        if (key == 113) {
-            key = 0xf1;
-        } // F2
-
-        if (key == 115) {
-            key = 0xf3;
-        } // F4
-
-        if (key == 119) {
-            key = 0xf5;
-        } // F8
-
-        if (key == 121) {
-            key = 0xf7;
-        } // F10
+        if (key == 37) { key = 0x8; mask = 0x4; } // LEFT
+        if (key == 38) { key = 0xb; mask = 0x1; } // UP
+        if (key == 39) { key = 0x9; mask = 0x8; } // RIGHT
+        if (key == 40) { key = 0xa; mask = 0x2; } // DOWN
+        if (key == 32) { mask = 0x10; } // FIRE
+        if (key == 65) { key = 65; mask2 = 0x4; } // LEFT
+        if (key == 87) { key = 87; mask2 = 0x1; } // UP
+        if (key == 68) { key = 68; mask2 = 0x8; } // RIGHT
+        if (key == 83) { key = 83; mask2 = 0x2; } // DOWN
+        if (key == 69) { mask2 = 0x10; } // FIRE
+        if (key == 113) { key = 0xf1; } // F2
+        if (key == 115) { key = 0xf3; } // F4
+        if (key == 119) { key = 0xf5; } // F8
+        if (key == 121) { key = 0xf7; } // F10
 
         if (flags & KeyFlags.KeyDown) {
             this.exports.machine_key_down(this.sys, key);
