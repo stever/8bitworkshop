@@ -68,7 +68,7 @@ export interface Platform {
 
     loadROM(title: string, rom: any);
 
-    loadBIOS?(title: string, rom: Uint8Array);
+    loadBIOS(rom: Uint8Array);
 
     getROMExtension?(rom: FileData): string;
 

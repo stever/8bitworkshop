@@ -1228,7 +1228,7 @@ async function loadBIOSFromProject() {
 
         if (biosdata instanceof Uint8Array) {
             console.log('loading BIOS', biospath, biosdata.length + " bytes")
-            platform.loadBIOS(biospath, biosdata);
+            platform.loadBIOS(biosdata);
         } else {
             console.log('BIOS file must be binary')
         }

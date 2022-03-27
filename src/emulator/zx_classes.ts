@@ -350,8 +350,8 @@ export abstract class BaseZ80Platform extends BaseDebugPlatform {
     }
 }
 
-export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPlatform implements Platform {
-    machine: T;
+export abstract class BaseMachinePlatform extends BaseDebugPlatform implements Platform {
+    machine: ZX_WASMMachine;
     mainElement: HTMLElement;
     timer: AnimationTimer;
     video: RasterVideo;
@@ -364,7 +364,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
     startProbing;
     stopProbing;
 
-    abstract newMachine(): T;
+    abstract newMachine(): ZX_WASMMachine;
 
     abstract getToolForFilename(s: string): string;
 
@@ -426,12 +426,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
         var videoFrequency;
         if (hasVideo(m)) {
             var vp = m.getVideoParams();
-            this.video = new RasterVideo(this.mainElement, vp.width, vp.height,
-                {
-                    overscan: !!vp.overscan,
-                    rotate: vp.rotate | 0,
-                    aspect: vp.aspect
-                });
+            this.video = new RasterVideo(this.mainElement, vp.width, vp.height, {overscan: !!vp.overscan});
             this.video.create();
             m.connectVideo(this.video.getFrameData());
             if (hasKeyInput(m)) {
@@ -466,8 +461,8 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
         }
 
         if (hasBIOS(m)) {
-            this.loadBIOS = (title, data) => {
-                m.loadBIOS(data, title);
+            this.loadBIOS = (data) => {
+                m.loadBIOS(data);
             };
         }
 
@@ -485,7 +480,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
         this.reset();
     }
 
-    loadBIOS: (title, data) => void; // only set if hasBIOS() is true
+    loadBIOS: (data) => void; // only set if hasBIOS() is true
 
     pollControls() {
         this.poller && this.poller.poll();
@@ -507,13 +502,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
 
     advanceFrameClock(trap, step) {
         if (!(step > 0)) return;
-        if (this.machine instanceof ZX_WASMMachine) {
-            return this.machine.advanceFrameClock(trap, step);
-        } else {
-            return this.machine.advanceFrame(() => {
-                return --step <= 0;
-            });
-        }
+        return this.machine.advanceFrameClock(trap, step);
     }
 
     isRunning() {
@@ -561,7 +550,7 @@ export abstract class BaseMachinePlatform<T extends Machine> extends BaseDebugPl
     }
 }
 
-export abstract class BaseZ80MachinePlatform<T extends Machine> extends BaseMachinePlatform<T> {
+export abstract class BaseZ80MachinePlatform extends BaseMachinePlatform {
 
     getToolForFilename = getToolForFilename_z80;
 
@@ -1035,7 +1024,7 @@ export class ZX_WASMMachine implements Machine {
     }
 }
 
-export class ZXWASMPlatform extends BaseZ80MachinePlatform<ZX_WASMMachine> implements Platform {
+export class ZXWASMPlatform extends BaseZ80MachinePlatform implements Platform {
     newMachine() {
         return new ZX_WASMMachine('zx');
     }
