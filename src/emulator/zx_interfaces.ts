@@ -1,19 +1,4 @@
-import {FileData} from "../worker/types";
-import {ProbeRecorder} from "./recorder";
-import {
-    BreakpointCallback,
-    DebugCondition,
-    DebugEvalCondition,
-    DisasmLine, MemoryMap
-} from "./zx_types";
-import {DebugSymbols} from "./zx_classes";
-
-export interface OpcodeMetadata {
-    minCycles: number;
-    maxCycles: number;
-    insnlength: number;
-    opcode: number;
-}
+import {DebugCondition} from "./zx_types";
 
 export interface CpuState {
     PC: number;
