@@ -15,7 +15,6 @@ import {Toolbar} from "./toolbar";
 import {
     getFilenameForPath,
     getFilenamePrefix,
-    highlightDifferences,
     getBasePlatform,
     hex,
     decodeQueryString
@@ -60,7 +59,6 @@ let current_output: any; // current ROM (or other object)
 let current_preset: Preset; // current preset object (if selected)
 let store: LocalForage; // persistent store
 let lastDebugInfo; // last debug info (CPU text)
-let debugCategory; // current debug category
 let debugTickPaused = false;
 let recorderActive = false;
 let lastViewClicked = null;
