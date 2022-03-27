@@ -2,7 +2,9 @@ import {byteToASCII, invertMap} from "../util";
 import {
     AddrSymbolMap,
     BreakpointCallback,
-    DebugCondition, DebugEvalCondition, DisasmLine,
+    DebugCondition,
+    DebugEvalCondition,
+    DisasmLine,
     SymbolMap
 } from "./zx_types";
 import {FileData} from "../worker/types";
@@ -11,20 +13,23 @@ import {SampledAudio} from "./audio";
 import {ControllerPoller} from "./joystick";
 import {
     CPU,
-    HasSerialIO, NullProbe,
+    HasSerialIO,
+    NullProbe,
     ProbeAll,
     SampledAudioSink,
-    SerialIOInterface, TrapCondition
+    SerialIOInterface,
+    TrapCondition
 } from "./devices";
 import {ProbeRecorder} from "./recorder";
 import {EmuHalt} from "./error";
 import {KeyFlags} from "./keys";
 import {
-    Breakpoint, CpuState,
+    Breakpoint,
+    CpuState,
     EmuRecorder,
     EmuState,
     Machine,
-    Platform, Preset
+    Platform
 } from "./zx_interfaces";
 import {
     cpuStateToLongString_Z80,
@@ -75,7 +80,6 @@ export class BreakpointList {
 }
 
 export class SerialIOVisualizer {
-
     textarea: HTMLTextAreaElement;
     device: HasSerialIO;
     lastOutCount = -1;
@@ -122,7 +126,6 @@ export class SerialIOVisualizer {
 }
 
 export class ZX_WASMMachine implements Machine {
-
     prefix: string;
     instance: WebAssembly.Instance;
     exports: any;
@@ -519,8 +522,7 @@ export class ZXWASMPlatform implements Platform {
     recorder: EmuRecorder = null;
     debugSymbols: DebugSymbols;
     internalFiles: { [path: string]: FileData } = {};
-
-
+    
     onBreakpointHit: BreakpointCallback;
     debugCallback: DebugCondition;
 
