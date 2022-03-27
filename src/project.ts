@@ -18,8 +18,8 @@ import {
     getBasePlatform,
     getWithBinary
 } from "./util";
-import {Platform} from "./emulator/zx_interfaces";
 import localforage from "localforage";
+import {ZXWASMPlatform} from "./emulator/zx_classes";
 
 export interface ProjectFilesystem {
     getFileData(path: string): Promise<FileData>;
@@ -125,7 +125,7 @@ export class CodeProject {
     tools_preloaded = {};
     worker: Worker;
     platform_id: string;
-    platform: Platform;
+    platform: ZXWASMPlatform;
     isCompiling: boolean = false;
     filename2path = {}; // map stripped paths to full paths
     filesystem: ProjectFilesystem;
@@ -425,7 +425,7 @@ export class CodeProject {
         }
 
         // save and sort segment list
-        var segs = (this.platform.getMemoryMap && this.platform.getMemoryMap()["main"]) || [];
+        var segs: Segment[] = this.platform.getMemoryMap()["main"];
         if (data.segments) {
             segs = segs.concat(data.segments || []);
         }

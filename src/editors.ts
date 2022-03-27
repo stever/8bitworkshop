@@ -322,14 +322,6 @@ export class SourceEditor implements ProjectView {
                 if (info.iscode) {
                     if (info.cycles) {
                         this.setGutter("gutter-clock", info.line - 1, info.cycles + "");
-                    } else if (platform.getOpcodeMetadata) {
-                        var opcode = parseInt(info.insns.split(" ")[0], 16);
-                        var meta = platform.getOpcodeMetadata(opcode, info.offset);
-
-                        if (meta && meta.minCycles) {
-                            var clockstr = meta.minCycles + "";
-                            this.setGutter("gutter-clock", info.line - 1, clockstr);
-                        }
                     }
                 }
             }
@@ -351,11 +343,9 @@ export class SourceEditor implements ProjectView {
     }
 
     setCurrentLine(line: SourceLocation, moveCursor: boolean) {
-        var blocked = platform.isBlocked && platform.isBlocked();
-
         var addCurrentMarker = (line: SourceLocation) => {
             var div = document.createElement("div");
-            var cls = blocked ? 'currentpc-marker-blocked' : 'currentpc-marker';
+            var cls = 'currentpc-marker';
             div.classList.add(cls);
             div.appendChild(document.createTextNode("\u25b6"));
             this.editor.setGutterMarker(line.line - 1, "gutter-info", div);
@@ -373,7 +363,7 @@ export class SourceEditor implements ProjectView {
                 }, {scroll: true});
             }
 
-            var cls = blocked ? 'currentpc-span-blocked' : 'currentpc-span';
+            var cls = 'currentpc-span';
             var markOpts = {className: cls, inclusiveLeft: true};
 
             if (line.start || line.end) {
@@ -515,7 +505,7 @@ export class ListingView extends DisassemblerView implements ProjectView {
         // go to PC
         if (!platform.saveState) return;
         var state = lastDebugState || platform.saveState();
-        var pc = state.c ? (state.c.EPC || state.c.PC) : 0;
+        var pc = state.c ? state.c.PC : 0;
         if (pc >= 0 && this.assemblyfile) {
             var res = this.assemblyfile.findLineForOffset(pc, 15);
             if (res) {

@@ -6,13 +6,14 @@ import {
     SampledAudioSource,
     VideoSource
 } from "./devices";
-import {Debuggable, Platform} from "./zx_interfaces";
+import {Debuggable} from "./zx_interfaces";
+import {ZXWASMPlatform} from "./zx_classes";
 
 export function isDebuggable(arg: any): arg is Debuggable {
     return arg && typeof arg.getDebugCategories === 'function';
 }
 
-export function inspectSymbol(platform: Platform, sym: string): string {
+export function inspectSymbol(platform: ZXWASMPlatform, sym: string): string {
     if (!platform.debugSymbols) return;
     var symmap = platform.debugSymbols.symbolmap;
     var addr2sym = platform.debugSymbols.addr2symbol;
@@ -55,7 +56,7 @@ export function getToolForFilename_z80(fn: string): string {
     return "zmac";
 }
 
-export function dumpStackToString(platform: Platform, mem: Uint8Array | number[], start: number, end: number, sp: number, jsrop: number): string {
+export function dumpStackToString(platform: ZXWASMPlatform, mem: Uint8Array | number[], start: number, end: number, sp: number, jsrop: number): string {
     var s = "";
     var nraw = 0;
 
@@ -87,7 +88,7 @@ export function dumpStackToString(platform: Platform, mem: Uint8Array | number[]
     return s + "\n";
 }
 
-export function lookupSymbol(platform: Platform, addr: number, extra: boolean) {
+export function lookupSymbol(platform: ZXWASMPlatform, addr: number, extra: boolean) {
     var start = addr;
     var addr2symbol = platform.debugSymbols && platform.debugSymbols.addr2symbol;
 

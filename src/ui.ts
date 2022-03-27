@@ -9,7 +9,6 @@ import {
 import {WorkerResult, WorkerError} from "./worker/types";
 import {ProjectWindows} from "./windows";
 import {
-    Platform,
     Preset,
     EmuState
 } from "./emulator/zx_interfaces";
@@ -49,7 +48,7 @@ import {DebugEvalCondition} from "./emulator/zx_types";
 declare var $: JQueryStatic;
 
 // Global variables
-export var platform: Platform; // emulator object
+export var platform: ZXWASMPlatform; // emulator object
 export var current_project: CodeProject;
 export var projectWindows: ProjectWindows;	// window manager
 export var compparams; // received build params from worker
@@ -307,14 +306,9 @@ function _downloadROMImage(e) {
     }
 
     var prefix = getFilenamePrefix(getCurrentMainFilename());
-    if (platform.getDownloadFile) {
-        var dl = platform.getDownloadFile();
-        var prefix = getFilenamePrefix(getCurrentMainFilename());
-        saveAs(dl.blob, prefix + dl.extension);
-    } else if (current_output instanceof Uint8Array) {
+    if (current_output instanceof Uint8Array) {
         var blob = new Blob([current_output], {type: "application/octet-stream"});
-        var suffix = (platform.getROMExtension && platform.getROMExtension(current_output))
-            || "-" + getBasePlatform('zx') + ".bin";
+        var suffix = "-" + getBasePlatform('zx') + ".bin";
         saveAs(blob, prefix + suffix);
     } else {
         alertError(`The platform doesn't have downloadable ROMs.`);
@@ -713,15 +707,6 @@ function singleStep() {
     platform.step();
 }
 
-function stepOver() {
-    if (!checkRunReady()) {
-        return;
-    }
-
-    setupBreakpoint("stepover");
-    platform.stepOver();
-}
-
 function singleFrameStep() {
     if (!checkRunReady()) {
         return;
@@ -749,14 +734,6 @@ export function runToPC(pc: number) {
         platform.runEval((c) => {
             return c.PC == pc;
         });
-    }
-}
-
-function restartAtCursor() {
-    if (platform.restartAtPC(getEditorPC())) {
-        resume();
-    } else {
-        alertError(`Could not restart program at selected line.`);
     }
 }
 
@@ -912,39 +889,6 @@ function setWaitProgress(prog: number) {
     $("#pleaseWaitProgressBar").css('width', (prog * 100) + '%').show();
 }
 
-function setFrameRateUI(fps: number) {
-    platform.setFrameRate(fps);
-
-    if (fps > 0.01) {
-        $("#fps_label").text(fps.toFixed(2));
-    } else {
-        $("#fps_label").text("1/" + Math.round(1 / fps));
-    }
-}
-
-function _slowerFrameRate() {
-    var fps = platform.getFrameRate();
-    fps = fps / 2;
-    if (fps > 0.00001) {
-        setFrameRateUI(fps);
-    }
-}
-
-function _fasterFrameRate() {
-    var fps = platform.getFrameRate();
-    fps = Math.min(60, fps * 2);
-    setFrameRateUI(fps);
-}
-
-function _slowestFrameRate() {
-    setFrameRateUI(60 / 65536);
-}
-
-function _fastestFrameRate() {
-    _resume();
-    setFrameRateUI(60);
-}
-
 function _disableRecording() {
     if (recorderActive) {
         platform.setRecorder(null);
@@ -979,8 +923,7 @@ function _toggleRecording() {
 
 function _lookupHelp() {
     if (platform.showHelp) {
-        let tool = platform.getToolForFilename(current_project.mainPath);
-        platform.showHelp(tool);
+        platform.showHelp();
     }
 }
 
@@ -992,10 +935,6 @@ function setupDebugControls() {
     uitoolbar.add('ctrl+alt+r', 'Reset', 'glyphicon-refresh', resetAndRun).prop('id', 'dbg_reset');
     uitoolbar.add('ctrl+alt+,', 'Pause', 'glyphicon-pause', pause).prop('id', 'dbg_pause');
     uitoolbar.add('ctrl+alt+.', 'Resume', 'glyphicon-play', resume).prop('id', 'dbg_go');
-
-    if (platform.restartAtPC) {
-        uitoolbar.add('ctrl+alt+/', 'Restart at Cursor', 'glyphicon-play-circle', restartAtCursor).prop('id', 'dbg_restartatline');
-    }
 
     uitoolbar.newGroup();
     uitoolbar.grp.prop('id', 'debug_bar');
@@ -1010,10 +949,6 @@ function setupDebugControls() {
 
     if (platform.step) {
         uitoolbar.add('ctrl+alt+s', 'Single Step', 'glyphicon-step-forward', singleStep).prop('id', 'dbg_step');
-    }
-
-    if (platform.stepOver) {
-        uitoolbar.add('ctrl+alt+t', 'Step Over', 'glyphicon-hand-right', stepOver).prop('id', 'dbg_stepover');
     }
 
     if (platform.runUntilReturn) {
@@ -1041,13 +976,6 @@ function setupDebugControls() {
     }
 
     $("#item_download_rom").click(_downloadROMImage);
-
-    if (platform.setFrameRate && platform.getFrameRate) {
-        $("#dbg_slower").click(_slowerFrameRate);
-        $("#dbg_faster").click(_fasterFrameRate);
-        $("#dbg_slowest").click(_slowestFrameRate);
-        $("#dbg_fastest").click(_fastestFrameRate);
-    }
 
     updateDebugWindows();
 
@@ -1215,10 +1143,6 @@ function addPageFocusHandlers() {
             hidden = true;
         }
     });
-
-    $(window).on("orientationchange", () => {
-        if (platform && platform.resize) setTimeout(platform.resize.bind(platform), 200);
-    });
 }
 
 async function loadBIOSFromProject() {
@@ -1256,7 +1180,6 @@ async function startPlatform() {
     await loadBIOSFromProject();
     await initProject();
     await loadProject(qs.file);
-    platform.sourceFileFetch = (path) => current_project.filedata[path];
     setupDebugControls();
     addPageFocusHandlers();
     updateSelector();
@@ -1273,9 +1196,6 @@ function setupSplits() {
     Split(['#sidebar', '#workspace', '#emulator'], {
         sizes: [12, 44, 44],
         minSize: [0, 250, 250],
-        onDrag: () => {
-            if (platform && platform.resize) platform.resize();
-        },
         onDragEnd: () => {
             if (projectWindows) projectWindows.resize();
         },

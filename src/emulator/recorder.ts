@@ -1,4 +1,4 @@
-import {Platform, EmuState, EmuControlsState, EmuRecorder} from "./zx_interfaces";
+import {EmuState, EmuControlsState, EmuRecorder} from "./zx_interfaces";
 
 let _random_state = 1;
 
@@ -19,7 +19,7 @@ export class StateRecorderImpl implements EmuRecorder {
     callbackNewCheckpoint: (state: EmuState) => void;
     maxCheckpoints: number = 300;
 
-    platform: Platform;
+    platform: ZXWASMPlatform;
     checkpoints: EmuState[];
     framerecs: FrameRec[];
     frameCount: number;
@@ -27,7 +27,7 @@ export class StateRecorderImpl implements EmuRecorder {
     lastSeekStep: number;
     lastStepCount: number;
 
-    constructor(platform: Platform) {
+    constructor(platform: ZXWASMPlatform) {
         this.reset();
         this.platform = platform;
     }
@@ -173,6 +173,7 @@ export class StateRecorderImpl implements EmuRecorder {
 }
 
 import {Probeable, ProbeAll} from "./devices";
+import {ZXWASMPlatform} from "./zx_classes";
 
 export enum ProbeFlags {
     CLOCKS = 0x00000000,
