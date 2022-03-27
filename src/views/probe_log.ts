@@ -1,6 +1,6 @@
 import {lpad, rpad} from "../util";
 import {platform} from "../ui";
-import {ZXWASMPlatform, BaseZ80Platform} from "../emulator/zx_classes";
+import {ZXWASMPlatform} from "../emulator/zx_classes";
 import {ProbeFlags} from "../emulator/recorder";
 import {ProbeViewBaseBase, VirtualTextLine, VirtualTextScroller} from "../views";
 
@@ -35,7 +35,7 @@ export class ProbeLogView extends ProbeViewBaseBase {
     }
 
     tick() {
-        const isz80 = platform instanceof ZXWASMPlatform || platform instanceof BaseZ80Platform;
+        const isz80 = platform instanceof ZXWASMPlatform;
 
         // cache each line in frame
         this.dumplines = {};

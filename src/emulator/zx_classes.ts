@@ -118,238 +118,6 @@ export abstract class BasePlatform {
     }
 }
 
-export abstract class BaseDebugPlatform extends BasePlatform {
-    onBreakpointHit: BreakpointCallback;
-    debugCallback: DebugCondition;
-    debugSavedState: EmuState = null;
-    debugBreakState: EmuState = null;
-    debugTargetClock: number = 0;
-    debugClock: number = 0;
-    breakpoints: BreakpointList = new BreakpointList();
-    frameCount: number = 0;
-
-    abstract getCPUState(): CpuState;
-
-    setBreakpoint(id: string, cond: DebugCondition) {
-        if (cond) {
-            this.breakpoints.id2bp[id] = {cond: cond};
-            this.restartDebugging();
-        } else {
-            this.clearBreakpoint(id);
-        }
-    }
-
-    clearBreakpoint(id: string) {
-        delete this.breakpoints.id2bp[id];
-    }
-
-    hasBreakpoint(id: string) {
-        return this.breakpoints.id2bp[id] != null;
-    }
-
-    getDebugCallback(): DebugCondition {
-        return this.breakpoints.getDebugCondition();
-    }
-
-    setupDebug(callback: BreakpointCallback): void {
-        this.onBreakpointHit = callback;
-    }
-
-    clearDebug() {
-        this.debugSavedState = null;
-        this.debugBreakState = null;
-        this.debugTargetClock = -1;
-        this.debugClock = 0;
-        this.onBreakpointHit = null;
-        this.clearBreakpoint('debug');
-        this.frameCount = 0;
-    }
-
-    setDebugCondition(debugCond: DebugCondition) {
-        this.setBreakpoint('debug', debugCond);
-    }
-
-    restartDebugging() {
-        if (this.debugSavedState) {
-            this.loadState(this.debugSavedState);
-        } else {
-            this.debugSavedState = this.saveState();
-        }
-        this.debugClock = 0;
-        this.debugCallback = this.getDebugCallback();
-        this.debugBreakState = null;
-        this.resume();
-    }
-
-    preFrame() {
-        // save state before frame, to record any inputs that happened pre-frame
-        if (this.debugCallback && !this.debugBreakState) {
-            // save state every frame and rewind debug clocks
-            this.debugSavedState = this.saveState();
-            this.debugTargetClock -= this.debugClock;
-            this.debugClock = 0;
-        }
-    }
-
-    postFrame() {
-        // reload debug state at end of frame after breakpoint
-        if (this.debugCallback && this.debugBreakState) {
-            this.loadState(this.debugBreakState);
-        }
-        this.frameCount++;
-    }
-
-    pollControls() {
-
-    }
-
-    nextFrame(novideo: boolean): number {
-        this.pollControls();
-        this.updateRecorder();
-        this.preFrame();
-        var steps = this.advance(novideo);
-        this.postFrame();
-        return steps;
-    }
-
-    // default debugging
-    abstract getSP(): number;
-
-    abstract getPC(): number;
-
-    abstract isStable(): boolean;
-
-    wasBreakpointHit(): boolean {
-        return this.debugBreakState != null;
-    }
-
-    breakpointHit(targetClock: number, reason?: string) {
-        console.log(this.debugTargetClock, targetClock, this.debugClock, this.isStable());
-        this.debugTargetClock = targetClock;
-        this.debugBreakState = this.saveState();
-        console.log("Breakpoint at clk", this.debugClock, "PC", this.debugBreakState.c.PC.toString(16));
-        this.pause();
-        if (this.onBreakpointHit) {
-            this.onBreakpointHit(this.debugBreakState, reason);
-        }
-    }
-
-    runEval(evalfunc: DebugEvalCondition) {
-        this.setDebugCondition(() => {
-            if (++this.debugClock >= this.debugTargetClock && this.isStable()) {
-                var cpuState = this.getCPUState();
-                if (evalfunc(cpuState)) {
-                    this.breakpointHit(this.debugClock);
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        });
-    }
-
-    runToPC(pc: number) {
-        this.debugTargetClock++;
-        this.runEval((c) => {
-            return c.PC == pc;
-        });
-    }
-
-    runUntilReturn() {
-        var SP0 = this.getSP();
-        this.runEval((c: CpuState): boolean => {
-            return c.SP > SP0;
-        });
-    }
-
-    runToFrameClock(clock: number): void {
-        this.restartDebugging();
-        this.debugTargetClock = clock;
-        this.runEval((): boolean => {
-            return true;
-        });
-    }
-
-    step() {
-        this.runToFrameClock(this.debugClock + 1);
-    }
-
-    stepBack() {
-        var prevState;
-        var prevClock;
-        var clock0 = this.debugTargetClock;
-        this.restartDebugging();
-        this.debugTargetClock = clock0 - 25;
-        this.runEval((c: CpuState): boolean => {
-            if (this.debugClock < clock0) {
-                prevState = this.saveState();
-                prevClock = this.debugClock;
-                return false;
-            } else {
-                if (prevState) {
-                    this.loadState(prevState);
-                    this.debugClock = prevClock;
-                }
-                return true;
-            }
-        });
-    }
-
-    runToVsync() {
-        this.restartDebugging();
-        var frame0 = this.frameCount;
-        this.runEval((): boolean => {
-            return this.frameCount > frame0;
-        });
-    }
-}
-
-export abstract class BaseZ80Platform extends BaseDebugPlatform {
-    _cpu;
-    waitCycles: number = 0;
-
-    getPC() {
-        return this._cpu.getPC();
-    }
-
-    getSP() {
-        return this._cpu.getSP();
-    }
-
-    isStable() {
-        return true;
-    }
-
-    getToolForFilename = getToolForFilename_z80;
-
-    getDefaultExtension() {
-        return ".c";
-    };
-
-    getDebugCategories() {
-        return ['CPU', 'Stack'];
-    }
-
-    getDebugInfo(category: string, state: EmuState): string {
-        switch (category) {
-            case 'CPU':
-                return cpuStateToLongString_Z80(state.c);
-            case 'Stack': {
-                var sp = (state.c.SP - 1) & 0xffff;
-                var start = sp & 0xff00;
-                var end = start + 0xff;
-                if (sp == 0) sp = 0x10000;
-                console.log(sp, start, end);
-                return dumpStackToString(<Platform><any>this, [], start, end, sp, 0xcd);
-            }
-        }
-    }
-
-    disassemble(pc: number, read: (addr: number) => number): DisasmLine {
-        return disassemble(pc, read(pc), read(pc + 1), read(pc + 2), read(pc + 3));
-    }
-}
-
 export class SerialIOVisualizer {
 
     textarea: HTMLTextAreaElement;
@@ -788,6 +556,192 @@ export class ZX_WASMMachine implements Machine {
         }
 
         this.exports.zx_joystick(this.sys, this.joymask0, 0);
+    }
+}
+
+export abstract class BaseDebugPlatform extends BasePlatform {
+    onBreakpointHit: BreakpointCallback;
+    debugCallback: DebugCondition;
+    debugSavedState: EmuState = null;
+    debugBreakState: EmuState = null;
+    debugTargetClock: number = 0;
+    debugClock: number = 0;
+    breakpoints: BreakpointList = new BreakpointList();
+    frameCount: number = 0;
+
+    abstract getCPUState(): CpuState;
+
+    setBreakpoint(id: string, cond: DebugCondition) {
+        if (cond) {
+            this.breakpoints.id2bp[id] = {cond: cond};
+            this.restartDebugging();
+        } else {
+            this.clearBreakpoint(id);
+        }
+    }
+
+    clearBreakpoint(id: string) {
+        delete this.breakpoints.id2bp[id];
+    }
+
+    hasBreakpoint(id: string) {
+        return this.breakpoints.id2bp[id] != null;
+    }
+
+    getDebugCallback(): DebugCondition {
+        return this.breakpoints.getDebugCondition();
+    }
+
+    setupDebug(callback: BreakpointCallback): void {
+        this.onBreakpointHit = callback;
+    }
+
+    clearDebug() {
+        this.debugSavedState = null;
+        this.debugBreakState = null;
+        this.debugTargetClock = -1;
+        this.debugClock = 0;
+        this.onBreakpointHit = null;
+        this.clearBreakpoint('debug');
+        this.frameCount = 0;
+    }
+
+    setDebugCondition(debugCond: DebugCondition) {
+        this.setBreakpoint('debug', debugCond);
+    }
+
+    restartDebugging() {
+        if (this.debugSavedState) {
+            this.loadState(this.debugSavedState);
+        } else {
+            this.debugSavedState = this.saveState();
+        }
+        this.debugClock = 0;
+        this.debugCallback = this.getDebugCallback();
+        this.debugBreakState = null;
+        this.resume();
+    }
+
+    preFrame() {
+        // save state before frame, to record any inputs that happened pre-frame
+        if (this.debugCallback && !this.debugBreakState) {
+            // save state every frame and rewind debug clocks
+            this.debugSavedState = this.saveState();
+            this.debugTargetClock -= this.debugClock;
+            this.debugClock = 0;
+        }
+    }
+
+    postFrame() {
+        // reload debug state at end of frame after breakpoint
+        if (this.debugCallback && this.debugBreakState) {
+            this.loadState(this.debugBreakState);
+        }
+        this.frameCount++;
+    }
+
+    pollControls() {
+
+    }
+
+    nextFrame(novideo: boolean): number {
+        this.pollControls();
+        this.updateRecorder();
+        this.preFrame();
+        var steps = this.advance(novideo);
+        this.postFrame();
+        return steps;
+    }
+
+    // default debugging
+    abstract getSP(): number;
+
+    abstract getPC(): number;
+
+    abstract isStable(): boolean;
+
+    wasBreakpointHit(): boolean {
+        return this.debugBreakState != null;
+    }
+
+    breakpointHit(targetClock: number, reason?: string) {
+        console.log(this.debugTargetClock, targetClock, this.debugClock, this.isStable());
+        this.debugTargetClock = targetClock;
+        this.debugBreakState = this.saveState();
+        console.log("Breakpoint at clk", this.debugClock, "PC", this.debugBreakState.c.PC.toString(16));
+        this.pause();
+        if (this.onBreakpointHit) {
+            this.onBreakpointHit(this.debugBreakState, reason);
+        }
+    }
+
+    runEval(evalfunc: DebugEvalCondition) {
+        this.setDebugCondition(() => {
+            if (++this.debugClock >= this.debugTargetClock && this.isStable()) {
+                var cpuState = this.getCPUState();
+                if (evalfunc(cpuState)) {
+                    this.breakpointHit(this.debugClock);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+    }
+
+    runToPC(pc: number) {
+        this.debugTargetClock++;
+        this.runEval((c) => {
+            return c.PC == pc;
+        });
+    }
+
+    runUntilReturn() {
+        var SP0 = this.getSP();
+        this.runEval((c: CpuState): boolean => {
+            return c.SP > SP0;
+        });
+    }
+
+    runToFrameClock(clock: number): void {
+        this.restartDebugging();
+        this.debugTargetClock = clock;
+        this.runEval((): boolean => {
+            return true;
+        });
+    }
+
+    step() {
+        this.runToFrameClock(this.debugClock + 1);
+    }
+
+    stepBack() {
+        var prevState;
+        var prevClock;
+        var clock0 = this.debugTargetClock;
+        this.restartDebugging();
+        this.debugTargetClock = clock0 - 25;
+        this.runEval((c: CpuState): boolean => {
+            if (this.debugClock < clock0) {
+                prevState = this.saveState();
+                prevClock = this.debugClock;
+                return false;
+            } else {
+                if (prevState) {
+                    this.loadState(prevState);
+                    this.debugClock = prevClock;
+                }
+                return true;
+            }
+        });
+    }
+
+    runToVsync() {
+        this.restartDebugging();
+        var frame0 = this.frameCount;
+        this.runEval((): boolean => {
+            return this.frameCount > frame0;
+        });
     }
 }
 
