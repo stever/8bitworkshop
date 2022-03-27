@@ -12,10 +12,10 @@ import {SampledAudio} from "./audio";
 import {ControllerPoller} from "./joystick";
 import {ProbeRecorder} from "./recorder";
 import {
-    cpuStateToLongString_Z80, dumpStackToString,
+    cpuStateToLongString_Z80,
+    dumpStackToString,
     getToolForFilename_z80,
     inspectSymbol,
-    isDebuggable
 } from "./zx_functions";
 import {ZXWASMMachine} from "./zx_machine";
 import {disassemble} from "./disassemble";
@@ -380,11 +380,7 @@ export class ZXWASMPlatform {
     getToolForFilename = getToolForFilename_z80;
 
     getDebugCategories() {
-        if (isDebuggable(this.machine)) {
-            return this.machine.getDebugCategories();
-        } else {
-            return ['CPU', 'Stack'];
-        }
+        return ['CPU', 'Stack'];
     }
 
     getDebugInfo(category: string, state: EmuState): string {
@@ -400,7 +396,7 @@ export class ZXWASMPlatform {
                 return dumpStackToString(this, [], start, end, sp, 0xcd);
             }
             default:
-                return isDebuggable(this.machine) && this.machine.getDebugInfo(category, state);
+                throw 'unexpected default case';
         }
     }
 

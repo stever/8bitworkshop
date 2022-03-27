@@ -1,10 +1,5 @@
 import {hex, printFlags} from "../util";
-import {Debuggable} from "./debug";
 import {ZXWASMPlatform} from "./zx_platform";
-
-export function isDebuggable(arg: any): arg is Debuggable {
-    return arg && typeof arg.getDebugCategories === 'function';
-}
 
 export function inspectSymbol(platform: ZXWASMPlatform, sym: string): string {
     if (!platform.debugSymbols) return;

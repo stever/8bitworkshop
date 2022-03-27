@@ -10,7 +10,6 @@ import {WorkerResult, WorkerError} from "./worker/types";
 import {ProjectWindows} from "./windows";
 import {Preset, EmuState} from "./emulator/debug";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
-import {isDebuggable} from "./emulator/zx_functions";
 import {EmuHalt} from "./emulator/error";
 import {Toolbar} from "./toolbar";
 import {
@@ -503,52 +502,6 @@ function hideDebugInfo() {
     lastDebugInfo = null;
 }
 
-function showDebugInfo(state?) {
-    if (!isDebuggable(platform)) {
-        return;
-    }
-
-    var meminfo = $("#mem_info");
-    var allcats = platform.getDebugCategories();
-
-    if (allcats && !debugCategory) {
-        debugCategory = allcats[0];
-    }
-
-    var s = state && platform.getDebugInfo(debugCategory, state);
-    if (s) {
-        var hs = lastDebugInfo ? highlightDifferences(lastDebugInfo, s) : s;
-        meminfo.show().html(hs);
-
-        var catspan = $('<div class="mem_info_links">');
-        var addCategoryLink = (cat: string) => {
-            var catlink = $('<a>' + cat + '</a>');
-            if (cat == debugCategory) {
-                catlink.addClass('selected');
-            }
-
-            catlink.click((e) => {
-                debugCategory = cat;
-                lastDebugInfo = null;
-                showDebugInfo(lastDebugState);
-            });
-
-            catspan.append(catlink);
-            catspan.append('<span> </span>');
-        }
-
-        for (var cat of allcats) {
-            addCategoryLink(cat);
-        }
-
-        meminfo.append('<br>');
-        meminfo.append(catspan);
-        lastDebugInfo = s;
-    } else {
-        hideDebugInfo();
-    }
-}
-
 function setDebugButtonState(btnid: string, btnstate: string) {
     $("#debug_bar, #run_bar").find("button").removeClass("btn_active").removeClass("btn_stopped");
     $("#dbg_" + btnid).addClass("btn_" + btnstate);
@@ -608,7 +561,6 @@ function openRelevantListing(state: EmuState) {
 
 function uiDebugCallback(state: EmuState) {
     lastDebugState = state;
-    showDebugInfo(state);
     openRelevantListing(state);
     projectWindows.refresh(true); // move cursor
     debugTickPaused = true;
@@ -743,7 +695,6 @@ function clearBreakpoint() {
     lastDebugState = null;
     platform.clearDebug();
     setupDebugCallback(); // in case of BRK/trap
-    showDebugInfo();
 }
 
 function resetPlatform() {
@@ -976,7 +927,7 @@ function setupReplaySlider() {
         replayslider.val(stateRecorder.currentFrame());
         clockslider.val(stateRecorder.currentStep());
         updateFrameNo();
-        showDebugInfo(platform.saveState());
+        platform.saveState();
     };
 
     replayslider.on('input', sliderChanged);
@@ -1155,10 +1106,5 @@ async function loadAndStartPlatform() {
 function emulationHalted(err: EmuHalt) {
     var msg = (err && err.message) || msg;
     showExceptionAsError(err, msg);
-
     projectWindows.refresh(false); // don't mess with cursor
-
-    if (platform.saveState) {
-        showDebugInfo(platform.saveState());
-    }
 }

@@ -17,12 +17,6 @@ export interface EmuControlsState {
 
 }
 
-export interface Debuggable {
-    getDebugCategories?(): string[];
-
-    getDebugInfo?(category: string, state: EmuState): string;
-}
-
 export interface Preset {
     id: string;
     name: string;
