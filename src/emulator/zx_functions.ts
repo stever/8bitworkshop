@@ -1,6 +1,6 @@
 import {hex, printFlags} from "../util";
 import {Debuggable} from "./zx_interfaces";
-import {ZXWASMPlatform} from "./zx_classes";
+import {ZXWASMPlatform} from "./zx_platform";
 
 export function isDebuggable(arg: any): arg is Debuggable {
     return arg && typeof arg.getDebugCategories === 'function';

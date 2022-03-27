@@ -19,7 +19,7 @@ import {
     getWithBinary
 } from "./util";
 import localforage from "localforage";
-import {ZXWASMPlatform} from "./emulator/zx_classes";
+import {ZXWASMPlatform} from "./emulator/zx_platform";
 
 export interface ProjectFilesystem {
     getFileData(path: string): Promise<FileData>;

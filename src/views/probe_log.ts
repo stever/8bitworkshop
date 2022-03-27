@@ -1,6 +1,6 @@
 import {lpad, rpad} from "../util";
 import {platform} from "../ui";
-import {ZXWASMPlatform} from "../emulator/zx_classes";
+import {ZXWASMPlatform} from "../emulator/zx_platform";
 import {ProbeFlags} from "../emulator/recorder";
 import {ProbeViewBaseBase, VirtualTextLine, VirtualTextScroller} from "../views";
 

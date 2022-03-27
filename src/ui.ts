@@ -9,7 +9,7 @@ import {
 import {WorkerResult, WorkerError} from "./worker/types";
 import {ProjectWindows} from "./windows";
 import {Preset, EmuState} from "./emulator/zx_interfaces";
-import {ZXWASMPlatform} from "./emulator/zx_classes";
+import {ZXWASMPlatform} from "./emulator/zx_platform";
 import {isDebuggable} from "./emulator/zx_functions";
 import {EmuHalt} from "./emulator/error";
 import {Toolbar} from "./toolbar";

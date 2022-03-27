@@ -1,6 +1,6 @@
 import {EmuState, EmuControlsState, EmuRecorder} from "./zx_interfaces";
 import {Probeable, ProbeAll} from "./devices";
-import {ZXWASMPlatform} from "./zx_classes";
+import {ZXWASMPlatform} from "./zx_platform";
 
 let _random_state = 1;
 
