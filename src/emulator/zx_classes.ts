@@ -1,11 +1,8 @@
-import {invertMap} from "../util";
 import {
-    AddrSymbolMap,
     BreakpointCallback,
     DebugCondition,
     DebugEvalCondition,
-    DisasmLine,
-    SymbolMap
+    DisasmLine
 } from "./zx_types";
 import {FileData} from "../worker/types";
 import {AnimationTimer, RasterVideo} from "./video";
@@ -22,7 +19,6 @@ import {ProbeRecorder} from "./recorder";
 import {EmuHalt} from "./error";
 import {KeyFlags} from "./keys";
 import {
-    Breakpoint,
     CpuState,
     EmuRecorder,
     EmuState
@@ -36,40 +32,7 @@ import {
 } from "./zx_functions";
 import {disassemble} from "./disassemble";
 import {ZX_MEMORY_MAP, ZX_PRESETS} from "./zx";
-
-export class DebugSymbols {
-    symbolmap: SymbolMap;	// symbol -> address
-    addr2symbol: AddrSymbolMap;	// address -> symbol
-    debuginfo: {}; // extra platform-specific debug info
-
-    constructor(symbolmap: SymbolMap, debuginfo: {}) {
-        this.symbolmap = symbolmap;
-        this.debuginfo = debuginfo;
-        this.addr2symbol = invertMap(symbolmap);
-        if (!this.addr2symbol[0x0]) this.addr2symbol[0x0] = '$00'; // needed for ...
-        this.addr2symbol[0x10000] = '__END__'; // ... dump memory to work
-    }
-}
-
-// for composite breakpoints w/ single debug function
-export class BreakpointList {
-    id2bp: { [id: string]: Breakpoint } = {};
-
-    getDebugCondition(): DebugCondition {
-        if (Object.keys(this.id2bp).length == 0) {
-            return null; // no breakpoints
-        } else {
-            // evaluate all breakpoints
-            return () => {
-                var result = false;
-                for (var id in this.id2bp)
-                    if (this.id2bp[id].cond())
-                        result = true;
-                return result;
-            };
-        }
-    }
-}
+import {BreakpointList, DebugSymbols} from "./debug";
 
 export class ZXWASMMachine {
     prefix: string;
