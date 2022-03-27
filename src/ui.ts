@@ -31,7 +31,7 @@ import {StateRecorderImpl} from "./emulator/recorder";
 import Split = require('split.js');
 import {ListingView, SourceEditor} from "./editors";
 import {DisassemblerView} from "./views/disassembly";
-import {BinaryFileView, VRAMMemoryView} from "./views/memory";
+import {BinaryFileView, VRAMMemoryView} from "./views";
 import {MemoryView} from "./views/memory_browser";
 import {MemoryMapView} from "./views/memory_map";
 import {AddressHeatMapView} from "./views/memory_probe";
