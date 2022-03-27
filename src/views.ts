@@ -1,7 +1,7 @@
-import {platform} from "../ui";
-import {hex} from "../util";
+import {platform} from "./ui";
+import {hex} from "./util";
 import {VirtualList} from "./vlist";
-import {ProbeFlags, ProbeRecorder} from "../emulator/recorder";
+import {ProbeFlags, ProbeRecorder} from "./emulator/recorder";
 
 // TODO: https://stackoverflow.com/questions/10463518/converting-em-to-px-in-javascript-and-getting-default-font-size
 export function getVisibleEditorLineHeight(): number {

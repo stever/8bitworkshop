@@ -6,7 +6,7 @@ import {
     ProbeViewBaseBase,
     VirtualTextLine,
     VirtualTextScroller
-} from "./views";
+} from "../views";
 
 export class ProbeSymbolView extends ProbeViewBaseBase {
     vlist: VirtualTextScroller;

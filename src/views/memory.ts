@@ -4,7 +4,7 @@ import {hex} from "../util";
 import {
     VirtualTextLine,
     VirtualTextScroller
-} from "./views";
+} from "../views";
 import {MemoryView} from "./memory_browser";
 
 export class VRAMMemoryView extends MemoryView {

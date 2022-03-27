@@ -2,7 +2,7 @@ import {lpad, rpad} from "../util";
 import {platform} from "../ui";
 import {BaseZ80MachinePlatform, BaseZ80Platform} from "../emulator/zx";
 import {ProbeFlags} from "../emulator/recorder";
-import {ProbeViewBaseBase, VirtualTextLine, VirtualTextScroller} from "./views";
+import {ProbeViewBaseBase, VirtualTextLine, VirtualTextScroller} from "../views";
 
 export class ProbeLogView extends ProbeViewBaseBase {
     vlist: VirtualTextScroller;

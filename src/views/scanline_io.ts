@@ -1,7 +1,7 @@
 import {hex, lpad} from "../util";
 import {ProbeFlags} from "../emulator/recorder";
 import {platform} from "../ui";
-import {ProbeViewBaseBase, VirtualTextLine, VirtualTextScroller} from "./views";
+import {ProbeViewBaseBase, VirtualTextLine, VirtualTextScroller} from "../views";
 
 export class ScanlineIOView extends ProbeViewBaseBase {
     vlist: VirtualTextScroller;

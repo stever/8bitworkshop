@@ -2,7 +2,7 @@ import {ProjectView} from "../baseviews";
 import {platform} from "../ui";
 import {ProbeFlags} from "../emulator/recorder";
 import {getMousePos} from "../emulator/video";
-import {ProbeViewBaseBase} from "./views";
+import {ProbeViewBaseBase} from "../views";
 
 abstract class ProbeViewBase extends ProbeViewBaseBase {
     maindiv: HTMLElement;

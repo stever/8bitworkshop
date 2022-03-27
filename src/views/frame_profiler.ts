@@ -1,4 +1,4 @@
-import {ProbeViewBaseBase} from "./views";
+import {ProbeViewBaseBase} from "../views";
 import {ProjectView} from "../baseviews";
 import {ProbeFlags} from "../emulator/recorder";
 import {createTreeRootNode, TreeNode} from "../treeviews";

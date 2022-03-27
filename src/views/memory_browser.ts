@@ -1,6 +1,6 @@
 import {ProjectView} from "../baseviews";
-import {VirtualList} from "./vlist";
-import {getVisibleEditorLineHeight, ignoreSymbol} from "./views";
+import {VirtualList} from "../vlist";
+import {getVisibleEditorLineHeight, ignoreSymbol} from "../views";
 import {compparams, current_project, platform} from "../ui";
 import {hex} from "../util";
 
