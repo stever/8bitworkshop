@@ -203,23 +203,6 @@ export class CodeProject {
             while (m = re3.exec(text)) {
                 this.pushAllFiles(files, m[2]);
             }
-
-            // for XASM only (USE include.ext)
-            // for merlin32 (ASM include.ext)
-            let re4 = /^\s+(USE|ASM)\s+(\S+[.]\S+)/gm;
-            while (m = re4.exec(text)) {
-                this.pushAllFiles(files, m[2]);
-            }
-
-            // for wiz
-            let re5 = /^\s*(import|embed)\s+"(.+?)";/gmi;
-            while (m = re5.exec(text)) {
-                if (m[1] == 'import') {
-                    this.pushAllFiles(files, m[2] + ".wiz");
-                } else {
-                    this.pushAllFiles(files, m[2]);
-                }
-            }
         }
 
         return files;
