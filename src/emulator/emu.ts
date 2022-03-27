@@ -2,8 +2,6 @@ import {hex, clamp} from "../util";
 import {SourceLocation} from "../worker/types";
 import {VirtualList} from "../vlist"
 
-// Emulator classes
-
 var _random_state = 1;
 
 export function getNoiseSeed() {
@@ -130,12 +128,6 @@ export class RasterVideo {
         } else {
             this.ctx.putImageData(this.imageData, 0, 0);
         }
-    }
-
-    clearRect(dx: number, dy: number, w: number, h: number) {
-        var ctx = this.ctx;
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(dx, dy, w, h);
     }
 
     setupMouseEvents(el?: HTMLCanvasElement) {
