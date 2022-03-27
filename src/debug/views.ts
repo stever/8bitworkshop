@@ -1,11 +1,11 @@
-import {newDiv, ProjectView} from "./baseviews";
-import {Segment} from "./worker/types";
-import {platform, compparams, current_project, projectWindows} from "./ui";
-import {hex, lpad, rpad} from "./util";
+import {newDiv, ProjectView} from "../baseviews";
+import {Segment} from "../worker/types";
+import {platform, compparams, current_project, projectWindows} from "../ui";
+import {hex, lpad, rpad} from "../util";
 import {VirtualList} from "./vlist";
-import {getMousePos} from "./emulator/video";
-import {ProbeFlags, ProbeRecorder} from "./emulator/recorder";
-import {BaseZ80MachinePlatform, BaseZ80Platform} from "./emulator/zx";
+import {getMousePos} from "../emulator/video";
+import {ProbeFlags, ProbeRecorder} from "../emulator/recorder";
+import {BaseZ80MachinePlatform, BaseZ80Platform} from "../emulator/zx";
 
 // TODO: https://stackoverflow.com/questions/10463518/converting-em-to-px-in-javascript-and-getting-default-font-size
 export function getVisibleEditorLineHeight(): number {
@@ -20,6 +20,7 @@ export interface VirtualTextLine {
 export class VirtualTextScroller {
     memorylist;
     maindiv: HTMLElement;
+
     getLineAt: (row: number) => VirtualTextLine;
 
     constructor(parent: HTMLElement) {

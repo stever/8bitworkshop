@@ -39,7 +39,7 @@ import {
     ProbeSymbolView,
     ScanlineIOView,
     VRAMMemoryView
-} from "./debugviews";
+} from "./debug/views";
 import {
     DebugBrowserView,
     FrameCallsView

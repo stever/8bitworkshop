@@ -3,7 +3,7 @@ import {ProbeFlags} from "./emulator/recorder";
 import {hex} from "./util";
 import {platform} from "./ui";
 import {ProjectView} from "./baseviews";
-import {ProbeViewBaseBase} from "./debugviews";
+import {ProbeViewBaseBase} from "./debug/views";
 
 const MAX_CHILDREN = 256;
 const MAX_STRING_LEN = 100;
