@@ -830,10 +830,6 @@ function getDebugExprExamples(): string {
         s += "this.readAddress(0x1234) == 0x0\n";
     }
 
-    if (platform.getRasterScanline) { // NOTE: Always true.
-        s += "this.getRasterScanline() > 222\n";
-    }
-
     return s;
 }
 

@@ -1,14 +1,4 @@
 import {hex, printFlags} from "../util";
-import {
-    AcceptsBIOS,
-    AcceptsKeyInput,
-    AcceptsPaddleInput,
-    HasSerialIO,
-    Probeable,
-    RasterFrameBased,
-    SampledAudioSource,
-    VideoSource
-} from "./devices";
 import {Debuggable} from "./zx_interfaces";
 import {ZXWASMPlatform} from "./zx_classes";
 
@@ -111,36 +101,4 @@ export function lookupSymbol(platform: ZXWASMPlatform, addr: number, extra: bool
     }
 
     return "";
-}
-
-export function hasVideo(arg: any): arg is VideoSource {
-    return typeof arg.connectVideo === 'function';
-}
-
-export function hasAudio(arg: any): arg is SampledAudioSource {
-    return typeof arg.connectAudio === 'function';
-}
-
-export function hasKeyInput(arg: any): arg is AcceptsKeyInput {
-    return typeof arg.setKeyInput === 'function';
-}
-
-export function hasPaddleInput(arg: any): arg is AcceptsPaddleInput {
-    return typeof arg.setPaddleInput === 'function';
-}
-
-export function isRaster(arg: any): arg is RasterFrameBased {
-    return typeof arg.getRasterY === 'function';
-}
-
-export function hasProbe(arg: any): arg is Probeable {
-    return typeof arg.connectProbe == 'function';
-}
-
-export function hasBIOS(arg: any): arg is AcceptsBIOS {
-    return typeof arg.loadBIOS == 'function';
-}
-
-export function hasSerialIO(arg: any): arg is HasSerialIO {
-    return typeof arg.connectSerialIO === 'function';
 }

@@ -14,48 +14,8 @@ export interface Bus {
 
 export type TrapCondition = () => boolean;
 
-export interface FrameBased {
-    advanceFrame(trap: TrapCondition): number;
-}
-
-export interface VideoSource {
-    getVideoParams(): VideoParams;
-
-    connectVideo(pixels: Uint32Array): void;
-}
-
-export interface RasterFrameBased extends FrameBased, VideoSource {
-    getRasterY(): number;
-
-    getRasterX(): number;
-}
-
-export interface VideoParams {
-    width: number;
-    height: number;
-    overscan?: boolean;
-    rotate?: number;
-    videoFrequency?: number; // default = 60
-    aspect?: number;
-}
-
-export interface SampledAudioParams {
-    sampleRate: number;
-    stereo: boolean;
-}
-
 export interface SampledAudioSink {
     feedSample(value: number, count: number): void;
-}
-
-export interface SampledAudioSource {
-    getAudioParams(): SampledAudioParams;
-
-    connectAudio(audio: SampledAudioSink): void;
-}
-
-export interface AcceptsBIOS {
-    loadBIOS(data: Uint8Array, title?: string): void;
 }
 
 export interface Resettable {
@@ -74,14 +34,6 @@ export interface CPU extends MemoryBusConnected, Resettable, SavesState<any> {
     isStable(): boolean;
 }
 
-export interface AcceptsKeyInput {
-    setKeyInput(key: number, code: number, flags: number): void;
-}
-
-export interface AcceptsPaddleInput {
-    setPaddleInput(controller: number, value: number): void;
-}
-
 // SERIAL I/O
 
 export interface SerialEvent {
@@ -91,6 +43,7 @@ export interface SerialEvent {
 }
 
 export interface SerialIOInterface {
+    
     // from machine to platform
     clearToSend(): boolean;
 

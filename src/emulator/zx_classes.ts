@@ -33,12 +33,8 @@ import {
     cpuStateToLongString_Z80,
     dumpStackToString,
     getToolForFilename_z80,
-    hasAudio, hasBIOS,
-    hasKeyInput,
-    hasPaddleInput,
-    hasProbe, hasSerialIO,
-    hasVideo,
-    inspectSymbol, isDebuggable, isRaster
+    inspectSymbol,
+    isDebuggable
 } from "./zx_functions";
 import {disassemble} from "./disassemble";
 import {ZX_MEMORY_MAP, ZX_PRESETS} from "./zx";
@@ -787,55 +783,33 @@ export class ZXWASMPlatform {
         }
 
         var videoFrequency;
-        if (hasVideo(m)) {
-            var vp = m.getVideoParams();
-            this.video = new RasterVideo(this.mainElement, vp.width, vp.height, {overscan: !!vp.overscan});
-            this.video.create();
-            m.connectVideo(this.video.getFrameData());
-            if (hasKeyInput(m)) {
-                this.video.setKeyboardEvents(m.setKeyInput.bind(m));
-                this.poller = new ControllerPoller(m.setKeyInput.bind(m));
-            }
-            videoFrequency = vp.videoFrequency;
-        }
+        var vp = m.getVideoParams();
+        this.video = new RasterVideo(this.mainElement, vp.width, vp.height, {overscan: !!vp.overscan});
+        this.video.create();
+        m.connectVideo(this.video.getFrameData());
+        this.video.setKeyboardEvents(m.setKeyInput.bind(m));
+        this.poller = new ControllerPoller(m.setKeyInput.bind(m));
+        videoFrequency = vp.videoFrequency;
 
         this.timer = new AnimationTimer(videoFrequency || 60, this.nextFrame.bind(this));
 
-        if (hasAudio(m)) {
-            var ap = m.getAudioParams();
-            this.audio = new SampledAudio(ap.sampleRate);
-            this.audio.start();
-            m.connectAudio(this.audio);
-        }
+        var ap = m.getAudioParams();
+        this.audio = new SampledAudio(ap.sampleRate);
+        this.audio.start();
+        m.connectAudio(this.audio);
 
-        if (hasPaddleInput(m)) {
-            this.video.setupMouseEvents();
-        }
+        this.probeRecorder = new ProbeRecorder(m);
+        this.startProbing = () => {
+            m.connectProbe(this.probeRecorder);
+            return this.probeRecorder;
+        };
+        this.stopProbing = () => {
+            m.connectProbe(null);
+        };
 
-        if (hasProbe(m)) {
-            this.probeRecorder = new ProbeRecorder(m);
-            this.startProbing = () => {
-                m.connectProbe(this.probeRecorder);
-                return this.probeRecorder;
-            };
-            this.stopProbing = () => {
-                m.connectProbe(null);
-            };
-        }
-
-        if (hasBIOS(m)) {
-            this.loadBIOS = (data) => {
-                m.loadBIOS(data);
-            };
-        }
-
-        if (hasSerialIO(m)) {
-            if (this.serialIOInterface == null) {
-                this.serialVisualizer = new SerialIOVisualizer(this.mainElement, m);
-            } else {
-                m.connectSerialIO(this.serialIOInterface);
-            }
-        }
+        this.loadBIOS = (data) => {
+            m.loadBIOS(data);
+        };
     }
 
     loadROM(title, data) {
@@ -847,10 +821,6 @@ export class ZXWASMPlatform {
 
     pollControls() {
         this.poller && this.poller.poll();
-        if (hasPaddleInput(this.machine)) {
-            this.machine.setPaddleInput(0, this.video.paddle_x);
-            this.machine.setPaddleInput(1, this.video.paddle_y);
-        }
         if (this.machine['pollControls']) {
             this.machine['pollControls']();
         }
@@ -899,10 +869,6 @@ export class ZXWASMPlatform {
         this.runEval((): boolean => {
             return this.frameCount > frame0;
         });
-    }
-
-    getRasterScanline() {
-        return isRaster(this.machine) && this.machine.getRasterY();
     }
 
     getToolForFilename = getToolForFilename_z80;
