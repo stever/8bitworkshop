@@ -10,8 +10,6 @@ export type DisasmLine = {
 export type SymbolMap = { [ident: string]: number };
 export type AddrSymbolMap = { [address: number]: string };
 
-export type MemoryMap = { [type: string]: Segment[] };
-
 export type DebugCondition = () => boolean;
 export type DebugEvalCondition = (c: CpuState) => boolean;
 export type BreakpointCallback = (s: EmuState, msg?: string) => void;
