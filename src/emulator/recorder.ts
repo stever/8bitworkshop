@@ -1,4 +1,6 @@
 import {EmuState, EmuControlsState, EmuRecorder} from "./zx_interfaces";
+import {Probeable, ProbeAll} from "./devices";
+import {ZXWASMPlatform} from "./zx_classes";
 
 let _random_state = 1;
 
@@ -171,9 +173,6 @@ export class StateRecorderImpl implements EmuRecorder {
         setNoiseSeed(this.framerecs[frame].seed);
     }
 }
-
-import {Probeable, ProbeAll} from "./devices";
-import {ZXWASMPlatform} from "./zx_classes";
 
 export enum ProbeFlags {
     CLOCKS = 0x00000000,
