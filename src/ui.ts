@@ -32,17 +32,17 @@ import Split = require('split.js');
 import {ListingView, SourceEditor} from "./editors";
 import {DisassemblerView} from "./views/disassembly";
 import {
-    AddressHeatMapView,
     ProbeLogView,
     ProbeSymbolView,
     ScanlineIOView
 } from "./views/views";
 import {
     BinaryFileView,
-    MemoryMapView,
-    MemoryView,
     VRAMMemoryView
 } from "./views/memory";
+import {MemoryView} from "./views/memory_browser";
+import {MemoryMapView} from "./views/memory_map";
+import {AddressHeatMapView} from "./views/memory_probe";
 import {
     DebugBrowserView,
     FrameCallsView
