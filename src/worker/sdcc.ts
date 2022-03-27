@@ -1,4 +1,4 @@
-import {CodeListingMap} from "../workertypes";
+import {CodeListingMap} from "./types";
 import {
     anyTargetChanged,
     BuildStep,

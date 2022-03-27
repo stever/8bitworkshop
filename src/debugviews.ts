@@ -1,5 +1,5 @@
 import {newDiv, ProjectView} from "./baseviews";
-import {Segment} from "./workertypes";
+import {Segment} from "./worker/types";
 import {platform, compparams, current_project, projectWindows} from "./ui";
 import {hex, lpad, rpad} from "./util";
 import {VirtualList} from "./vlist";

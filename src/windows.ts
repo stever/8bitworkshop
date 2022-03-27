@@ -1,6 +1,6 @@
 import $ = require("jquery");
 import {CodeProject} from "./project";
-import {WorkerError, FileData} from "./workertypes";
+import {WorkerError, FileData} from "./worker/types";
 import {getFilenamePrefix, getFilenameForPath} from "./util";
 import {ProjectView} from "./baseviews";
 

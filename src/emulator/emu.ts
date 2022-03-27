@@ -1,5 +1,5 @@
 import {hex, clamp} from "../util";
-import {SourceLocation} from "../workertypes";
+import {SourceLocation} from "../worker/types";
 import {VirtualList} from "../vlist"
 
 // Emulator classes

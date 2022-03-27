@@ -1,4 +1,4 @@
-import {WorkerError} from "./workertypes";
+import {WorkerError} from "./worker/types";
 import ErrorStackParser = require("error-stack-parser");
 import yufka from 'yufka';
 import * as io from "./io";

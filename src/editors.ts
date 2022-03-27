@@ -1,5 +1,5 @@
 import {isMobileDevice, ProjectView} from "./baseviews";
-import {SourceFile, WorkerError, SourceLocation} from "./workertypes";
+import {SourceFile, WorkerError, SourceLocation} from "./worker/types";
 import {platform, current_project, lastDebugState, runToPC} from "./ui";
 import {hex, rpad} from "./util";
 

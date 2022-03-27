@@ -6,7 +6,7 @@ import {
     ProjectFilesystem,
     WebPresetsFileSystem
 } from "./project";
-import {WorkerResult, WorkerError} from "./workertypes";
+import {WorkerResult, WorkerError} from "./worker/types";
 import {ProjectWindows} from "./windows";
 import {
     Platform,

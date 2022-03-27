@@ -10,7 +10,7 @@ import {
     isOutputResult,
     WorkerMessage,
     WorkerItemUpdate
-} from "./workertypes";
+} from "./worker/types";
 import {
     getFilenamePrefix,
     getFolderForPath,
