@@ -4,11 +4,11 @@ import {platform, compparams, current_project, projectWindows} from "./ui";
 import {hex, lpad, rpad} from "./util";
 import {VirtualList} from "./vlist";
 import {
-    getMousePos,
     getVisibleEditorLineHeight,
     VirtualTextLine,
     VirtualTextScroller
 } from "./emulator/emu";
+import {getMousePos} from "./emulator/video";
 import {ProbeFlags, ProbeRecorder} from "./emulator/recorder";
 import {BaseZ80MachinePlatform, BaseZ80Platform} from "./emulator/zx";
 

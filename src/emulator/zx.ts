@@ -2,7 +2,7 @@ import {KeyFlags} from "./keys";
 import {TrapCondition} from "./devices";
 import {CPU, SampledAudioSink, ProbeAll, NullProbe} from "./devices";
 import {EmuHalt} from "./emu";
-import {RasterVideo, AnimationTimer} from "./emu";
+import {RasterVideo, AnimationTimer} from "./video";
 import {ControllerPoller} from "./joystick";
 import {hex, printFlags, invertMap, byteToASCII} from "../util";
 import {Segment, FileData} from "../worker/types";
