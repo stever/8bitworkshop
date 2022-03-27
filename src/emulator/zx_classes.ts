@@ -125,7 +125,7 @@ export class SerialIOVisualizer {
     }
 }
 
-export class ZX_WASMMachine implements Machine {
+export class ZXWASMMachine implements Machine {
     prefix: string;
     instance: WebAssembly.Instance;
     exports: any;
@@ -522,7 +522,7 @@ export class ZXWASMPlatform implements Platform {
     recorder: EmuRecorder = null;
     debugSymbols: DebugSymbols;
     internalFiles: { [path: string]: FileData } = {};
-    
+
     onBreakpointHit: BreakpointCallback;
     debugCallback: DebugCondition;
 
@@ -533,7 +533,7 @@ export class ZXWASMPlatform implements Platform {
     breakpoints: BreakpointList = new BreakpointList();
     frameCount: number = 0;
 
-    machine: ZX_WASMMachine;
+    machine: ZXWASMMachine;
     mainElement: HTMLElement;
     timer: AnimationTimer;
     video: RasterVideo;
@@ -774,7 +774,7 @@ export class ZXWASMPlatform implements Platform {
         const m = this.machine;
         // block on WASM loading
 
-        if (m instanceof ZX_WASMMachine) {
+        if (m instanceof ZXWASMMachine) {
             await m.loadWASM();
         }
 
@@ -928,7 +928,7 @@ export class ZXWASMPlatform implements Platform {
     }
 
     newMachine() {
-        return new ZX_WASMMachine('zx');
+        return new ZXWASMMachine('zx');
     }
 
     getPresets() {
