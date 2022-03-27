@@ -1,16 +1,13 @@
 import {dumpRAM} from "./emulator/ram";
-import {ProbeFlags} from "./emulator/recorder";
 import {hex} from "./util";
-import {platform} from "./ui";
 import {ProjectView} from "./baseviews";
-import {ProbeViewBaseBase} from "./views/views";
 
 const MAX_CHILDREN = 256;
 const MAX_STRING_LEN = 100;
 
 var TREE_SHOW_DOLLAR_IDENTS = false;
 
-class TreeNode {
+export class TreeNode {
     parent: TreeNode;
     name: string;
     _div: HTMLElement;
@@ -191,7 +188,7 @@ class TreeNode {
     }
 }
 
-function createTreeRootNode(parent: HTMLElement, view: ProjectView): TreeNode {
+export function createTreeRootNode(parent: HTMLElement, view: ProjectView): TreeNode {
     var mainnode = new TreeNode(null, null);
     mainnode.view = view;
     mainnode._content = parent;
@@ -200,65 +197,4 @@ function createTreeRootNode(parent: HTMLElement, view: ProjectView): TreeNode {
     root.getDiv(); // create it
     root._div.style.padding = '0px';
     return root; // should be cached
-}
-
-export abstract class TreeViewBase implements ProjectView {
-    root: TreeNode;
-
-    createDiv(parent: HTMLElement): HTMLElement {
-        this.root = createTreeRootNode(parent, this);
-        return this.root.getDiv();
-    }
-
-    refresh() {
-        this.tick();
-    }
-
-    tick() {
-        this.root.update(this.getRootObject());
-    }
-
-    abstract getRootObject(): Object;
-}
-
-export class DebugBrowserView extends TreeViewBase implements ProjectView {
-    getRootObject() {
-        return platform.getDebugTree();
-    }
-}
-
-export class FrameCallsView extends ProbeViewBaseBase implements ProjectView {
-    treeroot: TreeNode;
-
-    createDiv(parent: HTMLElement): HTMLElement {
-        this.treeroot = createTreeRootNode(parent, this);
-        return this.treeroot.getDiv();
-    }
-
-    refresh() {
-        this.tick();
-    }
-
-    tick() {
-        this.treeroot.update(this.getRootObject());
-    }
-
-    getRootObject(): Object {
-        var frame = {};
-
-        this.redraw((op, addr, col, row, clk, value) => {
-            switch (op) {
-                case ProbeFlags.EXECUTE:
-                    let sym = this.addr2symbol(addr);
-                    if (sym) {
-                        if (!frame[sym]) {
-                            frame[sym] = row;
-                        }
-                    }
-                    break;
-            }
-        });
-
-        return frame;
-    }
 }

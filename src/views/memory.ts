@@ -1,7 +1,6 @@
-import {newDiv, ProjectView} from "../baseviews";
-import {current_project, platform, projectWindows} from "../ui";
+import {ProjectView} from "../baseviews";
+import {platform} from "../ui";
 import {hex} from "../util";
-import {Segment} from "../worker/types";
 import {
     VirtualTextLine,
     VirtualTextScroller

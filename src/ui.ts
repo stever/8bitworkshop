@@ -31,22 +31,15 @@ import {StateRecorderImpl} from "./emulator/recorder";
 import Split = require('split.js');
 import {ListingView, SourceEditor} from "./editors";
 import {DisassemblerView} from "./views/disassembly";
-import {
-    ProbeLogView,
-    ProbeSymbolView,
-    ScanlineIOView
-} from "./views/views";
-import {
-    BinaryFileView,
-    VRAMMemoryView
-} from "./views/memory";
+import {BinaryFileView, VRAMMemoryView} from "./views/memory";
 import {MemoryView} from "./views/memory_browser";
 import {MemoryMapView} from "./views/memory_map";
 import {AddressHeatMapView} from "./views/memory_probe";
-import {
-    DebugBrowserView,
-    FrameCallsView
-} from "./treeviews";
+import {ProbeLogView} from "./views/probe_log";
+import {ScanlineIOView} from "./views/scanline_io";
+import {ProbeSymbolView} from "./views/symbol_profiler";
+import {FrameCallsView} from "./views/frame_profiler";
+import {DebugBrowserView} from "./views/debug_tree";
 import {saveAs} from "file-saver";
 
 declare var $: JQueryStatic;
