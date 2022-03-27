@@ -517,7 +517,7 @@ export class ZXWASMMachine {
     }
 }
 
-export class ZXWASMPlatform implements Platform {
+export class ZXWASMPlatform {
     recorder: EmuRecorder = null;
     debugSymbols: DebugSymbols;
     internalFiles: { [path: string]: FileData } = {};
