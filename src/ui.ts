@@ -840,7 +840,7 @@ function _toggleRecording() {
 }
 
 function _lookupHelp() {
-    platform.showHelp();
+    window.open("https://worldofspectrum.org/faq/reference/reference.htm", "_help");
 }
 
 function setupDebugControls() {
