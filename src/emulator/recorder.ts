@@ -1,7 +1,14 @@
 import {Platform, EmuState, EmuControlsState, EmuRecorder} from "./zx";
-import {getNoiseSeed, setNoiseSeed} from "./emu";
 
-// RECORDER
+let _random_state = 1;
+
+function getNoiseSeed() {
+    return _random_state;
+}
+
+function setNoiseSeed(x: number) {
+    _random_state = x;
+}
 
 type FrameRec = { controls: EmuControlsState, seed: number };
 
