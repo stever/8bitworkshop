@@ -1,4 +1,4 @@
-import {EmuState, EmuControlsState, EmuRecorder} from "./zx_interfaces";
+import {EmuState, EmuControlsState, EmuRecorder} from "./debug";
 import {Probeable, ProbeAll} from "./devices";
 import {ZXWASMPlatform} from "./zx_platform";
 

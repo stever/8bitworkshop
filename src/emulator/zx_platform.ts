@@ -1,11 +1,12 @@
-import {CpuState, EmuRecorder, EmuState} from "./zx_interfaces";
+import {CpuState, EmuRecorder, EmuState} from "./debug";
 import {BreakpointList, DebugSymbols} from "./debug";
 import {FileData} from "../worker/types";
 import {
     BreakpointCallback,
     DebugCondition,
-    DebugEvalCondition, DisasmLine
-} from "./zx_types";
+    DebugEvalCondition,
+    DisasmLine
+} from "./debug";
 import {AnimationTimer, RasterVideo} from "./video";
 import {SampledAudio} from "./audio";
 import {ControllerPoller} from "./joystick";

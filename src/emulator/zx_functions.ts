@@ -1,5 +1,5 @@
 import {hex, printFlags} from "../util";
-import {Debuggable} from "./zx_interfaces";
+import {Debuggable} from "./debug";
 import {ZXWASMPlatform} from "./zx_platform";
 
 export function isDebuggable(arg: any): arg is Debuggable {

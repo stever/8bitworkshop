@@ -1,6 +1,57 @@
-import {AddrSymbolMap, DebugCondition, SymbolMap} from "./zx_types";
 import {invertMap} from "../util";
-import {Breakpoint} from "./zx_interfaces";
+
+export interface CpuState {
+    PC: number;
+    EPC?: number; // effective PC (for bankswitching)
+    o?: number; // opcode
+    SP?: number
+}
+
+export interface EmuState {
+    c?: CpuState, // CPU state
+    b?: Uint8Array | number[], // RAM
+    ram?: Uint8Array,
+}
+
+export interface EmuControlsState {
+
+}
+
+export interface Debuggable {
+    getDebugCategories?(): string[];
+
+    getDebugInfo?(category: string, state: EmuState): string;
+}
+
+export interface Preset {
+    id: string;
+    name: string;
+    chapter?: number;
+    title?: string;
+}
+
+export interface Breakpoint {
+    cond: DebugCondition;
+}
+
+export interface EmuRecorder {
+    frameRequested(): boolean;
+
+    recordFrame(state: EmuState);
+}
+
+export type DisasmLine = {
+    line: string,
+    nbytes: number,
+    isaddr: boolean
+};
+
+export type SymbolMap = { [ident: string]: number };
+export type AddrSymbolMap = { [address: number]: string };
+
+export type DebugCondition = () => boolean;
+export type DebugEvalCondition = (c: CpuState) => boolean;
+export type BreakpointCallback = (s: EmuState, msg?: string) => void;
 
 export class DebugSymbols {
     symbolmap: SymbolMap;	// symbol -> address

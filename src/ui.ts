@@ -8,7 +8,7 @@ import {
 } from "./project";
 import {WorkerResult, WorkerError} from "./worker/types";
 import {ProjectWindows} from "./windows";
-import {Preset, EmuState} from "./emulator/zx_interfaces";
+import {Preset, EmuState} from "./emulator/debug";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
 import {isDebuggable} from "./emulator/zx_functions";
 import {EmuHalt} from "./emulator/error";
@@ -35,8 +35,7 @@ import {ProbeSymbolView} from "./views/symbol_profiler";
 import {FrameCallsView} from "./views/frame_profiler";
 import {DebugBrowserView} from "./views/debug_tree";
 import {saveAs} from "file-saver";
-import {DebugEvalCondition} from "./emulator/zx_types";
-import {DebugSymbols} from "./emulator/debug";
+import {DebugSymbols, DebugEvalCondition} from "./emulator/debug";
 
 declare var $: JQueryStatic;
 
