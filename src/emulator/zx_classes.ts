@@ -559,9 +559,10 @@ export class ZX_WASMMachine implements Machine {
     }
 }
 
-export abstract class BaseDebugPlatform extends BasePlatform {
+export class ZXWASMPlatform extends BasePlatform implements Platform {
     onBreakpointHit: BreakpointCallback;
     debugCallback: DebugCondition;
+
     debugSavedState: EmuState = null;
     debugBreakState: EmuState = null;
     debugTargetClock: number = 0;
@@ -569,7 +570,23 @@ export abstract class BaseDebugPlatform extends BasePlatform {
     breakpoints: BreakpointList = new BreakpointList();
     frameCount: number = 0;
 
-    abstract getCPUState(): CpuState;
+    machine: ZX_WASMMachine;
+    mainElement: HTMLElement;
+    timer: AnimationTimer;
+    video: RasterVideo;
+    audio: SampledAudio;
+    poller: ControllerPoller;
+    serialIOInterface: SerialIOInterface;
+    serialVisualizer: SerialIOVisualizer;
+
+    probeRecorder: ProbeRecorder;
+    startProbing;
+    stopProbing;
+
+    constructor(mainElement: HTMLElement) {
+        super();
+        this.mainElement = mainElement;
+    }
 
     setBreakpoint(id: string, cond: DebugCondition) {
         if (cond) {
@@ -640,10 +657,6 @@ export abstract class BaseDebugPlatform extends BasePlatform {
         this.frameCount++;
     }
 
-    pollControls() {
-
-    }
-
     nextFrame(novideo: boolean): number {
         this.pollControls();
         this.updateRecorder();
@@ -652,13 +665,6 @@ export abstract class BaseDebugPlatform extends BasePlatform {
         this.postFrame();
         return steps;
     }
-
-    // default debugging
-    abstract getSP(): number;
-
-    abstract getPC(): number;
-
-    abstract isStable(): boolean;
 
     wasBreakpointHit(): boolean {
         return this.debugBreakState != null;
@@ -734,34 +740,6 @@ export abstract class BaseDebugPlatform extends BasePlatform {
                 return true;
             }
         });
-    }
-
-    runToVsync() {
-        this.restartDebugging();
-        var frame0 = this.frameCount;
-        this.runEval((): boolean => {
-            return this.frameCount > frame0;
-        });
-    }
-}
-
-export class ZXWASMPlatform extends BaseDebugPlatform implements Platform {
-    machine: ZX_WASMMachine;
-    mainElement: HTMLElement;
-    timer: AnimationTimer;
-    video: RasterVideo;
-    audio: SampledAudio;
-    poller: ControllerPoller;
-    serialIOInterface: SerialIOInterface;
-    serialVisualizer: SerialIOVisualizer;
-
-    probeRecorder: ProbeRecorder;
-    startProbing;
-    stopProbing;
-
-    constructor(mainElement: HTMLElement) {
-        super();
-        this.mainElement = mainElement;
     }
 
     reset() {
@@ -916,7 +894,13 @@ export class ZXWASMPlatform extends BaseDebugPlatform implements Platform {
             this.probeRecorder.clear();
             this.probeRecorder.singleFrame = false;
         }
-        super.runToVsync();
+
+        this.restartDebugging();
+        var frame0 = this.frameCount;
+
+        this.runEval((): boolean => {
+            return this.frameCount > frame0;
+        });
     }
 
     getRasterScanline() {
