@@ -554,13 +554,13 @@ export class ZXWASMPlatform {
 
     updateRecorder() {
         // are we recording and do we need to save a frame?
-        if (this.recorder && (<ZXWASMPlatform><any>this).isRunning() && this.recorder.frameRequested()) {
+        if (this.recorder && this.isRunning() && this.recorder.frameRequested()) {
             this.recorder.recordFrame(this.saveState());
         }
     }
 
     inspect(sym: string): string {
-        return inspectSymbol((this as any) as ZXWASMPlatform, sym);
+        return inspectSymbol(this, sym);
     }
 
     getDebugTree(): {} {
@@ -914,7 +914,7 @@ export class ZXWASMPlatform {
                 var end = start + 0xff;
                 if (sp == 0) sp = 0x10000;
                 console.log(sp, start, end);
-                return dumpStackToString(<ZXWASMPlatform><any>this, [], start, end, sp, 0xcd);
+                return dumpStackToString(this, [], start, end, sp, 0xcd);
             }
             default:
                 return isDebuggable(this.machine) && this.machine.getDebugInfo(category, state);
