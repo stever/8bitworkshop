@@ -11,11 +11,6 @@ import {AnimationTimer, RasterVideo} from "./video";
 import {SampledAudio} from "./audio";
 import {ControllerPoller} from "./joystick";
 import {ProbeRecorder} from "./recorder";
-import {
-    cpuStateToLongString_Z80,
-    dumpStackToString,
-    getToolForFilename_z80
-} from "./zx_functions";
 import {ZXWASMMachine} from "./zx_machine";
 import {disassemble} from "./disassemble";
 import {hex} from "../util";
@@ -377,27 +372,15 @@ export class ZXWASMPlatform {
         });
     }
 
-    getToolForFilename = getToolForFilename_z80;
-
-    getDebugCategories() {
-        return ['CPU', 'Stack'];
-    }
-
-    getDebugInfo(category: string, state: EmuState): string {
-        switch (category) {
-            case 'CPU':
-                return cpuStateToLongString_Z80(state.c);
-            case 'Stack': {
-                var sp = (state.c.SP - 1) & 0xffff;
-                var start = sp & 0xff00;
-                var end = start + 0xff;
-                if (sp == 0) sp = 0x10000;
-                console.log(sp, start, end);
-                return dumpStackToString(this, [], start, end, sp, 0xcd);
-            }
-            default:
-                throw 'unexpected default case';
-        }
+    getToolForFilename(fn: string): string {
+        if (fn.endsWith(".c")) return "sdcc";
+        if (fn.endsWith(".h")) return "sdcc";
+        if (fn.endsWith(".s")) return "sdasz80";
+        if (fn.endsWith(".ns")) return "naken";
+        if (fn.endsWith(".scc")) return "sccz80";
+        if (fn.endsWith(".z")) return "zmac";
+        if (fn.endsWith(".wiz")) return "wiz";
+        return "zmac";
     }
 
     disassemble(pc: number, read: (addr: number) => number): DisasmLine {
