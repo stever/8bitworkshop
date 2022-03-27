@@ -1,4 +1,4 @@
-import {KeyFlags} from "./emu";
+import {KeyFlags} from "./keys";
 import {TrapCondition} from "./devices";
 import {CPU, SampledAudioSink, ProbeAll, NullProbe} from "./devices";
 import {EmuHalt} from "./emu";
