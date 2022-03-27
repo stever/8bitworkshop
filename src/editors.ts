@@ -165,10 +165,7 @@ export class SourceEditor implements ProjectView {
     }
 
     inspect(ident: string): void {
-        var result;
-        if (platform.inspect) {
-            result = platform.inspect(ident);
-        }
+        var result = platform.inspect(ident);
 
         if (this.inspectWidget) {
             this.inspectWidget.clear();

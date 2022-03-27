@@ -217,19 +217,15 @@ function refreshWindowList() {
         }
     }
 
-    // add other tools
     separate = true;
-    if (platform.disassemble && platform.saveState) {
-        addWindowItem("#disasm", "Disassembly", () => {
-            return new DisassemblerView();
-        });
-    }
 
-    if (platform.readAddress) {
-        addWindowItem("#memory", "Memory Browser", () => {
-            return new MemoryView();
-        });
-    }
+    addWindowItem("#disasm", "Disassembly", () => {
+        return new DisassemblerView();
+    });
+
+    addWindowItem("#memory", "Memory Browser", () => {
+        return new MemoryView();
+    });
 
     if (current_project.segments && current_project.segments.length) {
         addWindowItem("#memmap", "Memory Map", () => {
@@ -259,11 +255,9 @@ function refreshWindowList() {
         });
     }
 
-    if (platform.getDebugTree) {
-        addWindowItem("#debugview", "Debug Tree", () => {
-            return new DebugBrowserView();
-        });
-    }
+    addWindowItem("#debugview", "Debug Tree", () => {
+        return new DebugBrowserView();
+    });
 }
 
 function loadMainWindow(preset_id: string) {
@@ -629,7 +623,7 @@ function uiDebugCallback(state: EmuState) {
 }
 
 function setupDebugCallback(btnid?: string) {
-    if (platform.setupDebug) platform.setupDebug((state: EmuState, msg: string) => {
+    platform.setupDebug((state: EmuState, msg: string) => {
         uiDebugCallback(state);
         setDebugButtonState(btnid || "pause", "stopped");
         msg && showErrorAlert([{msg: "STOPPED: " + msg, line: 0}], true);
@@ -728,13 +722,7 @@ export function runToPC(pc: number) {
 
     setupBreakpoint("toline");
     console.log("Run to", pc.toString(16));
-    if (platform.runToPC) {
-        platform.runToPC(pc);
-    } else {
-        platform.runEval((c) => {
-            return c.PC == pc;
-        });
-    }
+    platform.runToPC(pc);
 }
 
 function runToCursor() {
@@ -761,7 +749,7 @@ function runStepBackwards() {
 
 function clearBreakpoint() {
     lastDebugState = null;
-    if (platform.clearDebug) platform.clearDebug();
+    platform.clearDebug();
     setupDebugCallback(); // in case of BRK/trap
     showDebugInfo();
 }
@@ -790,21 +778,14 @@ function resetAndDebug() {
 
     _disableRecording();
 
-    if (platform.setupDebug && platform.runEval) {
-        clearBreakpoint();
-        _resume();
-        resetPlatform();
-        setupBreakpoint("restart");
+    clearBreakpoint();
+    _resume();
+    resetPlatform();
+    setupBreakpoint("restart");
 
-        platform.runEval((c) => {
-            return true;
-        });
-
-        // break immediately
-    } else {
-        resetPlatform();
-        _resume();
-    }
+    platform.runEval((c) => {
+        return true;
+    });
 
     if (wasRecording) {
         _enableRecording();
@@ -845,11 +826,11 @@ function getDebugExprExamples(): string {
         s += "c.HL == 0x4000\n";
     }
 
-    if (platform.readAddress) {
+    if (platform.readAddress) { // NOTE: Always true.
         s += "this.readAddress(0x1234) == 0x0\n";
     }
 
-    if (platform['getRasterScanline']) {
+    if (platform.getRasterScanline) { // NOTE: Always true.
         s += "this.getRasterScanline() > 222\n";
     }
 
@@ -922,14 +903,10 @@ function _toggleRecording() {
 }
 
 function _lookupHelp() {
-    if (platform.showHelp) {
-        platform.showHelp();
-    }
+    platform.showHelp();
 }
 
 function setupDebugControls() {
-
-    // create toolbar buttons
     uitoolbar = new Toolbar($("#toolbar")[0], null);
     uitoolbar.grp.prop('id', 'run_bar');
     uitoolbar.add('ctrl+alt+r', 'Reset', 'glyphicon-refresh', resetAndRun).prop('id', 'dbg_reset');
@@ -938,56 +915,25 @@ function setupDebugControls() {
 
     uitoolbar.newGroup();
     uitoolbar.grp.prop('id', 'debug_bar');
-
-    if (platform.runEval) {
-        uitoolbar.add('ctrl+alt+e', 'Reset and Debug', 'glyphicon-fast-backward', resetAndDebug).prop('id', 'dbg_restart');
-    }
-
-    if (platform.stepBack) {
-        uitoolbar.add('ctrl+alt+b', 'Step Backwards', 'glyphicon-step-backward', runStepBackwards).prop('id', 'dbg_stepback');
-    }
-
-    if (platform.step) {
-        uitoolbar.add('ctrl+alt+s', 'Single Step', 'glyphicon-step-forward', singleStep).prop('id', 'dbg_step');
-    }
-
-    if (platform.runUntilReturn) {
-        uitoolbar.add('ctrl+alt+o', 'Step Out of Subroutine', 'glyphicon-hand-up', runUntilReturn).prop('id', 'dbg_stepout');
-    }
-
-    if (platform.runToVsync) {
-        uitoolbar.add('ctrl+alt+n', 'Next Frame/Interrupt', 'glyphicon-forward', singleFrameStep).prop('id', 'dbg_tovsync');
-    }
-
-    if ((platform.runEval || platform.runToPC)) {
-        uitoolbar.add('ctrl+alt+l', 'Run To Line', 'glyphicon-save', runToCursor).prop('id', 'dbg_toline');
-    }
+    uitoolbar.add('ctrl+alt+e', 'Reset and Debug', 'glyphicon-fast-backward', resetAndDebug).prop('id', 'dbg_restart');
+    uitoolbar.add('ctrl+alt+b', 'Step Backwards', 'glyphicon-step-backward', runStepBackwards).prop('id', 'dbg_stepback');
+    uitoolbar.add('ctrl+alt+s', 'Single Step', 'glyphicon-step-forward', singleStep).prop('id', 'dbg_step');
+    uitoolbar.add('ctrl+alt+o', 'Step Out of Subroutine', 'glyphicon-hand-up', runUntilReturn).prop('id', 'dbg_stepout');
+    uitoolbar.add('ctrl+alt+n', 'Next Frame/Interrupt', 'glyphicon-forward', singleFrameStep).prop('id', 'dbg_tovsync');
+    uitoolbar.add('ctrl+alt+l', 'Run To Line', 'glyphicon-save', runToCursor).prop('id', 'dbg_toline');
 
     uitoolbar.newGroup();
     uitoolbar.grp.prop('id', 'xtra_bar');
+    uitoolbar.add('ctrl+alt+?', 'Show Help', 'glyphicon-question-sign', _lookupHelp);
+    uitoolbar.add('ctrl+alt+0', 'Start/Stop Replay Recording', 'glyphicon-record', _toggleRecording).prop('id', 'dbg_record');
 
     // add menu clicks
     $(".dropdown-menu").collapse({toggle: false});
-
-    if (platform.runEval) {
-        $("#item_debug_expr").click(_breakExpression).show();
-    } else {
-        $("#item_debug_expr").hide();
-    }
-
+    $("#item_debug_expr").click(_breakExpression).show();
     $("#item_download_rom").click(_downloadROMImage);
 
     updateDebugWindows();
-
-    // show help button?
-    if (platform.showHelp) {
-        uitoolbar.add('ctrl+alt+?', 'Show Help', 'glyphicon-question-sign', _lookupHelp);
-    }
-
-    // setup replay slider
-    if (platform.setRecorder && platform.advance) {
-        setupReplaySlider();
-    }
+    setupReplaySlider();
 }
 
 function setupReplaySlider() {
@@ -995,10 +941,6 @@ function setupReplaySlider() {
     var clockslider = $("#clockslider");
     var replayframeno = $("#replay_frame");
     var clockno = $("#replay_clock");
-
-    if (!platform.advanceFrameClock) {
-        $("#clockdiv").hide();
-    }
 
     var updateFrameNo = () => {
         replayframeno.text(stateRecorder.lastSeekFrame + "");
@@ -1077,8 +1019,6 @@ function setupReplaySlider() {
     });
 
     $("#replay_bar").show();
-
-    uitoolbar.add('ctrl+alt+0', 'Start/Stop Replay Recording', 'glyphicon-record', _toggleRecording).prop('id', 'dbg_record');
 }
 
 function globalErrorHandler(msgevent) {

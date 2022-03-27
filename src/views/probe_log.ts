@@ -52,19 +52,21 @@ export class ProbeLogView extends ProbeViewBaseBase {
                     asm: null,
                     info: []
                 };
+
                 this.dumplines[clk] = line;
             }
 
             switch (op) {
                 case ProbeFlags.EXECUTE:
-                    if (platform.disassemble) {
-                        var disasm = platform.disassemble(addr, platform.readAddress.bind(platform));
-                        line.asm = disasm && disasm.line;
-                    }
+                    var disasm = platform.disassemble(addr, platform.readAddress.bind(platform));
+                    line.asm = disasm && disasm.line;
                     break;
                 default:
                     var xtra = this.opToString(op, addr, value);
-                    if (xtra != "") line.info.push(xtra);
+                    if (xtra != "") {
+                        line.info.push(xtra);
+                    }
+
                     break;
             }
         });

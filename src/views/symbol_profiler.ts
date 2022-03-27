@@ -11,7 +11,6 @@ import {
 export class ProbeSymbolView extends ProbeViewBaseBase {
     vlist: VirtualTextScroller;
     keys: string[];
-    recreateOnResize = true;
     dumplines;
     cumulativeData = true;
 
@@ -48,6 +47,7 @@ export class ProbeSymbolView extends ProbeViewBaseBase {
             s = lpad(sym, 35)
                 + getop(ProbeFlags.MEM_READ)
                 + getop(ProbeFlags.MEM_WRITE);
+
             if (line[ProbeFlags.EXECUTE]) {
                 c = 'seg_code';
             } else if (line[ProbeFlags.IO_READ] || line[ProbeFlags.IO_WRITE]) {

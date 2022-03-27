@@ -425,7 +425,7 @@ export class ZXWASMMachine {
 
     saveState() {
         this.exports.machine_save_state(this.sys, this.stateptr);
-        
+
         return {
             c: this.getCPUState(),
             state: this.statearr.slice(0),
