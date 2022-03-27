@@ -404,11 +404,13 @@ export class ZXWASMPlatform {
     }
 
     getToolForFilename(fn: string): string {
+        // TODO: Get file extension and use switch here.
         if (fn.endsWith(".c")) return "sdcc";
         if (fn.endsWith(".h")) return "sdcc";
         if (fn.endsWith(".s")) return "sdasz80";
         if (fn.endsWith(".scc")) return "sccz80";
         if (fn.endsWith(".z")) return "zmac";
+        // TODO: Case for .asm return "zmac".
         return "zmac";
     }
 
@@ -438,9 +440,5 @@ export class ZXWASMPlatform {
                 {name: 'User RAM', start: 0x5ccb, size: 0xff58 - 0x5ccb, type: 'ram'},
             ]
         };
-    }
-
-    showHelp() {
-        window.open("https://worldofspectrum.org/faq/reference/reference.htm", "_help");
     }
 }
