@@ -56,22 +56,6 @@ export class WebPresetsFileSystem implements ProjectFilesystem {
     }
 }
 
-export class NullFilesystem implements ProjectFilesystem {
-    gets = [];
-    sets = [];
-
-    getFileData(path: string): Promise<FileData> {
-        this.gets.push(path);
-        return null;
-    }
-
-    setFileData(path: string, data: FileData): Promise<void> {
-        this.sets.push(path);
-        return;
-    }
-
-}
-
 export class OverlayFilesystem implements ProjectFilesystem {
     basefs: ProjectFilesystem;
     overlayfs: ProjectFilesystem;

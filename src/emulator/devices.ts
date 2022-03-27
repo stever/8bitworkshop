@@ -43,7 +43,7 @@ export interface SerialEvent {
 }
 
 export interface SerialIOInterface {
-    
+
     // from machine to platform
     clearToSend(): boolean;
 
