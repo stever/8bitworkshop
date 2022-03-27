@@ -350,206 +350,6 @@ export abstract class BaseZ80Platform extends BaseDebugPlatform {
     }
 }
 
-export abstract class BaseMachinePlatform extends BaseDebugPlatform implements Platform {
-    machine: ZX_WASMMachine;
-    mainElement: HTMLElement;
-    timer: AnimationTimer;
-    video: RasterVideo;
-    audio: SampledAudio;
-    poller: ControllerPoller;
-    serialIOInterface: SerialIOInterface;
-    serialVisualizer: SerialIOVisualizer;
-
-    probeRecorder: ProbeRecorder;
-    startProbing;
-    stopProbing;
-
-    abstract newMachine(): ZX_WASMMachine;
-
-    abstract getToolForFilename(s: string): string;
-
-    abstract getDefaultExtension(): string;
-
-    abstract getPresets(): Preset[];
-
-    constructor(mainElement: HTMLElement) {
-        super();
-        this.mainElement = mainElement;
-    }
-
-    reset() {
-        this.machine.reset();
-        if (this.serialVisualizer != null) this.serialVisualizer.reset();
-    }
-
-    loadState(s) {
-        this.machine.loadState(s);
-    }
-
-    saveState() {
-        return this.machine.saveState();
-    }
-
-    getSP() {
-        return this.machine.cpu.getSP();
-    }
-
-    getPC() {
-        return this.machine.cpu.getPC();
-    }
-
-    isStable() {
-        return this.machine.cpu.isStable();
-    }
-
-    getCPUState() {
-        return this.machine.cpu.saveState();
-    }
-
-    loadControlsState(s) {
-        this.machine.loadControlsState(s);
-    }
-
-    saveControlsState() {
-        return this.machine.saveControlsState();
-    }
-
-    async start() {
-        this.machine = this.newMachine();
-        const m = this.machine;
-        // block on WASM loading
-
-        if (m instanceof ZX_WASMMachine) {
-            await m.loadWASM();
-        }
-
-        var videoFrequency;
-        if (hasVideo(m)) {
-            var vp = m.getVideoParams();
-            this.video = new RasterVideo(this.mainElement, vp.width, vp.height, {overscan: !!vp.overscan});
-            this.video.create();
-            m.connectVideo(this.video.getFrameData());
-            if (hasKeyInput(m)) {
-                this.video.setKeyboardEvents(m.setKeyInput.bind(m));
-                this.poller = new ControllerPoller(m.setKeyInput.bind(m));
-            }
-            videoFrequency = vp.videoFrequency;
-        }
-
-        this.timer = new AnimationTimer(videoFrequency || 60, this.nextFrame.bind(this));
-
-        if (hasAudio(m)) {
-            var ap = m.getAudioParams();
-            this.audio = new SampledAudio(ap.sampleRate);
-            this.audio.start();
-            m.connectAudio(this.audio);
-        }
-
-        if (hasPaddleInput(m)) {
-            this.video.setupMouseEvents();
-        }
-
-        if (hasProbe(m)) {
-            this.probeRecorder = new ProbeRecorder(m);
-            this.startProbing = () => {
-                m.connectProbe(this.probeRecorder);
-                return this.probeRecorder;
-            };
-            this.stopProbing = () => {
-                m.connectProbe(null);
-            };
-        }
-
-        if (hasBIOS(m)) {
-            this.loadBIOS = (data) => {
-                m.loadBIOS(data);
-            };
-        }
-
-        if (hasSerialIO(m)) {
-            if (this.serialIOInterface == null) {
-                this.serialVisualizer = new SerialIOVisualizer(this.mainElement, m);
-            } else {
-                m.connectSerialIO(this.serialIOInterface);
-            }
-        }
-    }
-
-    loadROM(title, data) {
-        this.machine.loadROM(data);
-        this.reset();
-    }
-
-    loadBIOS: (data) => void; // only set if hasBIOS() is true
-
-    pollControls() {
-        this.poller && this.poller.poll();
-        if (hasPaddleInput(this.machine)) {
-            this.machine.setPaddleInput(0, this.video.paddle_x);
-            this.machine.setPaddleInput(1, this.video.paddle_y);
-        }
-        if (this.machine['pollControls']) {
-            this.machine['pollControls']();
-        }
-    }
-
-    advance(novideo: boolean) {
-        var steps = this.machine.advanceFrame(this.getDebugCallback());
-        if (!novideo && this.video) this.video.updateFrame();
-        if (!novideo && this.serialVisualizer) this.serialVisualizer.refresh();
-        return steps;
-    }
-
-    advanceFrameClock(trap, step) {
-        if (!(step > 0)) return;
-        return this.machine.advanceFrameClock(trap, step);
-    }
-
-    isRunning() {
-        return this.timer && this.timer.isRunning();
-    }
-
-    resume() {
-        this.timer.start();
-        this.audio && this.audio.start();
-    }
-
-    pause() {
-        this.timer.stop();
-        this.audio && this.audio.stop();
-        // i guess for runToVsync()?
-        if (this.probeRecorder) {
-            this.probeRecorder.singleFrame = true;
-        }
-    }
-
-    // so probe views stick around
-    runToVsync() {
-        if (this.probeRecorder) {
-            this.probeRecorder.clear();
-            this.probeRecorder.singleFrame = false;
-        }
-        super.runToVsync();
-    }
-
-    getRasterScanline() {
-        return isRaster(this.machine) && this.machine.getRasterY();
-    }
-
-    readAddress(addr: number): number {
-        return this.machine.read(addr);
-    }
-
-    getDebugCategories() {
-        if (isDebuggable(this.machine))
-            return this.machine.getDebugCategories();
-    }
-
-    getDebugInfo(category: string, state: EmuState): string {
-        return isDebuggable(this.machine) && this.machine.getDebugInfo(category, state);
-    }
-}
-
 export class SerialIOVisualizer {
 
     textarea: HTMLTextAreaElement;
@@ -991,7 +791,183 @@ export class ZX_WASMMachine implements Machine {
     }
 }
 
-export class ZXWASMPlatform extends BaseMachinePlatform implements Platform {
+export class ZXWASMPlatform extends BaseDebugPlatform implements Platform {
+    machine: ZX_WASMMachine;
+    mainElement: HTMLElement;
+    timer: AnimationTimer;
+    video: RasterVideo;
+    audio: SampledAudio;
+    poller: ControllerPoller;
+    serialIOInterface: SerialIOInterface;
+    serialVisualizer: SerialIOVisualizer;
+
+    probeRecorder: ProbeRecorder;
+    startProbing;
+    stopProbing;
+
+    constructor(mainElement: HTMLElement) {
+        super();
+        this.mainElement = mainElement;
+    }
+
+    reset() {
+        this.machine.reset();
+        if (this.serialVisualizer != null) this.serialVisualizer.reset();
+    }
+
+    loadState(s) {
+        this.machine.loadState(s);
+    }
+
+    saveState() {
+        return this.machine.saveState();
+    }
+
+    getSP() {
+        return this.machine.cpu.getSP();
+    }
+
+    getPC() {
+        return this.machine.cpu.getPC();
+    }
+
+    isStable() {
+        return this.machine.cpu.isStable();
+    }
+
+    getCPUState() {
+        return this.machine.cpu.saveState();
+    }
+
+    loadControlsState(s) {
+        this.machine.loadControlsState(s);
+    }
+
+    saveControlsState() {
+        return this.machine.saveControlsState();
+    }
+
+    async start() {
+        this.machine = this.newMachine();
+        const m = this.machine;
+        // block on WASM loading
+
+        if (m instanceof ZX_WASMMachine) {
+            await m.loadWASM();
+        }
+
+        var videoFrequency;
+        if (hasVideo(m)) {
+            var vp = m.getVideoParams();
+            this.video = new RasterVideo(this.mainElement, vp.width, vp.height, {overscan: !!vp.overscan});
+            this.video.create();
+            m.connectVideo(this.video.getFrameData());
+            if (hasKeyInput(m)) {
+                this.video.setKeyboardEvents(m.setKeyInput.bind(m));
+                this.poller = new ControllerPoller(m.setKeyInput.bind(m));
+            }
+            videoFrequency = vp.videoFrequency;
+        }
+
+        this.timer = new AnimationTimer(videoFrequency || 60, this.nextFrame.bind(this));
+
+        if (hasAudio(m)) {
+            var ap = m.getAudioParams();
+            this.audio = new SampledAudio(ap.sampleRate);
+            this.audio.start();
+            m.connectAudio(this.audio);
+        }
+
+        if (hasPaddleInput(m)) {
+            this.video.setupMouseEvents();
+        }
+
+        if (hasProbe(m)) {
+            this.probeRecorder = new ProbeRecorder(m);
+            this.startProbing = () => {
+                m.connectProbe(this.probeRecorder);
+                return this.probeRecorder;
+            };
+            this.stopProbing = () => {
+                m.connectProbe(null);
+            };
+        }
+
+        if (hasBIOS(m)) {
+            this.loadBIOS = (data) => {
+                m.loadBIOS(data);
+            };
+        }
+
+        if (hasSerialIO(m)) {
+            if (this.serialIOInterface == null) {
+                this.serialVisualizer = new SerialIOVisualizer(this.mainElement, m);
+            } else {
+                m.connectSerialIO(this.serialIOInterface);
+            }
+        }
+    }
+
+    loadROM(title, data) {
+        this.machine.loadROM(data);
+        this.reset();
+    }
+
+    loadBIOS: (data) => void; // only set if hasBIOS() is true
+
+    pollControls() {
+        this.poller && this.poller.poll();
+        if (hasPaddleInput(this.machine)) {
+            this.machine.setPaddleInput(0, this.video.paddle_x);
+            this.machine.setPaddleInput(1, this.video.paddle_y);
+        }
+        if (this.machine['pollControls']) {
+            this.machine['pollControls']();
+        }
+    }
+
+    advance(novideo: boolean) {
+        var steps = this.machine.advanceFrame(this.getDebugCallback());
+        if (!novideo && this.video) this.video.updateFrame();
+        if (!novideo && this.serialVisualizer) this.serialVisualizer.refresh();
+        return steps;
+    }
+
+    advanceFrameClock(trap, step) {
+        if (!(step > 0)) return;
+        return this.machine.advanceFrameClock(trap, step);
+    }
+
+    isRunning() {
+        return this.timer && this.timer.isRunning();
+    }
+
+    resume() {
+        this.timer.start();
+        this.audio && this.audio.start();
+    }
+
+    pause() {
+        this.timer.stop();
+        this.audio && this.audio.stop();
+        // i guess for runToVsync()?
+        if (this.probeRecorder) {
+            this.probeRecorder.singleFrame = true;
+        }
+    }
+
+    // so probe views stick around
+    runToVsync() {
+        if (this.probeRecorder) {
+            this.probeRecorder.clear();
+            this.probeRecorder.singleFrame = false;
+        }
+        super.runToVsync();
+    }
+
+    getRasterScanline() {
+        return isRaster(this.machine) && this.machine.getRasterY();
+    }
 
     getToolForFilename = getToolForFilename_z80;
 
