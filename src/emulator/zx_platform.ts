@@ -294,7 +294,7 @@ export class ZXWASMPlatform {
     }
 
     async start() {
-        this.machine = this.newMachine();
+        this.machine = new ZXWASMMachine();
         const m = this.machine;
 
         // block on WASM loading
@@ -414,10 +414,6 @@ export class ZXWASMPlatform {
 
     disassemble(pc: number, read: (addr: number) => number): DisasmLine {
         return disassemble(pc, read(pc), read(pc + 1), read(pc + 2), read(pc + 3));
-    }
-
-    newMachine() {
-        return new ZXWASMMachine();
     }
 
     getPresets() {
