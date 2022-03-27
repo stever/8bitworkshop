@@ -1,4 +1,4 @@
-import {byteToASCII, invertMap} from "../util";
+import {invertMap} from "../util";
 import {
     AddrSymbolMap,
     BreakpointCallback,
@@ -13,7 +13,6 @@ import {SampledAudio} from "./audio";
 import {ControllerPoller} from "./joystick";
 import {
     CPU,
-    HasSerialIO,
     NullProbe,
     ProbeAll,
     SampledAudioSink,
@@ -68,52 +67,6 @@ export class BreakpointList {
                         result = true;
                 return result;
             };
-        }
-    }
-}
-
-export class SerialIOVisualizer {
-    textarea: HTMLTextAreaElement;
-    device: HasSerialIO;
-    lastOutCount = -1;
-    lastInCount = -1;
-
-    constructor(parentElement: HTMLElement, device: HasSerialIO) {
-        this.device = device;
-        this.textarea = document.createElement("textarea");
-        this.textarea.classList.add('transcript');
-        this.textarea.classList.add('transcript-style-2');
-        this.textarea.style.display = 'none';
-        parentElement.appendChild(this.textarea);
-    }
-
-    reset() {
-        this.lastOutCount = 0;
-        this.lastInCount = 0;
-        this.textarea.style.display = 'none';
-    }
-
-    refresh() {
-        var lastop = '';
-        if (this.device.serialOut.length != this.lastOutCount) {
-            var s = '';
-            for (var ev of this.device.serialOut) {
-                if (lastop != ev.op) {
-                    if (s != '') s += '\n';
-                    if (ev.op === 'read') s += '<< ';
-                    else if (ev.op === 'write') s += '>> ';
-                    lastop = ev.op;
-                }
-                if (ev.value == 10) {
-                    s += '\u21b5';
-                    lastop = '';
-                } else {
-                    s += byteToASCII(ev.value);
-                }
-            }
-            this.textarea.value = s;
-            this.lastOutCount = this.device.serialOut.length;
-            this.textarea.style.display = 'block';
         }
     }
 }
@@ -476,7 +429,6 @@ export class ZXWASMPlatform {
     video: RasterVideo;
     audio: SampledAudio;
     poller: ControllerPoller;
-    serialVisualizer: SerialIOVisualizer;
 
     probeRecorder: ProbeRecorder;
     startProbing;
@@ -673,10 +625,6 @@ export class ZXWASMPlatform {
 
     reset() {
         this.machine.reset();
-
-        if (this.serialVisualizer != null) {
-            this.serialVisualizer.reset();
-        }
     }
 
     loadState(s) {
@@ -771,10 +719,6 @@ export class ZXWASMPlatform {
 
         if (!novideo && this.video) {
             this.video.updateFrame();
-        }
-
-        if (!novideo && this.serialVisualizer) {
-            this.serialVisualizer.refresh();
         }
 
         return steps;

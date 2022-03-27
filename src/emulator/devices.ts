@@ -34,39 +34,6 @@ export interface CPU extends MemoryBusConnected, Resettable, SavesState<any> {
     isStable(): boolean;
 }
 
-// SERIAL I/O
-
-export interface SerialEvent {
-    op: 'read' | 'write';
-    value: number;
-    nbits: number;
-}
-
-export interface SerialIOInterface {
-
-    // from machine to platform
-    clearToSend(): boolean;
-
-    sendByte(b: number);
-
-    // from platform to machine
-    byteAvailable(): boolean;
-
-    recvByte(): number;
-
-    // implement these too
-    reset(): void;
-
-    advance(clocks: number): void;
-}
-
-export interface HasSerialIO {
-    connectSerialIO(serial: SerialIOInterface);
-
-    serialOut?: SerialEvent[];    // outgoing event log
-    serialIn?: SerialEvent[];     // incoming queue
-}
-
 /// PROFILER
 
 export interface Probeable {
