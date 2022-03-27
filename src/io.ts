@@ -112,23 +112,6 @@ export function read(url: string, type?: 'binary' | 'text'): FileData {
     return data;
 }
 
-export function readbin(url: string): Uint8Array {
-    var data = read(url, 'binary');
-    if (data instanceof Uint8Array) {
-        return data;
-    } else {
-        throw new Error(`The resource at "${url}" is not a binary file.`);
-    }
-}
-
-export function readlines(url: string): string[] {
-    return (read(url, 'text') as string).split('\n');
-}
-
-export function splitlines(text: string): string[] {
-    return text.split(/\n|\r\n/g);
-}
-
 export function module(url: string) {
     // find module in cache?
     let key = `${url}::${url.length}`;
@@ -144,22 +127,4 @@ export function module(url: string) {
     }
 
     return exports;
-}
-
-export function mutable<T>(obj: object): object {
-    Object.defineProperty(obj, '$$setstate', {
-        value: function (newstate) {
-            Object.assign(this, newstate);
-        },
-        enumerable: false
-    });
-
-    Object.defineProperty(obj, '$$getstate', {
-        value: function () {
-            return this;
-        },
-        enumerable: false
-    });
-
-    return obj;
 }
