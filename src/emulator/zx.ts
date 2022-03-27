@@ -6,7 +6,7 @@ import {RasterVideo, AnimationTimer} from "./video";
 import {ControllerPoller} from "./joystick";
 import {hex, printFlags, invertMap, byteToASCII} from "../util";
 import {Segment, FileData} from "../worker/types";
-import {disassembleZ80} from "./disassemble";
+import {disassemble} from "./disassemble";
 import {
     Bus,
     Resettable,
@@ -559,7 +559,7 @@ export abstract class BaseZ80Platform extends BaseDebugPlatform {
     }
 
     disassemble(pc: number, read: (addr: number) => number): DisasmLine {
-        return disassembleZ80(pc, read(pc), read(pc + 1), read(pc + 2), read(pc + 3));
+        return disassemble(pc, read(pc), read(pc + 1), read(pc + 2), read(pc + 3));
     }
 }
 
@@ -906,7 +906,7 @@ export abstract class BaseZ80MachinePlatform<T extends Machine> extends BaseMach
     }
 
     disassemble(pc: number, read: (addr: number) => number): DisasmLine {
-        return disassembleZ80(pc, read(pc), read(pc + 1), read(pc + 2), read(pc + 3));
+        return disassemble(pc, read(pc), read(pc + 1), read(pc + 2), read(pc + 3));
     }
 }
 
