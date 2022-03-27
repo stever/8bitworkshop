@@ -193,6 +193,7 @@ export class ZXWASMMachine {
     }
 
     async initWASM() {
+
         // init machine instance
         this.sys = this.exports.machine_init(this.biosptr);
         let statesize = this.exports.machine_get_state_size();
@@ -202,16 +203,20 @@ export class ZXWASMMachine {
         let cpustatesize = this.exports.machine_get_cpu_state_size();
         this.cpustateptr = this.exports.malloc(cpustatesize);
         this.romptr = this.exports.malloc(this.maxROMSize);
+
         // create state buffers
         // must do this after allocating memory (and everytime we grow memory?)
         this.statearr = new Uint8Array(this.exports.memory.buffer, this.stateptr, statesize);
         this.ctrlstatearr = new Uint8Array(this.exports.memory.buffer, this.ctrlstateptr, ctrlstatesize);
         this.cpustatearr = new Uint8Array(this.exports.memory.buffer, this.cpustateptr, cpustatesize);
+
         // create audio buffer
         let sampbufsize = 4096 * 4;
         this.audioarr = new Float32Array(this.exports.memory.buffer, this.exports.machine_get_sample_buffer(), sampbufsize);
+
         // create ROM buffer
         this.romarr = new Uint8Array(this.exports.memory.buffer, this.romptr, this.maxROMSize);
+
         console.log('machine_init', this.sys, statesize, ctrlstatesize, cpustatesize, sampbufsize);
     }
 
@@ -308,6 +313,7 @@ export class ZXWASMMachine {
 
     advanceFrameClock(trap, cpf: number): number {
         var i: number;
+
         if (trap) {
             for (i = 0; i < cpf; i++) {
                 if (trap()) {
@@ -319,8 +325,10 @@ export class ZXWASMMachine {
             this.exports.machine_exec(this.sys, cpf);
             i = cpf;
         }
+
         this.syncVideo();
         this.syncAudio();
+
         return i;
     }
 
@@ -329,6 +337,7 @@ export class ZXWASMMachine {
             var datalen = this.exports.machine_get_probe_buffer_size();
             var dataaddr = this.exports.machine_get_probe_buffer_address();
             var databuf = new Uint32Array(this.exports.memory.buffer, dataaddr, datalen);
+
             this.probe.logNewFrame();
             this.probe.addLogBuffer(databuf);
         }
@@ -416,6 +425,7 @@ export class ZXWASMMachine {
 
     saveState() {
         this.exports.machine_save_state(this.sys, this.stateptr);
+        
         return {
             c: this.getCPUState(),
             state: this.statearr.slice(0),
