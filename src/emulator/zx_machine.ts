@@ -137,6 +137,7 @@ export class ZXWASMMachine {
         this.romarr.set(rom);
         this.romlen = rom.length;
         console.log('load rom', rom.length, 'bytes');
+        console.assert(rom.length === 41613, 'unexpected rom length');
 
         this.reset();
     }
