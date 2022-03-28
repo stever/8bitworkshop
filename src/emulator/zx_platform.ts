@@ -339,10 +339,6 @@ export class ZXWASMPlatform {
         this.reset();
     }
 
-    loadBIOS(data) {
-        this.machine.loadBIOS(data);
-    }
-
     pollControls() {
         this.poller && this.poller.poll();
         if (this.machine['pollControls']) {
