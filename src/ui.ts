@@ -1022,6 +1022,28 @@ function addPageFocusHandlers() {
     });
 }
 
+function revealTopBar() {
+    setTimeout(() => {
+        $("#controls_dynamic").css('visibility', 'inherit');
+    }, 250);
+}
+
+function setupSplits() {
+    Split(['#sidebar', '#workspace', '#emulator'], {
+        sizes: [12, 44, 44],
+        minSize: [0, 250, 250],
+        onDragEnd: () => {
+            if (projectWindows) projectWindows.resize();
+        },
+    });
+}
+
+function emulationHalted(err: EmuHalt) {
+    var msg = (err && err.message) || msg;
+    showExceptionAsError(err, msg);
+    projectWindows.refresh(false); // don't mess with cursor
+}
+
 async function startPlatform() {
     platform = new ZXWASMPlatform($("#emuscreen")[0]);
     stateRecorder = new StateRecorderImpl(platform);
@@ -1048,32 +1070,6 @@ async function startPlatform() {
     revealTopBar();
 }
 
-function revealTopBar() {
-    setTimeout(() => {
-        $("#controls_dynamic").css('visibility', 'inherit');
-    }, 250);
-}
-
-function setupSplits() {
-    Split(['#sidebar', '#workspace', '#emulator'], {
-        sizes: [12, 44, 44],
-        minSize: [0, 250, 250],
-        onDragEnd: () => {
-            if (projectWindows) projectWindows.resize();
-        },
-    });
-}
-
-export async function start() {
-    setupSplits();
-
-    // create store
-    store = createNewPersistentStore('zx');
-
-    // load and start platform object
-    await loadAndStartPlatform();
-}
-
 async function loadAndStartPlatform() {
     try {
         await startPlatform();
@@ -1086,8 +1082,12 @@ async function loadAndStartPlatform() {
     }
 }
 
-function emulationHalted(err: EmuHalt) {
-    var msg = (err && err.message) || msg;
-    showExceptionAsError(err, msg);
-    projectWindows.refresh(false); // don't mess with cursor
+export async function start() {
+    setupSplits();
+
+    // create store
+    store = createNewPersistentStore('zx');
+
+    // load and start platform object
+    await loadAndStartPlatform();
 }
