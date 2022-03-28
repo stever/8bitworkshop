@@ -1022,20 +1022,6 @@ function addPageFocusHandlers() {
     });
 }
 
-async function loadBIOSFromProject() {
-    if (platform.loadBIOS) {
-        var biospath = 'zx.rom';
-        var biosdata = await store.getItem(biospath);
-
-        if (biosdata instanceof Uint8Array) {
-            console.log('loading BIOS', biospath, biosdata.length + " bytes")
-            platform.loadBIOS(biosdata);
-        } else {
-            console.log('BIOS file must be binary')
-        }
-    }
-}
-
 async function startPlatform() {
     platform = new ZXWASMPlatform($("#emuscreen")[0]);
     stateRecorder = new StateRecorderImpl(platform);
@@ -1054,7 +1040,6 @@ async function startPlatform() {
     replaceURLState();
     installErrorHandler();
     await platform.start();
-    await loadBIOSFromProject();
     await initProject();
     await loadProject(qs.file);
     setupDebugControls();
