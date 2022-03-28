@@ -1066,7 +1066,7 @@ async function startPlatform() {
     await loadProject(qs.file);
     setupDebugControls();
     addPageFocusHandlers();
-    updateSelector();
+    await updateSelector();
     revealTopBar();
 }
 
