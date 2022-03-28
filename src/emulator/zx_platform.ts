@@ -336,7 +336,6 @@ export class ZXWASMPlatform {
 
     loadROM(title, data) {
         this.machine.loadROM(data);
-        this.reset();
     }
 
     pollControls() {
