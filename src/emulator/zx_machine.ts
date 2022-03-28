@@ -32,6 +32,11 @@ export class ZXWASMMachine {
     probe: ProbeAll;
     maxROMSize: number = 0x40000;
 
+    numTotalScanlines = 312;
+    cpuCyclesPerLine = 224;
+
+    joymask0 = 0;
+
     constructor() {
         this.prefix = 'zx';
         var self = this;
@@ -231,11 +236,6 @@ export class ZXWASMMachine {
     connectProbe(probe: ProbeAll): void {
         this.probe = probe;
     }
-
-    numTotalScanlines = 312;
-    cpuCyclesPerLine = 224;
-
-    joymask0 = 0;
 
     reset() {
         this.exports.machine_reset(this.sys);
