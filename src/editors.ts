@@ -1,7 +1,7 @@
 import {isMobileDevice, ProjectView} from "./baseviews";
 import {SourceFile, WorkerError, SourceLocation} from "./worker/types";
 import {platform, current_project, lastDebugState, runToPC} from "./ui";
-import {hex, rpad} from "./util";
+import {hex} from "./util";
 import {DisassemblerView} from "./views/disassembly";
 
 declare var CodeMirror;
@@ -24,15 +24,7 @@ const MAX_ERRORS = 200;
 
 const MODEDEFS = {
     default: {theme: 'mbo'}, // NOTE: Not merged w/ other modes
-    '6502': {isAsm: true},
-    z80: {isAsm: true},
-    jsasm: {isAsm: true},
-    gas: {isAsm: true},
-    vasm: {isAsm: true},
-    inform6: {theme: 'cobalt'},
-    markdown: {lineWrap: true},
-    fastbasic: {noGutters: true},
-    basic: {noLineNumbers: true, noGutters: true}
+    z80: {isAsm: true}
 }
 
 export var textMapFunctions = {
