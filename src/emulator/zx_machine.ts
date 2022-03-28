@@ -130,10 +130,14 @@ export class ZXWASMMachine {
     }
 
     loadROM(rom: Uint8Array) {
-        if (rom.length > this.maxROMSize) throw new EmuHalt(`Rom size too big: ${rom.length} bytes`);
+        if (rom.length > this.maxROMSize) {
+            throw new EmuHalt(`Rom size too big: ${rom.length} bytes`);
+        }
+
         this.romarr.set(rom);
         this.romlen = rom.length;
         console.log('load rom', rom.length, 'bytes');
+
         this.reset();
     }
 
