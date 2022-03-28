@@ -337,12 +337,16 @@ export class CodeProject {
     }
 
     sendBuild() {
-        if (!this.mainPath) throw Error("need to call setMainFile first");
+        if (!this.mainPath) {
+            throw Error("need to call setMainFile first");
+        }
+
         var maindata = this.getFile(this.mainPath);
 
         // if binary blob, just return it as ROM
         if (maindata instanceof Uint8Array) {
             this.isCompiling = true;
+
             this.receiveWorkerMessage({
                 output: maindata,
                 errors: [],
@@ -350,13 +354,17 @@ export class CodeProject {
                 symbolmap: null,
                 params: {}
             });
+
             return;
         }
 
         // otherwise, make it a string
         var text = typeof maindata === "string" ? maindata : '';
         return this.loadFileDependencies(text).then((depends) => {
-            if (!depends) depends = [];
+            if (!depends) {
+                depends = [];
+            }
+
             var workermsg = this.buildWorkerMessage(depends);
             this.worker.postMessage(workermsg);
             this.isCompiling = true;
@@ -364,18 +372,29 @@ export class CodeProject {
     }
 
     updateFile(path: string, text: FileData) {
-        if (this.filedata[path] == text) return; // unchanged, don't update
+        if (this.filedata[path] == text) {
+            return; // unchanged, don't update
+        }
+
         this.updateFileInStore(path, text);
         this.filedata[path] = text;
+
         if (this.okToSend()) {
-            if (this.callbackBuildStatus) this.callbackBuildStatus(true);
+            if (this.callbackBuildStatus) {
+                this.callbackBuildStatus(true);
+            }
+
             this.sendBuild();
         }
     };
 
     setMainFile(path: string) {
         this.mainPath = path;
-        if (this.callbackBuildStatus) this.callbackBuildStatus(true);
+
+        if (this.callbackBuildStatus) {
+            this.callbackBuildStatus(true);
+        }
+
         this.sendBuild();
     }
 
@@ -384,10 +403,14 @@ export class CodeProject {
             this.listings = data.listings;
             for (var lstname in this.listings) {
                 var lst = this.listings[lstname];
-                if (lst.lines)
+
+                if (lst.lines) {
                     lst.sourcefile = new SourceFile(lst.lines, lst.text);
-                if (lst.asmlines)
+                }
+
+                if (lst.asmlines) {
                     lst.assemblyfile = new SourceFile(lst.asmlines, lst.text);
+                }
             }
         }
 
@@ -413,8 +436,10 @@ export class CodeProject {
         var fnprefix = getFilenamePrefix(this.stripLocalPath(path));
         var listings = this.getListings();
         var onlyfile = null;
+
         for (var lstfn in listings) {
             onlyfile = lstfn;
+
             if (getFilenamePrefix(lstfn) == fnprefix) {
                 return listings[lstfn];
             }
@@ -424,15 +449,18 @@ export class CodeProject {
     stripLocalPath(path: string): string {
         if (this.mainPath) {
             var folder = getFolderForPath(this.mainPath);
+
             if (folder != '' && path.startsWith(folder)) {
                 path = path.substring(folder.length + 1);
             }
         }
+
         return path;
     }
 
     updateDataItems(items: WorkerItemUpdate[]) {
         this.dataItems = items;
+
         if (this.okToSend()) {
             this.sendBuild();
         }
