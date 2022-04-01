@@ -401,7 +401,6 @@ export class ZXWASMPlatform {
         if (fn.endsWith(".c")) return "sdcc";
         if (fn.endsWith(".h")) return "sdcc";
         if (fn.endsWith(".s")) return "sdasz80";
-        if (fn.endsWith(".scc")) return "sccz80";
         if (fn.endsWith(".z")) return "zmac";
         // TODO: Case for .asm return "zmac".
         return "zmac";

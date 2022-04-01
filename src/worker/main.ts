@@ -864,7 +864,6 @@ var TOOLS = {
 var TOOL_PRELOADFS = {
     'sdasz80': 'sdcc',
     'sdcc': 'sdcc',
-    'sccz80': 'sccz80',
 }
 
 async function handleMessage(data: WorkerMessage): Promise<WorkerResult> {
