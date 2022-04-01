@@ -396,14 +396,20 @@ export class ZXWASMPlatform {
         });
     }
 
-    getToolForFilename(fn: string): string {
-        // TODO: Get file extension and use switch here.
-        if (fn.endsWith(".c")) return "sdcc";
-        if (fn.endsWith(".h")) return "sdcc";
-        if (fn.endsWith(".s")) return "sdasz80";
-        if (fn.endsWith(".z")) return "zmac";
-        // TODO: Case for .asm return "zmac".
-        return "zmac";
+    getToolForFilename(filename: string): string {
+        const ext = /(?:\.([^.]+))?$/.exec(filename)[1];
+        switch (ext) {
+            case 'c':
+            case 'h':
+                return 'sdcc';
+            case 's':
+                return 'sdasz80';
+            case 'z':
+            case 'asm':
+                return 'zmac';
+            default:
+                throw `unexpected file extension: ${ext}`;
+        }
     }
 
     disassemble(pc: number, read: (addr: number) => number): DisasmLine {
