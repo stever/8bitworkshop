@@ -1,5 +1,5 @@
 import type {WorkerResult} from "./types";
-import {getBasePlatform, getRootBasePlatform} from "../util";
+import {getBasePlatform} from "../util";
 import * as sdcc from './sdcc'
 import * as z80 from './z80'
 import {
@@ -877,7 +877,7 @@ async function handleMessage(data: WorkerMessage): Promise<WorkerResult> {
         }
 
         if (!fs && data.platform) {
-            fs = TOOL_PRELOADFS[data.preload + '-' + getRootBasePlatform(data.platform)];
+            fs = TOOL_PRELOADFS[data.preload + '-zx'];
         }
 
         if (fs && !fsMeta[fs]) {

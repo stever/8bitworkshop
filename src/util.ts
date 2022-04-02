@@ -58,17 +58,6 @@ function toradix(v: number, nd: number, radix: number) {
     }
 }
 
-// get platform ID without . emulator
 export function getBasePlatform(platform: string): string {
-    return platform.split('.')[0];
-}
-
-// get platform ID without - specialization
-export function getRootPlatform(platform: string): string {
-    return platform.split('-')[0];
-}
-
-// get platform ID without emulator or specialization
-export function getRootBasePlatform(platform: string): string {
-    return getRootPlatform(getBasePlatform(platform));
+    return 'zx';
 }
