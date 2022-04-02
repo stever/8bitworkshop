@@ -21,7 +21,7 @@ import {
     setupFS,
     setupStdin,
     staleFiles
-} from "./main";
+} from "./worker";
 
 function hexToArray(s, ofs) {
     var buf = new ArrayBuffer(s.length / 2);

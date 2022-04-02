@@ -15,7 +15,7 @@ import {
     print_fn,
     putWorkFile,
     staleFiles
-} from "./main"
+} from "./worker"
 
 export function assembleZMAC(step: BuildStep): BuildStepResult {
     loadNative("zmac");

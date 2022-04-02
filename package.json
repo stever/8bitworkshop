@@ -23,7 +23,7 @@
     "cp:codemirror:modes": "copyfiles -u 3 \"node_modules/codemirror/mode/**/*\" ./public/dist/deps/codemirror/mode/",
     "cp:codemirror:addons": "copyfiles -u 3 \"node_modules/codemirror/addon/**/*\" ./public/dist/deps/codemirror/addon/",
     "build:tsc": "tsc --build tsconfig.json",
-    "build:es:worker": "esbuild src/worker/main.ts --bundle --sourcemap --target=es2017 --outfile=./public/dist/worker.js",
+    "build:es:worker": "esbuild src/worker/worker.ts --bundle --sourcemap --target=es2017 --outfile=./public/dist/worker.js",
     "build:es:ui": "esbuild src/main.ts --splitting --format=esm --bundle --minify --sourcemap --target=es2017 --outdir=./public/dist/ --external:path --external:fs",
     "watch:tsc": "tsc -w --preserveWatchOutput",
     "watch:es:worker": "npm run esbuild-worker -- --watch",
