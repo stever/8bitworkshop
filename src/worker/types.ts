@@ -62,7 +62,3 @@ export type WorkerResult =
     WorkerErrorResult
     | WorkerOutputResult<any>
     | WorkerUnchangedResult;
-
-export function isOutputResult(result: WorkerResult): result is WorkerOutputResult<any> {
-    return ('output' in result);
-}

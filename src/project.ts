@@ -3,8 +3,7 @@ import {
     SourceFile,
     CodeListingMap,
     Segment,
-    WorkerResult,
-    isOutputResult
+    WorkerResult
 } from "./worker/types";
 import {
     getFilenamePrefix,
@@ -185,6 +184,10 @@ export class LocalForageFilesystem {
 type BuildResultCallback = (result: WorkerResult) => void;
 type BuildStatusCallback = (busy: boolean) => void;
 type IterateFilesCallback = (path: string, data: FileData) => void;
+
+function isOutputResult(result: WorkerResult): result is WorkerOutputResult<any> {
+    return ('output' in result);
+}
 
 export class CodeProject {
     filedata: { [path: string]: FileData } = {};
