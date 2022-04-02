@@ -10,6 +10,10 @@ import {
     WorkerMessage,
     WorkingStore
 } from "./interfaces";
+import {Builder} from "./Builder";
+import {PLATFORM_PARAMS, TOOL_PRELOADFS} from "./global_vars";
+import {errorResult} from "./util";
+import {FileWorkingStore} from "./FileWorkingStore";
 
 declare function importScripts(path: string);
 
@@ -76,21 +80,6 @@ export function moduleInstFn(module_id: string) {
     }
 }
 
-var PLATFORM_PARAMS = {
-    'zx': {
-        arch: 'z80',
-        code_start: 0x5ccb,
-        rom_size: 0xff58 - 0x5ccb,
-        data_start: 0xf000,
-        data_size: 0xfe00 - 0xf000,
-        stack_end: 0xff58,
-        extra_link_args: ['crt0-zx.rel'],
-        extra_link_files: ['crt0-zx.rel', 'crt0-zx.lst'],
-    },
-};
-
-PLATFORM_PARAMS['sms-sms-libcv'] = PLATFORM_PARAMS['sms-sg1000-libcv'];
-
 var _t1;
 
 export function starttime() {
@@ -104,212 +93,9 @@ export function endtime(msg) {
 
 /// working file store and build steps
 
-export class FileWorkingStore implements WorkingStore {
-    workfs: { [path: string]: FileEntry } = {};
-    workerseq: number = 0;
-    items: {};
-
-    constructor() {
-        this.reset();
-    }
-
-    reset() {
-        this.workfs = {};
-        this.newVersion();
-    }
-
-    currentVersion() {
-        return this.workerseq;
-    }
-
-    newVersion() {
-        let ts = new Date().getTime();
-        if (ts <= this.workerseq)
-            ts = ++this.workerseq;
-        return ts;
-    }
-
-    putFile(path: string, data: FileData): FileEntry {
-        var encoding = (typeof data === 'string') ? 'utf8' : 'binary';
-        var entry = this.workfs[path];
-
-        if (!entry || !compareData(entry.data, data) || entry.encoding != encoding) {
-            this.workfs[path] = entry = {
-                path: path,
-                data: data,
-                encoding: encoding,
-                ts: this.newVersion()
-            };
-
-            console.log('+++', entry.path, entry.encoding, entry.data.length, entry.ts);
-        }
-
-        return entry;
-    }
-
-    getFileData(path: string): FileData {
-        return this.workfs[path] && this.workfs[path].data;
-    }
-
-    getFileAsString(path: string): string {
-        let data = this.getFileData(path);
-        if (data != null && typeof data !== 'string') {
-            throw new Error(`${path}: expected string`)
-        }
-
-        return data as string;
-    }
-
-    setItem(key: string, value: object) {
-        this.items[key] = value;
-    }
-}
-
 export var store = new FileWorkingStore();
 
-function errorResult(msg: string): WorkerErrorResult {
-    return {errors: [{line: 0, msg: msg}]};
-}
-
-class Builder {
-    steps: BuildStep[] = [];
-    startseq: number = 0;
-
-    async executeBuildSteps(): Promise<WorkerResult> {
-        this.startseq = store.currentVersion();
-        var linkstep: BuildStep = null;
-
-        while (this.steps.length) {
-            var step = this.steps.shift(); // get top of array
-            var platform = step.platform;
-            var toolfn = TOOLS[step.tool];
-
-            if (!toolfn) {
-                throw Error("no tool named " + step.tool);
-            }
-
-            step.params = PLATFORM_PARAMS['zx'];
-
-            try {
-                step.result = await toolfn(step);
-            } catch (e) {
-                console.log("EXCEPTION", e, e.stack);
-                return errorResult(e + "");
-            }
-
-            if (step.result) {
-                (step.result as any).params = step.params;
-
-                // errors? return them
-                if ('errors' in step.result && step.result.errors.length) {
-                    applyDefaultErrorPath(step.result.errors, step.path);
-                    return step.result;
-                }
-
-                // if we got some output, return it immediately
-                if ('output' in step.result && step.result.output) {
-                    return step.result;
-                }
-
-                // combine files with a link tool?
-                if ('linktool' in step.result) {
-                    if (linkstep) {
-                        linkstep.files = linkstep.files.concat(step.result.files);
-                        linkstep.args = linkstep.args.concat(step.result.args);
-                    } else {
-                        linkstep = {
-                            tool: step.result.linktool,
-                            platform: platform,
-                            files: step.result.files,
-                            args: step.result.args
-                        };
-                    }
-                }
-
-                // process with another tool?
-                if ('nexttool' in step.result) {
-                    var asmstep: BuildStep = {
-                        tool: step.result.nexttool,
-                        platform: platform,
-                        ...step.result
-                    }
-
-                    this.steps.push(asmstep);
-                }
-
-                // process final step?
-                if (this.steps.length == 0 && linkstep) {
-                    this.steps.push(linkstep);
-                    linkstep = null;
-                }
-            }
-        }
-    }
-
-    async handleMessage(data: WorkerMessage): Promise<WorkerResult> {
-        this.steps = [];
-
-        // file updates
-        if (data.updates) {
-            data.updates.forEach((u) => store.putFile(u.path, u.data));
-        }
-
-        // object update
-        if (data.setitems) {
-            data.setitems.forEach((i) => store.setItem(i.key, i.value));
-        }
-
-        // build steps
-        if (data.buildsteps) {
-            this.steps.push.apply(this.steps, data.buildsteps);
-        }
-
-        // single-file
-        if (data.code) {
-            this.steps.push(data as BuildStep);
-        }
-
-        // execute build steps
-        if (this.steps.length) {
-            var result = await this.executeBuildSteps();
-            return result ? result : {unchanged: true};
-        }
-
-        // message not recognized
-        console.log("Unknown message", data);
-    }
-}
-
 var builder = new Builder();
-
-function applyDefaultErrorPath(errors: WorkerError[], path: string) {
-    if (!path) {
-        return;
-    }
-
-    for (var i = 0; i < errors.length; i++) {
-        var err = errors[i];
-        if (!err.path && err.line) {
-            err.path = path;
-        }
-    }
-}
-
-function compareData(a: FileData, b: FileData): boolean {
-    if (a.length != b.length) {
-        return false;
-    }
-
-    if (typeof a === 'string' && typeof b === 'string') {
-        return a == b;
-    } else {
-        for (var i = 0; i < a.length; i++) {
-            if (a[i] != b[i]) return false;
-        }
-
-        return true;
-    }
-}
 
 export function putWorkFile(path: string, data: FileData) {
     return store.putFile(path, data);
@@ -805,18 +591,6 @@ export function preprocessMCPP(step: BuildStep, filesys: string) {
     }
 
     return {code: iout};
-}
-
-var TOOLS = {
-    'sdasz80': sdcc.assembleSDASZ80,
-    'sdldz80': sdcc.linkSDLDZ80,
-    'sdcc': sdcc.compileSDCC,
-    'zmac': z80.assembleZMAC,
-}
-
-var TOOL_PRELOADFS = {
-    'sdasz80': 'sdcc',
-    'sdcc': 'sdcc',
 }
 
 async function handleMessage(data: WorkerMessage): Promise<WorkerResult> {
