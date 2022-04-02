@@ -1091,3 +1091,5 @@ export async function start() {
     // load and start platform object
     await loadAndStartPlatform();
 }
+
+start();
