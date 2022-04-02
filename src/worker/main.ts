@@ -457,7 +457,7 @@ export function populateExtraFiles(step: BuildStep, fs, extrafiles) {
             }
 
             // fetch from network
-            var xpath = "lib/" + getBasePlatform(step.platform) + "/" + xfn;
+            var xpath = getBasePlatform(step.platform) + "/" + xfn;
             var xhr = new XMLHttpRequest();
             xhr.responseType = 'arraybuffer';
             xhr.open("GET", PWORKER + xpath, false);  // synchronous request
