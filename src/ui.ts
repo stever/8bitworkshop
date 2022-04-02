@@ -16,8 +16,7 @@ import {
     getFilenameForPath,
     getFilenamePrefix,
     getBasePlatform,
-    hex,
-    decodeQueryString
+    hex
 } from "./util";
 import {StateRecorderImpl} from "./emulator/recorder";
 import Split = require('split.js');
@@ -46,6 +45,28 @@ export var lastDebugState: EmuState; // last debug state (object)
 
 interface UIQueryString {
     file?: string;
+}
+
+function decodeQueryString(qs: string): {} {
+    if (qs.startsWith('?')) qs = qs.substr(1);
+    var a = qs.split('&');
+
+    if (!a || a.length == 0) {
+        return {};
+    }
+
+    var b = {};
+    for (var i = 0; i < a.length; ++i) {
+        var p = a[i].split('=', 2);
+
+        if (p.length == 1) {
+            b[p[0]] = "";
+        } else {
+            b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+        }
+    }
+
+    return b;
 }
 
 const qs: UIQueryString = decodeQueryString(window.location.search || '?') as UIQueryString;

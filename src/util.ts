@@ -72,25 +72,3 @@ export function getRootPlatform(platform: string): string {
 export function getRootBasePlatform(platform: string): string {
     return getRootPlatform(getBasePlatform(platform));
 }
-
-export function decodeQueryString(qs: string): {} {
-    if (qs.startsWith('?')) qs = qs.substr(1);
-    var a = qs.split('&');
-
-    if (!a || a.length == 0) {
-        return {};
-    }
-
-    var b = {};
-    for (var i = 0; i < a.length; ++i) {
-        var p = a[i].split('=', 2);
-
-        if (p.length == 1) {
-            b[p[0]] = "";
-        } else {
-            b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
-        }
-    }
-
-    return b;
-}
