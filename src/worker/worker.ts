@@ -1,15 +1,5 @@
 import type {BuildOptions, FileData, FileEntry, WorkerResult} from "./types";
-import * as sdcc from './sdcc'
-import * as z80 from './z80'
-import {
-    BuildStep,
-    EmscriptenModule,
-    SourceLine,
-    WorkerError,
-    WorkerErrorResult,
-    WorkerMessage,
-    WorkingStore
-} from "./interfaces";
+import {BuildStep, EmscriptenModule, SourceLine, WorkerError, WorkerMessage} from "./interfaces";
 import {Builder} from "./Builder";
 import {PLATFORM_PARAMS, TOOL_PRELOADFS} from "./global_vars";
 import {errorResult} from "./util";
