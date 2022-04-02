@@ -1,12 +1,16 @@
 import {Component, h, createRef, VNode} from 'preact';
 import {PROP_CONSTRUCTOR_NAME} from "./env";
-import {hex, isArray} from "./util";
+import {hex, isTypedArray} from "./util";
 import {dumpRAM} from "./emulator/ram";
 import {current_project} from "./ui";
 
 import * as scriptui from "./scriptui";
 
 const MAX_STRING_LEN = 100;
+
+function isArray(obj: any): obj is ArrayLike<any> {
+    return obj != null && (Array.isArray(obj) || isTypedArray(obj));
+}
 
 function sendInteraction(iobj: scriptui.Interactive, type: string, event: Event, xtraprops: {}) {
     let irec = iobj.$$interact;
