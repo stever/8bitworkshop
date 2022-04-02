@@ -1,7 +1,6 @@
 import {BuildStepResult, CodeListingMap} from "./types";
 import {
     anyTargetChanged,
-    emglobal,
     execMain,
     gatherFiles,
     getWorkFileAsString,
@@ -20,6 +19,7 @@ import {
     staleFiles
 } from "./worker";
 import {BuildStep, EmscriptenModule} from "./interfaces";
+import {emglobal} from "./global_vars";
 
 function hexToArray(s, ofs) {
     var buf = new ArrayBuffer(s.length / 2);

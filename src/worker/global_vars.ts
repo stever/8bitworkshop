@@ -25,3 +25,9 @@ export const TOOL_PRELOADFS = {
     'sdasz80': 'sdcc',
     'sdcc': 'sdcc',
 }
+
+declare function importScripts(path: string);
+
+export const ENVIRONMENT_IS_WEB = typeof window === 'object';
+export const ENVIRONMENT_IS_WORKER = typeof importScripts === 'function';
+export const emglobal: any = ENVIRONMENT_IS_WORKER ? self : ENVIRONMENT_IS_WEB ? window : global;

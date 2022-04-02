@@ -1,7 +1,6 @@
 import {BuildStepResult, CodeListingMap} from "./types";
 import {
     anyTargetChanged,
-    emglobal,
     execMain,
     gatherFiles,
     loadNative,
@@ -14,6 +13,7 @@ import {
     staleFiles
 } from "./worker"
 import {BuildStep, EmscriptenModule} from "./interfaces";
+import {emglobal} from "./global_vars";
 
 export function assembleZMAC(step: BuildStep): BuildStepResult {
     loadNative("zmac");

@@ -1,18 +1,18 @@
 import type {BuildOptions, FileData, FileEntry, WorkerResult} from "./types";
 import {BuildStep, EmscriptenModule, SourceLine, WorkerError, WorkerMessage} from "./interfaces";
 import {Builder} from "./Builder";
-import {PLATFORM_PARAMS, TOOL_PRELOADFS} from "./global_vars";
+import {
+    emglobal,
+    ENVIRONMENT_IS_WORKER,
+    PLATFORM_PARAMS,
+    TOOL_PRELOADFS
+} from "./global_vars";
 import {errorResult} from "./util";
 import {FileWorkingStore} from "./FileWorkingStore";
 
 declare function importScripts(path: string);
 
 declare function postMessage(msg);
-
-const ENVIRONMENT_IS_WEB = typeof window === 'object';
-const ENVIRONMENT_IS_WORKER = typeof importScripts === 'function';
-
-export const emglobal: any = ENVIRONMENT_IS_WORKER ? self : ENVIRONMENT_IS_WEB ? window : global;
 
 // simple CommonJS module loader
 if (!emglobal['require']) {
