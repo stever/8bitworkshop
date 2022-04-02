@@ -73,10 +73,6 @@ export function getRootBasePlatform(platform: string): string {
     return getRootPlatform(getBasePlatform(platform));
 }
 
-export function isTypedArray(obj: any): obj is ArrayLike<number> {
-    return obj != null && obj['BYTES_PER_ELEMENT'];
-}
-
 export function decodeQueryString(qs: string): {} {
     if (qs.startsWith('?')) qs = qs.substr(1);
     var a = qs.split('&');

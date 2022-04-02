@@ -1,6 +1,6 @@
 import {Component, h, createRef, VNode} from 'preact';
 import {PROP_CONSTRUCTOR_NAME} from "./env";
-import {hex, isTypedArray} from "./util";
+import {hex} from "./util";
 import {dumpRAM} from "./emulator/ram";
 import {current_project} from "./ui";
 
@@ -10,6 +10,10 @@ const MAX_STRING_LEN = 100;
 
 function isArray(obj: any): obj is ArrayLike<any> {
     return obj != null && (Array.isArray(obj) || isTypedArray(obj));
+}
+
+function isTypedArray(obj: any): obj is ArrayLike<number> {
+    return obj != null && obj['BYTES_PER_ELEMENT'];
 }
 
 function sendInteraction(iobj: scriptui.Interactive, type: string, event: Event, xtraprops: {}) {
