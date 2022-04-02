@@ -1,5 +1,4 @@
 import {_setKeyboardEvents} from "./keys";
-import {clamp} from "../util";
 
 export function __createCanvas(doc: HTMLDocument, mainElement: HTMLElement, width: number, height: number): HTMLCanvasElement {
     var canvas = doc.createElement('canvas');
@@ -104,6 +103,10 @@ export class RasterVideo {
             this.paddle_y = clamp(0, 255, new_y);
         });
     };
+}
+
+function clamp(minv: number, maxv: number, v: number) {
+    return (v < minv) ? minv : (v > maxv) ? maxv : v;
 }
 
 export var useRequestAnimationFrame: boolean = false;

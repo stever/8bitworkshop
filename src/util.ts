@@ -58,10 +58,6 @@ function toradix(v: number, nd: number, radix: number) {
     }
 }
 
-export function clamp(minv: number, maxv: number, v: number) {
-    return (v < minv) ? minv : (v > maxv) ? maxv : v;
-}
-
 // firefox doesn't do GET with binary files
 export function getWithBinary(url: string, success: (text: string | Uint8Array) => void, datatype: 'text' | 'arraybuffer') {
     var oReq = new XMLHttpRequest();
