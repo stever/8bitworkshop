@@ -1,42 +1,13 @@
 import type {BuildOptions, FileData, FileEntry, WorkerResult} from "./types";
 import {BuildStep, EmscriptenModule, SourceLine, WorkerError, WorkerMessage} from "./interfaces";
 import {Builder} from "./Builder";
-import {
-    emglobal,
-    ENVIRONMENT_IS_WORKER,
-    PLATFORM_PARAMS,
-    TOOL_PRELOADFS
-} from "./global_vars";
+import {emglobal, PLATFORM_PARAMS, TOOL_PRELOADFS} from "./global_vars";
 import {errorResult} from "./util";
 import {FileWorkingStore} from "./FileWorkingStore";
 
 declare function importScripts(path: string);
 
 declare function postMessage(msg);
-
-// simple CommonJS module loader
-if (!emglobal['require']) {
-    emglobal['require'] = (modpath: string) => {
-        if (modpath.endsWith('.js')) {
-            modpath = modpath.slice(-3);
-        }
-
-        var modname = modpath.split('/').slice(-1)[0];
-        var hasNamespace = emglobal[modname] != null;
-        console.log('@@@ require', modname, modpath, hasNamespace);
-
-        if (!hasNamespace) {
-            exports = {};
-            importScripts(`${modpath}.js`);
-        }
-
-        if (emglobal[modname] == null) {
-            emglobal[modname] = exports;
-        }
-
-        return emglobal[modname];
-    }
-}
 
 // WebAssembly module cache
 var _WASM_module_cache = {};
@@ -613,22 +584,20 @@ async function handleMessage(data: WorkerMessage): Promise<WorkerResult> {
     return builder.handleMessage(data);
 }
 
-if (ENVIRONMENT_IS_WORKER) {
-    var lastpromise = null;
+var lastpromise = null;
 
-    onmessage = async function (e) {
-        await lastpromise; // wait for previous message to complete
-        lastpromise = handleMessage(e.data);
-        var result = await lastpromise;
-        lastpromise = null;
+onmessage = async function (e) {
+    await lastpromise; // wait for previous message to complete
+    lastpromise = handleMessage(e.data);
+    var result = await lastpromise;
+    lastpromise = null;
 
-        if (result) {
-            try {
-                postMessage(result);
-            } catch (e) {
-                console.log(e);
-                postMessage(errorResult(`${e}`));
-            }
+    if (result) {
+        try {
+            postMessage(result);
+        } catch (e) {
+            console.log(e);
+            postMessage(errorResult(`${e}`));
         }
     }
 }
