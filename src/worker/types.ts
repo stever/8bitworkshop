@@ -1,6 +1,6 @@
 import {
     CodeListing,
-    WorkerErrorResult,
+    WorkerErrorResult, WorkerNextToolResult,
     WorkerOutputResult,
     WorkerUnchangedResult
 } from "./interfaces";
@@ -12,3 +12,17 @@ export type CodeListingMap = { [path: string]: CodeListing };
 export type Segment = { name: string, start: number, size: number, last?: number, type?: string };
 
 export type WorkerResult = WorkerErrorResult | WorkerOutputResult<any> | WorkerUnchangedResult;
+
+export type FileEntry = {
+    path: string
+    encoding: string
+    data: FileData
+    ts: number
+};
+
+export type BuildOptions = {
+    mainFilePath: string,
+    processFn?: (s: string, d: FileData) => FileData
+};
+
+export type BuildStepResult = WorkerResult | WorkerNextToolResult;

@@ -1,19 +1,15 @@
-import type {WorkerResult} from "./types";
+import type {BuildOptions, FileData, FileEntry, WorkerResult} from "./types";
 import * as sdcc from './sdcc'
 import * as z80 from './z80'
 import {
+    BuildStep,
+    EmscriptenModule,
     SourceLine,
-    WorkerBuildStep, WorkerError,
+    WorkerError,
     WorkerErrorResult,
     WorkerMessage,
     WorkingStore
 } from "./interfaces";
-
-/// <reference types="emscripten" />
-export interface EmscriptenModule {
-    callMain: (args: string[]) => void;
-    FS: any;
-}
 
 declare function importScripts(path: string);
 
@@ -107,43 +103,6 @@ export function endtime(msg) {
 }
 
 /// working file store and build steps
-
-type FileData = string | Uint8Array;
-
-type FileEntry = {
-    path: string
-    encoding: string
-    data: FileData
-    ts: number
-};
-
-type BuildOptions = {
-    mainFilePath: string,
-    processFn?: (s: string, d: FileData) => FileData
-};
-
-export type BuildStepResult = WorkerResult | WorkerNextToolResult;
-
-export interface WorkerNextToolResult {
-    nexttool?: string
-    linktool?: string
-    path?: string
-    args: string[]
-    files: string[]
-    bblines?: boolean
-}
-
-export interface BuildStep extends WorkerBuildStep {
-    files?: string[]
-    args?: string[]
-    nextstep?: BuildStep
-    linkstep?: BuildStep
-    params?
-    result?: BuildStepResult
-    code?
-    prefix?
-    maxts?
-}
 
 export class FileWorkingStore implements WorkingStore {
     workfs: { [path: string]: FileEntry } = {};

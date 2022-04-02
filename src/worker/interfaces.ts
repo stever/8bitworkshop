@@ -1,4 +1,4 @@
-import {CodeListingMap, FileData, Segment} from "./types";
+import {BuildStepResult, CodeListingMap, FileData, Segment} from "./types";
 import {SourceFile} from "./SourceFile";
 
 export interface SourceLocation {
@@ -11,7 +11,7 @@ export interface SourceLocation {
     func?: string;
 }
 
-// actually it's a kind of SourceSnippet .. can have multiple per line
+// actually it's a kind of SourceSnippet - can have multiple per line
 export interface SourceLine extends SourceLocation {
     offset: number;
     insns?: string;
@@ -87,4 +87,31 @@ export interface WorkerOutputResult<T> {
 
 export interface WorkingStore {
     getFileData(path: string): FileData;
+}
+
+/// <reference types="emscripten" />
+export interface EmscriptenModule {
+    callMain: (args: string[]) => void;
+    FS: any;
+}
+
+export interface WorkerNextToolResult {
+    nexttool?: string
+    linktool?: string
+    path?: string
+    args: string[]
+    files: string[]
+    bblines?: boolean
+}
+
+export interface BuildStep extends WorkerBuildStep {
+    files?: string[]
+    args?: string[]
+    nextstep?: BuildStep
+    linkstep?: BuildStep
+    params?
+    result?: BuildStepResult
+    code?
+    prefix?
+    maxts?
 }
