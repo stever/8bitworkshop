@@ -44,7 +44,7 @@ export function hex(v: number, nd?: number) {
     }
 }
 
-export function toradix(v: number, nd: number, radix: number) {
+function toradix(v: number, nd: number, radix: number) {
     try {
         var s = v.toString(radix).toUpperCase();
 
