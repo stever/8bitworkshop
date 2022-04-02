@@ -17,15 +17,12 @@ function getWASMModule(module_id: string) {
     let module = _WASM_module_cache[module_id];
 
     if (!module) {
-        starttime();
         module = new WebAssembly.Module(wasmBlob[module_id]);
 
         if (CACHE_WASM_MODULES) {
             _WASM_module_cache[module_id] = module;
             delete wasmBlob[module_id];
         }
-
-        endtime("module creation " + module_id);
     }
 
     return module;
@@ -39,17 +36,6 @@ export function moduleInstFn(module_id: string) {
         ri(inst);
         return inst.exports;
     }
-}
-
-let _t1;
-
-function starttime() {
-    _t1 = new Date();
-}
-
-function endtime(msg) {
-    const _t2 = new Date();
-    console.log(msg, _t2.getTime() - _t1.getTime(), "ms");
 }
 
 /// working file store and build steps
@@ -215,10 +201,8 @@ export function anyTargetChanged(step: BuildStep, targets: string[]) {
 }
 
 export function execMain(step: BuildStep, mod, args: string[]) {
-    starttime();
     const run = mod.callMain || mod.run;
     run(args);
-    endtime(step.tool);
 }
 
 /// asm.js / WASM / filesystem loading
