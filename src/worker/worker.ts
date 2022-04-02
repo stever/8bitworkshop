@@ -1,15 +1,14 @@
-import type {
-    WorkerResult,
-    WorkerBuildStep,
-    WorkerMessage,
-    WorkerError,
-    SourceLine,
-    WorkerErrorResult,
-    WorkingStore
-} from "./types";
+import type {WorkerResult} from "./types";
 import {getBasePlatform, getRootBasePlatform} from "../util";
 import * as sdcc from './sdcc'
 import * as z80 from './z80'
+import {
+    SourceLine,
+    WorkerBuildStep, WorkerError,
+    WorkerErrorResult,
+    WorkerMessage,
+    WorkingStore
+} from "./interfaces";
 
 /// <reference types="emscripten" />
 export interface EmscriptenModule {

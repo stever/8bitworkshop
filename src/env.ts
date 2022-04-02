@@ -1,9 +1,9 @@
-import {WorkerError} from "./worker/types";
 import ErrorStackParser = require("error-stack-parser");
 import yufka from 'yufka';
 import * as io from "./io";
 import * as output from "./output";
 import * as scriptui from "./scriptui";
+import {WorkerError} from "./worker/interfaces";
 
 export const PROP_CONSTRUCTOR_NAME = "$$consname";
 

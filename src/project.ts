@@ -1,15 +1,10 @@
 import {
     FileData,
-    Dependency,
     SourceFile,
-    CodeListing,
     CodeListingMap,
     Segment,
     WorkerResult,
-    WorkerOutputResult,
-    isOutputResult,
-    WorkerMessage,
-    WorkerItemUpdate
+    isOutputResult
 } from "./worker/types";
 import {
     getFilenamePrefix,
@@ -18,6 +13,13 @@ import {
 } from "./util";
 import localforage from "localforage";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
+import {
+    CodeListing,
+    Dependency,
+    WorkerItemUpdate,
+    WorkerMessage,
+    WorkerOutputResult
+} from "./worker/interfaces";
 
 function isProbablyBinary(path: string, data?: number[] | Uint8Array): boolean {
     var score = 0;

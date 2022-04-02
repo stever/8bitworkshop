@@ -1,4 +1,5 @@
-import {SourceFile, WorkerError} from "./worker/types";
+import {SourceFile} from "./worker/types";
+import {WorkerError} from "./worker/interfaces";
 
 export interface ProjectView {
     createDiv(parent: HTMLElement): HTMLElement;
