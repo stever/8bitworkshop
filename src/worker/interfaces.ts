@@ -1,4 +1,5 @@
-import {CodeListingMap, FileData, Segment, SourceFile} from "./types";
+import {CodeListingMap, FileData, Segment} from "./types";
+import {SourceFile} from "./SourceFile";
 
 export interface SourceLocation {
     line: number;

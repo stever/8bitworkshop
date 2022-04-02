@@ -1,6 +1,5 @@
 import {
     FileData,
-    SourceFile,
     CodeListingMap,
     Segment,
     WorkerResult
@@ -19,6 +18,7 @@ import {
     WorkerMessage,
     WorkerOutputResult
 } from "./worker/interfaces";
+import {SourceFile} from "./worker/SourceFile";
 
 function isProbablyBinary(path: string, data?: number[] | Uint8Array): boolean {
     var score = 0;
