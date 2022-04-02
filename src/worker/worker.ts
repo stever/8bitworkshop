@@ -11,18 +11,14 @@ declare function postMessage(msg);
 
 // WebAssembly module cache
 const _WASM_module_cache = {};
-let CACHE_WASM_MODULES = true; // if false, use asm.js only
 
 function getWASMModule(module_id: string) {
     let module = _WASM_module_cache[module_id];
 
     if (!module) {
         module = new WebAssembly.Module(wasmBlob[module_id]);
-
-        if (CACHE_WASM_MODULES) {
-            _WASM_module_cache[module_id] = module;
-            delete wasmBlob[module_id];
-        }
+        _WASM_module_cache[module_id] = module;
+        delete wasmBlob[module_id];
     }
 
     return module;
@@ -261,7 +257,7 @@ export function loadWASM(modulename: string, debug?: boolean) {
 
 export function loadNative(modulename: string) {
     // detect WASM
-    if (CACHE_WASM_MODULES && typeof WebAssembly === 'object') {
+    if (typeof WebAssembly === 'object') {
         loadWASM(modulename);
     } else {
         load(modulename);
