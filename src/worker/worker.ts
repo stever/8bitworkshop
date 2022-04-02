@@ -1,5 +1,4 @@
 import type {WorkerResult} from "./types";
-import {getBasePlatform} from "../util";
 import * as sdcc from './sdcc'
 import * as z80 from './z80'
 import {
@@ -230,7 +229,7 @@ class Builder {
                 throw Error("no tool named " + step.tool);
             }
 
-            step.params = PLATFORM_PARAMS[getBasePlatform(platform)];
+            step.params = PLATFORM_PARAMS['zx'];
 
             try {
                 step.result = await toolfn(step);
@@ -457,7 +456,7 @@ export function populateExtraFiles(step: BuildStep, fs, extrafiles) {
             }
 
             // fetch from network
-            var xpath = getBasePlatform(step.platform) + "/" + xfn;
+            var xpath = "zx/" + xfn;
             var xhr = new XMLHttpRequest();
             xhr.responseType = 'arraybuffer';
             xhr.open("GET", PWORKER + xpath, false);  // synchronous request
@@ -784,7 +783,7 @@ export function preprocessMCPP(step: BuildStep, filesys: string) {
     load("mcpp");
 
     var platform = step.platform;
-    var params = PLATFORM_PARAMS[getBasePlatform(platform)];
+    var params = PLATFORM_PARAMS['zx'];
 
     if (!params) {
         throw Error("Platform not supported: " + platform);
@@ -807,7 +806,6 @@ export function preprocessMCPP(step: BuildStep, filesys: string) {
     }
 
     populateFiles(step, FS);
-    populateExtraFiles(step, FS, params.extra_compile_files);
 
     var args = [
         "-D", "__8BITWORKSHOP__",
@@ -819,10 +817,6 @@ export function preprocessMCPP(step: BuildStep, filesys: string) {
 
     if (step.mainfile) {
         args.unshift.apply(args, ["-D", "__MAIN__"]);
-    }
-
-    if (params.extra_preproc_args) {
-        args.push.apply(args, params.extra_preproc_args);
     }
 
     execMain(step, MCPP, args);
@@ -873,7 +867,7 @@ async function handleMessage(data: WorkerMessage): Promise<WorkerResult> {
         var fs = TOOL_PRELOADFS[data.preload];
 
         if (!fs && data.platform) {
-            fs = TOOL_PRELOADFS[data.preload + '-' + getBasePlatform(data.platform)];
+            fs = TOOL_PRELOADFS[data.preload + '-zx'];
         }
 
         if (!fs && data.platform) {
