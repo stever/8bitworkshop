@@ -204,32 +204,3 @@ export function decodeQueryString(qs: string): {} {
 
     return b;
 }
-
-export class FileDataCache {
-    maxSize: number = 8000000;
-    size: number;
-    cache: Map<string, string | Uint8Array>;
-
-    constructor() {
-        this.reset();
-    }
-
-    get(key: string): string | Uint8Array {
-        return this.cache.get(key);
-    }
-
-    put(key: string, value: string | Uint8Array) {
-        this.cache.set(key, value);
-        this.size += value.length;
-
-        if (this.size > this.maxSize) {
-            console.log('cache reset', this);
-            this.reset();
-        }
-    }
-
-    reset() {
-        this.cache = new Map();
-        this.size = 0;
-    }
-}
