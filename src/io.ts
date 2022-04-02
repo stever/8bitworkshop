@@ -1,6 +1,6 @@
 import {FileData, WorkingStore} from "./worker/types";
 
-export class FileDataCache {
+class FileDataCache {
     maxSize: number = 8000000;
     size: number;
     cache: Map<string, string | Uint8Array>;
