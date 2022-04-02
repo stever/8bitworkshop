@@ -1,4 +1,14 @@
-import {invertMap} from "../util";
+function invertMap(m: {}): {} {
+    var r = {};
+
+    if (m) {
+        for (var k in m) {
+            r[m[k]] = k;
+        }
+    }
+
+    return r;
+}
 
 export interface CpuState {
     PC: number;

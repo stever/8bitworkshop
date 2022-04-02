@@ -58,18 +58,6 @@ function toradix(v: number, nd: number, radix: number) {
     }
 }
 
-export function invertMap(m: {}): {} {
-    var r = {};
-
-    if (m) {
-        for (var k in m) {
-            r[m[k]] = k;
-        }
-    }
-
-    return r;
-}
-
 export function isProbablyBinary(path: string, data?: number[] | Uint8Array): boolean {
     var score = 0;
 
