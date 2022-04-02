@@ -15,7 +15,6 @@ import {
     getFilenamePrefix,
     getFolderForPath,
     getBasePlatform,
-    getWithBinary
 } from "./util";
 import localforage from "localforage";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
@@ -71,6 +70,39 @@ function isProbablyBinary(path: string, data?: number[] | Uint8Array): boolean {
     }
 
     return score > 0;
+}
+
+// firefox doesn't do GET with binary files
+function getWithBinary(url: string, success: (text: string | Uint8Array) => void, datatype: 'text' | 'arraybuffer') {
+    var oReq = new XMLHttpRequest();
+    oReq.open("GET", url, true);
+    oReq.responseType = datatype;
+
+    oReq.onload = function (oEvent) {
+        if (oReq.status == 200) {
+            var data = oReq.response;
+
+            if (data instanceof ArrayBuffer) {
+                data = new Uint8Array(data);
+            }
+
+            success(data);
+        } else if (oReq.status == 404) {
+            success(null);
+        } else {
+            throw Error("Error " + oReq.status + " loading " + url);
+        }
+    }
+
+    oReq.onerror = function (oEvent) {
+        success(null);
+    }
+
+    oReq.ontimeout = function (oEvent) {
+        throw Error("Timeout loading " + url);
+    }
+
+    oReq.send(null);
 }
 
 export interface ProjectFilesystem {
