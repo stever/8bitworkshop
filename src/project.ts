@@ -4,11 +4,7 @@ import {
     Segment,
     WorkerResult
 } from "./worker/types";
-import {
-    getFilenamePrefix,
-    getFolderForPath,
-    getBasePlatform,
-} from "./util";
+import {getFilenamePrefix, getFolderForPath} from "./util";
 import localforage from "localforage";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
 import {
@@ -113,11 +109,6 @@ export interface ProjectFilesystem {
 }
 
 export class WebPresetsFileSystem implements ProjectFilesystem {
-    preset_id: string;
-
-    constructor(platform_id: string) {
-        this.preset_id = getBasePlatform(platform_id); // remove .suffix from preset name
-    }
 
     async getRemoteFile(path: string): Promise<FileData> {
         return new Promise((yes, no) => {
@@ -127,7 +118,7 @@ export class WebPresetsFileSystem implements ProjectFilesystem {
 
     async getFileData(path: string): Promise<FileData> {
         // found on remote fetch?
-        var webpath = "presets/" + this.preset_id + "/" + path;
+        var webpath = "presets/zx/" + path;
         var data = await this.getRemoteFile(webpath);
         if (data) {
             console.log("read", webpath, data.length, 'bytes');

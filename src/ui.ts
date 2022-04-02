@@ -12,12 +12,7 @@ import {Preset, EmuState} from "./emulator/debug";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
 import {EmuHalt} from "./emulator/error";
 import {Toolbar} from "./toolbar";
-import {
-    getFilenameForPath,
-    getFilenamePrefix,
-    getBasePlatform,
-    hex
-} from "./util";
+import {getFilenameForPath, getFilenamePrefix, hex} from "./util";
 import {StateRecorderImpl} from "./emulator/recorder";
 import Split = require('split.js');
 import {ListingView, SourceEditor} from "./editors";
@@ -115,7 +110,7 @@ function getCurrentPresetTitle(): string {
 }
 
 async function newFilesystem() {
-    var basefs: ProjectFilesystem = new WebPresetsFileSystem('zx');
+    var basefs: ProjectFilesystem = new WebPresetsFileSystem();
     return new OverlayFilesystem(basefs, new LocalForageFilesystem(store));
 }
 
@@ -313,7 +308,7 @@ function _downloadROMImage(e) {
     var prefix = getFilenamePrefix(getCurrentMainFilename());
     if (current_output instanceof Uint8Array) {
         var blob = new Blob([current_output], {type: "application/octet-stream"});
-        var suffix = "-" + getBasePlatform('zx') + ".bin";
+        var suffix = "-zx.bin";
         saveAs(blob, prefix + suffix);
     } else {
         alertError(`The platform doesn't have downloadable ROMs.`);

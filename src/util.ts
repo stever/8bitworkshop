@@ -57,7 +57,3 @@ function toradix(v: number, nd: number, radix: number) {
         return v + "";
     }
 }
-
-export function getBasePlatform(platform: string): string {
-    return 'zx';
-}
