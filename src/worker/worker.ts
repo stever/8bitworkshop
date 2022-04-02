@@ -311,6 +311,7 @@ export function setupFS(FS, name: string) {
 
         let contents = blobcache[stream.path];
         if (!contents) {
+            // noinspection JSVoidFunctionReturnValueUsed
             const ab = reader.readAsArrayBuffer(stream.node.contents);
             contents = blobcache[stream.path] = new Uint8Array(ab);
         }
