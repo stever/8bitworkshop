@@ -7,17 +7,11 @@ import {fsMeta, loadFilesystem, store} from "./files";
 
 declare function postMessage(msg);
 
-/// working file store and build steps
-
 const builder = new Builder();
 
 export function execMain(step: BuildStep, mod, args: string[]) {
     const run = mod.callMain || mod.run;
     run(args);
-}
-
-export var print_fn = function (s: string) {
-    console.log(s);
 }
 
 async function handleMessage(data: WorkerMessage): Promise<WorkerResult> {
