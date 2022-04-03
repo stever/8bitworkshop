@@ -2,20 +2,20 @@ import {BuildStepResult, CodeListingMap, FileData, Segment} from "./types";
 import {SourceFile} from "./SourceFile";
 
 export interface SourceLocation {
-    line: number;
-    label?: string;
-    path?: string;
-    start?: number;
-    end?: number;
-    segment?: string;
-    func?: string;
+    line: number
+    label?: string
+    path?: string
+    start?: number
+    end?: number
+    segment?: string
+    func?: string
 }
 
 export interface SourceSnippet extends SourceLocation {
-    offset: number;
-    insns?: string;
-    iscode?: boolean;
-    cycles?: number;
+    offset: number
+    insns?: string
+    iscode?: boolean
+    cycles?: number
 }
 
 export interface Dependency {
@@ -37,9 +37,20 @@ export interface WorkerBuildStep {
     mainfile?: boolean
 }
 
+export interface PlatformParams {
+    arch: string
+    code_start: number
+    rom_size: number
+    data_start: number
+    data_size: number
+    stack_end: number
+    extra_link_args: string[]
+    extra_link_files: string[]
+}
+
 export interface BuildStep extends WorkerBuildStep {
     args?: string[]
-    params?
+    params?: PlatformParams
     result?: BuildStepResult
     code?
     prefix?
@@ -61,7 +72,7 @@ export interface WorkerMessage {
 }
 
 export interface WorkerError extends SourceLocation {
-    msg: string,
+    msg: string
 }
 
 export interface CodeListing {
@@ -73,7 +84,7 @@ export interface CodeListing {
 }
 
 export interface WorkerUnchangedResult {
-    unchanged: true;
+    unchanged: true
 }
 
 export interface WorkerErrorResult {
@@ -91,13 +102,13 @@ export interface WorkerOutputResult<T> {
 }
 
 export interface WorkingStore {
-    getFileData(path: string): FileData;
+    getFileData(path: string): FileData
 }
 
 /// <reference types="emscripten" />
 export interface EmscriptenModule {
-    callMain: (args: string[]) => void;
-    FS: any;
+    callMain: (args: string[]) => void
+    FS: any
 }
 
 export interface WorkerNextToolResult {

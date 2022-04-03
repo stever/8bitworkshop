@@ -203,9 +203,7 @@ export function linkSDLDZ80(step: BuildStep) {
         // parse binary file
         const binout = parseIHX(
             hexout,
-            params.rom_start !== undefined
-                ? params.rom_start
-                : params.code_start,
+            params.code_start,
             params.rom_size);
 
         // parse listings
@@ -286,7 +284,6 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
     const outpath = step.prefix + ".asm";
     if (staleFiles(step, [outpath])) {
         const errors = [];
-        const params = step.params;
 
         loadNative('sdcc');
 
@@ -348,10 +345,6 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
                 '--no-peep',
                 '--nolospre'
             ]);
-        }
-
-        if (params.extra_compile_args) {
-            args.push.apply(args, params.extra_compile_args);
         }
 
         execMain(step, SDCC, args);

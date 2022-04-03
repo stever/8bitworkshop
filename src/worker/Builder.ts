@@ -1,4 +1,9 @@
-import {BuildStep, WorkerError, WorkerMessage} from "./interfaces";
+import {
+    BuildStep,
+    PlatformParams,
+    WorkerError,
+    WorkerMessage
+} from "./interfaces";
 import {WorkerResult} from "./types";
 import {fileStore} from "./files";
 import {errorResult} from "./shared_funcs";
@@ -21,7 +26,7 @@ const PLATFORM_PARAMS = {
     stack_end: 0xff58,
     extra_link_args: ['crt0.rel'],
     extra_link_files: ['crt0.rel', 'crt0.lst']
-};
+} as PlatformParams;
 
 export class Builder {
     steps: BuildStep[] = [];
