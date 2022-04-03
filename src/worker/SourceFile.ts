@@ -1,6 +1,7 @@
 import {SourceSnippet} from "./interfaces";
 
 export class SourceFile {
+    
     lines: SourceSnippet[];
     text: string;
     offset2loc: Map<number, SourceSnippet>; //{[offset:number]:number};
@@ -14,21 +15,25 @@ export class SourceFile {
         this.offset2loc = new Map();
         this.line2offset = new Map();
 
-        for (var info of lines) {
+        for (let info of lines) {
             if (info.offset >= 0) {
+
                 // first line wins (is assigned to offset)
-                if (!this.offset2loc[info.offset])
+                if (!this.offset2loc[info.offset]) {
                     this.offset2loc[info.offset] = info;
-                if (!this.line2offset[info.line])
+                }
+
+                if (!this.line2offset[info.line]) {
                     this.line2offset[info.line] = info.offset;
+                }
             }
         }
     }
 
     findLineForOffset(PC: number, lookbehind: number) {
         if (this.offset2loc) {
-            for (var i = 0; i <= lookbehind; i++) {
-                var loc = this.offset2loc[PC];
+            for (let i = 0; i <= lookbehind; i++) {
+                const loc = this.offset2loc[PC];
 
                 if (loc) {
                     return loc;
