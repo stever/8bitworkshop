@@ -21,14 +21,17 @@ export class FileWorkingStore implements WorkingStore {
 
     newVersion() {
         let ts = new Date().getTime();
-        if (ts <= this.workerseq)
+
+        if (ts <= this.workerseq) {
             ts = ++this.workerseq;
+        }
+
         return ts;
     }
 
     putFile(path: string, data: FileData): FileEntry {
-        var encoding = (typeof data === 'string') ? 'utf8' : 'binary';
-        var entry = this.workfs[path];
+        const encoding = (typeof data === 'string') ? 'utf8' : 'binary';
+        let entry = this.workfs[path];
 
         if (!entry || !compareData(entry.data, data) || entry.encoding != encoding) {
             this.workfs[path] = entry = {
@@ -50,6 +53,7 @@ export class FileWorkingStore implements WorkingStore {
 
     getFileAsString(path: string): string {
         let data = this.getFileData(path);
+
         if (data != null && typeof data !== 'string') {
             throw new Error(`${path}: expected string`)
         }
@@ -70,7 +74,7 @@ function compareData(a: FileData, b: FileData): boolean {
     if (typeof a === 'string' && typeof b === 'string') {
         return a == b;
     } else {
-        for (var i = 0; i < a.length; i++) {
+        for (let i = 0; i < a.length; i++) {
             if (a[i] != b[i]) return false;
         }
 
