@@ -105,7 +105,7 @@ function populateEntry(fs, path: string, entry: FileEntry, options: BuildOptions
 }
 
 // can call multiple times (from populateFiles)
-export function gatherFiles(step: BuildStep, options?: BuildOptions): number {
+export function gatherFiles(step: BuildStep): number {
     let maxts = 0;
     if (step.files) {
         for (let i = 0; i < step.files.length; i++) {
@@ -139,7 +139,7 @@ function getPrefix(s: string): string {
 }
 
 export function populateFiles(step: BuildStep, fs, options?: BuildOptions) {
-    gatherFiles(step, options);
+    gatherFiles(step);
 
     if (!step.files) {
         throw Error("call gatherFiles() first");

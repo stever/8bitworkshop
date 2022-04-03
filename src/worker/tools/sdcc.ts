@@ -66,7 +66,7 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
     let objout, lstout;
     const errors = [];
 
-    gatherFiles(step, {mainFilePath: "main.asm"});
+    gatherFiles(step);
 
     const objpath = step.prefix + ".rel";
     const lstpath = step.prefix + ".lst";
@@ -277,9 +277,7 @@ export function linkSDLDZ80(step: BuildStep) {
 }
 
 export function compileSDCC(step: BuildStep): BuildStepResult {
-    gatherFiles(step, {
-        mainFilePath: "main.c" // not used
-    });
+    gatherFiles(step);
 
     const outpath = step.prefix + ".asm";
     if (staleFiles(step, [outpath])) {

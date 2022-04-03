@@ -18,7 +18,7 @@ export function assembleZMAC(step: BuildStep): BuildStepResult {
     let lstout, binout;
     const errors = [];
 
-    gatherFiles(step, {mainFilePath: "main.asm"});
+    gatherFiles(step);
 
     const lstpath = step.prefix + ".lst";
     const binpath = step.prefix + ".cim";
