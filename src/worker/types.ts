@@ -21,9 +21,4 @@ export type FileEntry = {
     ts: number
 };
 
-export type BuildOptions = {
-    mainFilePath: string,
-    processFn?: (s: string, d: FileData) => FileData
-};
-
 export type BuildStepResult = WorkerResult | WorkerNextToolResult;

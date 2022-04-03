@@ -1,6 +1,6 @@
 import {WORKER_RELATIVE_PATH} from "./shared_vars";
 import {FileWorkingStore} from "./FileWorkingStore";
-import {BuildOptions, FileData, FileEntry} from "./types";
+import {FileData, FileEntry} from "./types";
 import {BuildStep} from "./interfaces";
 
 const fsMeta = {};
@@ -79,12 +79,8 @@ export function getWorkFileAsString(path: string): string {
     return fileStore.getFileAsString(path);
 }
 
-function populateEntry(fs, path: string, entry: FileEntry, options: BuildOptions) {
+function populateEntry(fs, path: string, entry: FileEntry) {
     let data = entry.data;
-
-    if (options && options.processFn) {
-        data = options.processFn(path, data);
-    }
 
     // create subfolders
     const toks = path.split('/');
@@ -139,7 +135,7 @@ function getPrefix(s: string): string {
     return (pos > 0) ? s.substring(0, pos) : s;
 }
 
-export function populateFiles(step: BuildStep, fs, options?: BuildOptions) {
+export function populateFiles(step: BuildStep, fs) {
     gatherFiles(step);
 
     if (!step.files) {
@@ -148,7 +144,7 @@ export function populateFiles(step: BuildStep, fs, options?: BuildOptions) {
 
     for (let i = 0; i < step.files.length; i++) {
         const path = step.files[i];
-        populateEntry(fs, path, fileStore.workfs[path], options);
+        populateEntry(fs, path, fileStore.workfs[path]);
     }
 }
 
