@@ -1,5 +1,5 @@
 import type {WorkerResult} from "./types";
-import {BuildStep, WorkerMessage} from "./interfaces";
+import {WorkerMessage} from "./interfaces";
 import {Builder} from "./Builder";
 import {TOOL_PRELOADFS} from "./global_vars";
 import {errorResult} from "./util";
@@ -8,11 +8,6 @@ import {fsMeta, loadFilesystem, store} from "./files";
 declare function postMessage(msg);
 
 const builder = new Builder();
-
-export function execMain(step: BuildStep, mod, args: string[]) {
-    const run = mod.callMain || mod.run;
-    run(args);
-}
 
 async function handleMessage(data: WorkerMessage): Promise<WorkerResult> {
 

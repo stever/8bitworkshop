@@ -1,5 +1,4 @@
 import {BuildStepResult, CodeListingMap} from "../types";
-import {execMain} from "../worker";
 import {
     anyTargetChanged,
     gatherFiles,
@@ -15,7 +14,7 @@ import {loadNative, moduleInstFn} from "../modules";
 import {setupFS} from "../files";
 import {preprocessMCPP} from "./mcpp";
 import {parseListing, parseSourceLines} from "../parsing";
-import {print_fn} from "../util";
+import {print_fn, execMain} from "../util";
 
 function hexToArray(s, ofs) {
     var buf = new ArrayBuffer(s.length / 2);

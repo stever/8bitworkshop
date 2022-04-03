@@ -1,5 +1,4 @@
 import {BuildStepResult, CodeListingMap} from "../types";
-import {execMain} from "../worker";
 import {
     anyTargetChanged,
     gatherFiles,
@@ -12,7 +11,7 @@ import {emglobal} from "../global_vars";
 import {loadNative, moduleInstFn} from "../modules";
 import {makeErrorMatcher} from "../errors";
 import {parseListing} from "../parsing";
-import {print_fn} from "../util";
+import {print_fn, execMain} from "../util";
 
 export function assembleZMAC(step: BuildStep): BuildStepResult {
     loadNative("zmac");
