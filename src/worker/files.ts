@@ -79,7 +79,7 @@ export function getWorkFileAsString(path: string): string {
     return fileStore.getFileAsString(path);
 }
 
-export function populateEntry(fs, path: string, entry: FileEntry, options: BuildOptions) {
+function populateEntry(fs, path: string, entry: FileEntry, options: BuildOptions) {
     let data = entry.data;
     if (options && options.processFn) {
         data = options.processFn(path, data);
@@ -145,7 +145,7 @@ export function gatherFiles(step: BuildStep, options?: BuildOptions): number {
     return maxts;
 }
 
-export function getPrefix(s: string): string {
+function getPrefix(s: string): string {
     const pos = s.lastIndexOf('.');
     return (pos > 0) ? s.substring(0, pos) : s;
 }
