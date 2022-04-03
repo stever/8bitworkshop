@@ -1,5 +1,6 @@
-import * as sdcc from "./tools/sdcc";
 import * as z80 from "./tools/z80";
+
+declare function importScripts(path: string);
 
 export const PLATFORM_PARAMS = {
     'zx': {
@@ -13,20 +14,6 @@ export const PLATFORM_PARAMS = {
         extra_link_files: ['crt0-zx.rel', 'crt0-zx.lst'],
     },
 };
-
-export const TOOLS = {
-    'sdasz80': sdcc.assembleSDASZ80,
-    'sdldz80': sdcc.linkSDLDZ80,
-    'sdcc': sdcc.compileSDCC,
-    'zmac': z80.assembleZMAC,
-}
-
-export const TOOL_PRELOADFS = {
-    'sdasz80': 'sdcc',
-    'sdcc': 'sdcc',
-}
-
-declare function importScripts(path: string);
 
 const ENVIRONMENT_IS_WEB = typeof window === 'object';
 const ENVIRONMENT_IS_WORKER = typeof importScripts === 'function';

@@ -1,11 +1,15 @@
 import type {WorkerResult} from "./types";
 import {WorkerMessage} from "./interfaces";
 import {Builder} from "./Builder";
-import {TOOL_PRELOADFS} from "./global_vars";
 import {errorResult} from "./util";
 import {fsMeta, loadFilesystem, store} from "./files";
 
 declare function postMessage(msg);
+
+const TOOL_PRELOADFS = {
+    'sdasz80': 'sdcc',
+    'sdcc': 'sdcc',
+}
 
 const builder = new Builder();
 
@@ -36,13 +40,11 @@ async function handleMessage(data: WorkerMessage): Promise<WorkerResult> {
 }
 
 let lastpromise = null;
-
 onmessage = async function (e) {
     await lastpromise; // wait for previous message to complete
     lastpromise = handleMessage(e.data);
     const result = await lastpromise;
     lastpromise = null;
-
     if (result) {
         try {
             postMessage(result);

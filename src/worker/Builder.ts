@@ -1,8 +1,17 @@
 import {BuildStep, WorkerError, WorkerMessage} from "./interfaces";
 import {WorkerResult} from "./types";
 import {store} from "./files";
-import {PLATFORM_PARAMS, TOOLS} from "./global_vars";
+import {PLATFORM_PARAMS} from "./global_vars";
 import {errorResult} from "./util";
+import * as sdcc from "./tools/sdcc";
+import * as z80 from "./tools/z80";
+
+const TOOLS = {
+    'sdasz80': sdcc.assembleSDASZ80,
+    'sdldz80': sdcc.linkSDLDZ80,
+    'sdcc': sdcc.compileSDCC,
+    'zmac': z80.assembleZMAC,
+}
 
 export class Builder {
     steps: BuildStep[] = [];
