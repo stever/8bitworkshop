@@ -1,7 +1,7 @@
 import {SourceSnippet} from "./interfaces";
 
 export class SourceFile {
-    
+
     lines: SourceSnippet[];
     text: string;
     offset2loc: Map<number, SourceSnippet>; //{[offset:number]:number};

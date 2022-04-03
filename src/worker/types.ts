@@ -1,6 +1,7 @@
 import {
     CodeListing,
-    WorkerErrorResult, WorkerNextToolResult,
+    WorkerErrorResult,
+    WorkerNextToolResult,
     WorkerOutputResult,
     WorkerUnchangedResult
 } from "./interfaces";

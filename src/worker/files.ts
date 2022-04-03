@@ -81,6 +81,7 @@ export function getWorkFileAsString(path: string): string {
 
 function populateEntry(fs, path: string, entry: FileEntry, options: BuildOptions) {
     let data = entry.data;
+
     if (options && options.processFn) {
         data = options.processFn(path, data);
     }
