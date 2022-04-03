@@ -1,6 +1,6 @@
 import {BuildStep, WorkerError, WorkerMessage} from "./interfaces";
 import {WorkerResult} from "./types";
-import {store} from "./worker";
+import {store} from "./files";
 import {PLATFORM_PARAMS, TOOLS} from "./global_vars";
 import {errorResult} from "./util";
 

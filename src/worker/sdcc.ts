@@ -1,25 +1,26 @@
 import {BuildStepResult, CodeListingMap} from "./types";
 import {
-    anyTargetChanged,
     execMain,
-    gatherFiles,
-    getWorkFileAsString,
-    loadNative,
-    moduleInstFn,
     msvcErrorMatcher,
     parseListing,
     parseSourceLines,
-    populateExtraFiles,
-    populateFiles,
     preprocessMCPP,
     print_fn,
-    putWorkFile,
-    setupFS,
-    setupStdin,
-    staleFiles
+    setupStdin
 } from "./worker";
+import {
+    anyTargetChanged,
+    gatherFiles,
+    getWorkFileAsString,
+    populateExtraFiles,
+    populateFiles,
+    putWorkFile,
+    staleFiles
+} from "./files";
 import {BuildStep, EmscriptenModule} from "./interfaces";
 import {emglobal} from "./global_vars";
+import {loadNative, moduleInstFn} from "./modules";
+import {setupFS} from "./files";
 
 function hexToArray(s, ofs) {
     var buf = new ArrayBuffer(s.length / 2);
