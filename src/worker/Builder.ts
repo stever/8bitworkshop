@@ -51,7 +51,7 @@ export class Builder {
                 step.result = await toolfn(step);
             } catch (e) {
                 console.log("EXCEPTION", e, e.stack);
-                return errorResult(e + "");
+                return errorResult(`${e}`);
             }
 
             if (step.result) {
