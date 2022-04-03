@@ -115,5 +115,4 @@ export interface WorkerNextToolResult {
     path?: string
     args: string[]
     files: string[]
-    bblines?: boolean
 }
