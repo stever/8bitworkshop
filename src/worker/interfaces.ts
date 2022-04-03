@@ -38,10 +38,7 @@ export interface WorkerBuildStep {
 }
 
 export interface BuildStep extends WorkerBuildStep {
-    files?: string[]
     args?: string[]
-    nextstep?: BuildStep
-    linkstep?: BuildStep
     params?
     result?: BuildStepResult
     code?
