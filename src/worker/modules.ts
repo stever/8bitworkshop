@@ -2,16 +2,16 @@ import {WORKER_RELATIVE_PATH} from "./shared_vars";
 
 declare function importScripts(path: string);
 
-const _WASM_module_cache = {};
+const wasmModuleCache = {};
 const wasmBlob = {};
 const loaded = {};
 
 function getWASMModule(module_id: string) {
-    let module = _WASM_module_cache[module_id];
+    let module = wasmModuleCache[module_id];
 
     if (!module) {
         module = new WebAssembly.Module(wasmBlob[module_id]);
-        _WASM_module_cache[module_id] = module;
+        wasmModuleCache[module_id] = module;
         delete wasmBlob[module_id];
     }
 
