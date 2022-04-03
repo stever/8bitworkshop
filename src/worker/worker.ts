@@ -19,10 +19,6 @@ async function handleMessage(data: WorkerMessage): Promise<WorkerResult> {
     if (data.preload) {
         let fs = TOOL_PRELOADFS[data.preload];
 
-        if (!fs && data.platform) {
-            fs = TOOL_PRELOADFS[data.preload + '-zx'];
-        }
-
         if (fs && !fsMeta[fs]) {
             loadFilesystem(fs);
         }
