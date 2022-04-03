@@ -27,7 +27,7 @@ function hexToArray(s, ofs) {
     return arr;
 }
 
-function parseIHX(ihx, rom_start, rom_size, errors) {
+function parseIHX(ihx, rom_start, rom_size) {
     const output = new Uint8Array(new ArrayBuffer(rom_size));
     let high_size = 0;
 
@@ -185,6 +185,10 @@ export function linkSDLDZ80(step: BuildStep) {
 
         execMain(step, LDZ80, args);
 
+        if (errors.length) {
+            return {errors};
+        }
+
         const hexout = FS.readFile("main.ihx", {encoding: 'utf8'});
         const noiout = FS.readFile("main.noi", {encoding: 'utf8'});
 
@@ -202,12 +206,7 @@ export function linkSDLDZ80(step: BuildStep) {
             params.rom_start !== undefined
                 ? params.rom_start
                 : params.code_start,
-            params.rom_size,
-            errors);
-
-        if (errors.length) {
-            return {errors: errors};
-        }
+            params.rom_size);
 
         // parse listings
         const listings: CodeListingMap = {};
