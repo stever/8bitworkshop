@@ -1,4 +1,4 @@
-import {WorkerError} from "./worker/interfaces";
+import {WorkerError} from "./worker/misc_interfaces";
 import {SourceFile} from "./worker/SourceFile";
 
 export interface ProjectView {

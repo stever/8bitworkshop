@@ -1,4 +1,4 @@
-import {BuildStepResult, CodeListingMap, FileData, Segment} from "./types";
+import {BuildStepResult, CodeListingMap, FileData, Segment} from "./misc_types";
 import {SourceFile} from "./SourceFile";
 
 export interface SourceLocation {

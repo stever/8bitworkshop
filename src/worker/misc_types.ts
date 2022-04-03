@@ -4,7 +4,7 @@ import {
     WorkerNextToolResult,
     WorkerOutputResult,
     WorkerUnchangedResult
-} from "./interfaces";
+} from "./misc_interfaces";
 
 export type FileData = string | Uint8Array;
 

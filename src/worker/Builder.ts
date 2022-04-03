@@ -3,8 +3,8 @@ import {
     PlatformParams,
     WorkerError,
     WorkerMessage
-} from "./interfaces";
-import {WorkerResult} from "./types";
+} from "./misc_interfaces";
+import {WorkerResult} from "./misc_types";
 import {fileStore} from "./files";
 import {errorResult} from "./shared_funcs";
 import * as sdcc from "./tools/sdcc";

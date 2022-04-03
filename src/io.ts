@@ -1,5 +1,5 @@
-import {FileData} from "./worker/types";
-import {WorkingStore} from "./worker/interfaces";
+import {FileData} from "./worker/misc_types";
+import {WorkingStore} from "./worker/misc_interfaces";
 
 class FileDataCache {
     maxSize: number = 8000000;

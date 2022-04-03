@@ -3,7 +3,7 @@ import {
     CodeListingMap,
     Segment,
     WorkerResult
-} from "./worker/types";
+} from "./worker/misc_types";
 import {getFilenamePrefix, getFolderForPath} from "./util";
 import localforage from "localforage";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
@@ -13,7 +13,7 @@ import {
     WorkerItemUpdate,
     WorkerMessage,
     WorkerOutputResult
-} from "./worker/interfaces";
+} from "./worker/misc_interfaces";
 import {SourceFile} from "./worker/SourceFile";
 
 function isProbablyBinary(path: string, data?: number[] | Uint8Array): boolean {
