@@ -1,12 +1,12 @@
-import {SourceLine} from "./interfaces";
+import {SourceSnippet} from "./interfaces";
 
 export class SourceFile {
-    lines: SourceLine[];
+    lines: SourceSnippet[];
     text: string;
-    offset2loc: Map<number, SourceLine>; //{[offset:number]:number};
+    offset2loc: Map<number, SourceSnippet>; //{[offset:number]:number};
     line2offset: Map<number, number>; //{[line:number]:number};
 
-    constructor(lines: SourceLine[], text: string) {
+    constructor(lines: SourceSnippet[], text: string) {
         lines = lines || [];
 
         this.lines = lines;

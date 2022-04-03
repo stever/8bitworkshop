@@ -11,8 +11,7 @@ export interface SourceLocation {
     func?: string;
 }
 
-// actually it's a kind of SourceSnippet - can have multiple per line
-export interface SourceLine extends SourceLocation {
+export interface SourceSnippet extends SourceLocation {
     offset: number;
     insns?: string;
     iscode?: boolean;
@@ -72,8 +71,8 @@ export interface WorkerError extends SourceLocation {
 }
 
 export interface CodeListing {
-    lines: SourceLine[]
-    asmlines?: SourceLine[]
+    lines: SourceSnippet[]
+    asmlines?: SourceSnippet[]
     text?: string
     sourcefile?: SourceFile   // not returned by worker
     assemblyfile?: SourceFile  // not returned by worker

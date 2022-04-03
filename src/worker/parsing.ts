@@ -1,4 +1,4 @@
-import {SourceLine} from "./interfaces";
+import {SourceSnippet} from "./interfaces";
 
 export const re_crlf = /\r?\n/;
 export const re_lineoffset = /\s*(\d+)\s+[%]line\s+(\d+)\+(\d+)\s+(.+)/;
@@ -9,9 +9,9 @@ export function parseListing(code: string,
                              ioffset: number,
                              iinsns: number,
                              icycles?: number,
-                             funcMatch?, segMatch?): SourceLine[] {
+                             funcMatch?, segMatch?): SourceSnippet[] {
 
-    const lines: SourceLine[] = [];
+    const lines: SourceSnippet[] = [];
 
     let lineofs = 0;
     let segment = '';
