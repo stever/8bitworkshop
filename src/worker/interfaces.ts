@@ -105,7 +105,7 @@ export interface WorkingStore {
 
 /// <reference types="emscripten" />
 export interface EmscriptenModule {
-    callMain: (args: string[]) => void
+    callMain?: (args: string[]) => void
     FS: any
 }
 
