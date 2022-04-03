@@ -10,7 +10,7 @@ import {BuildStep, EmscriptenModule} from "../interfaces";
 import {emglobal} from "../shared_vars";
 import {loadNative, moduleInstFn} from "../modules";
 import {parseListing} from "../parsing";
-import {print_fn, execMain, makeErrorMatcher} from "../shared_funcs";
+import {print_fn, makeErrorMatcher} from "../shared_funcs";
 
 export function assembleZMAC(step: BuildStep): BuildStepResult {
     loadNative("zmac");
@@ -34,7 +34,7 @@ export function assembleZMAC(step: BuildStep): BuildStepResult {
 
         const FS = ZMAC.FS;
         populateFiles(step, FS);
-        execMain(step, ZMAC, ['-z', '-c', '--oo', 'lst,cim', step.path]);
+        ZMAC.callMain(['-z', '-c', '--oo', 'lst,cim', step.path]);
 
         if (errors.length) {
             return {errors: errors};

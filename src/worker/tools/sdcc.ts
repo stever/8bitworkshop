@@ -14,7 +14,7 @@ import {loadNative, moduleInstFn} from "../modules";
 import {setupFS} from "../files";
 import {preprocessMCPP} from "./mcpp";
 import {parseListing, parseSourceLines} from "../parsing";
-import {print_fn, execMain} from "../shared_funcs";
+import {print_fn} from "../shared_funcs";
 
 function hexToArray(s, ofs) {
     const buf = new ArrayBuffer(s.length / 2);
@@ -109,7 +109,8 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
         const FS = ASZ80.FS;
 
         populateFiles(step, FS);
-        execMain(step, ASZ80, ['-plosgffwy', step.path]);
+
+        ASZ80.callMain(['-plosgffwy', step.path]);
 
         if (errors.length) {
             return {errors: errors};
@@ -183,7 +184,7 @@ export function linkSDLDZ80(step: BuildStep) {
         args.push.apply(args, step.args);
         //console.log(args);
 
-        execMain(step, LDZ80, args);
+        LDZ80.callMain(args);
 
         if (errors.length) {
             return {errors};
@@ -345,7 +346,7 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
             ]);
         }
 
-        execMain(step, SDCC, args);
+        SDCC.callMain(args);
 
         if (errors.length /* && nwarnings < msvc_errors.length*/) {
             return {errors: errors};

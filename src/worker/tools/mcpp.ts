@@ -2,12 +2,7 @@ import {BuildStep, EmscriptenModule} from "../interfaces";
 import {load} from "../modules";
 import {emglobal} from "../shared_vars";
 import {populateFiles, setupFS} from "../files";
-import {
-    errorResult,
-    execMain,
-    makeErrorMatcher,
-    print_fn
-} from "../shared_funcs";
+import {errorResult, makeErrorMatcher, print_fn} from "../shared_funcs";
 
 export function preprocessMCPP(step: BuildStep, filesys: string) {
     load("mcpp");
@@ -43,7 +38,7 @@ export function preprocessMCPP(step: BuildStep, filesys: string) {
         args.unshift.apply(args, ["-D", "__MAIN__"]);
     }
 
-    execMain(step, MCPP, args);
+    MCPP.callMain(args);
 
     if (errors.length) {
         return {errors};
