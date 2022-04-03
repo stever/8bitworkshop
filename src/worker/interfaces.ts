@@ -52,7 +52,6 @@ export interface BuildStep extends WorkerBuildStep {
     args?: string[]
     params?: PlatformParams
     result?: BuildStepResult
-    code?
     prefix?
     maxts?
 }

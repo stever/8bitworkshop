@@ -118,18 +118,6 @@ export function gatherFiles(step: BuildStep, options?: BuildOptions): number {
                 maxts = Math.max(maxts, entry.ts);
             }
         }
-    } else if (step.code) {
-        const path = step.path ? step.path : options.mainFilePath;
-
-        if (!path) {
-            throw Error("need path or mainFilePath");
-        }
-
-        const code = step.code;
-        const entry = putWorkFile(path, code);
-        step.path = path;
-        step.files = [path];
-        maxts = entry.ts;
     } else if (step.path) {
         const path = step.path;
         const entry = fileStore.workfs[path];
