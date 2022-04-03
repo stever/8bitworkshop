@@ -78,8 +78,8 @@ export interface CodeListing {
     lines: SourceSnippet[]
     asmlines?: SourceSnippet[]
     text?: string
-    sourcefile?: SourceFile   // not returned by worker
-    assemblyfile?: SourceFile  // not returned by worker
+    sourcefile?: SourceFile // not returned by worker
+    assemblyfile?: SourceFile // not returned by worker
 }
 
 export interface WorkerUnchangedResult {
