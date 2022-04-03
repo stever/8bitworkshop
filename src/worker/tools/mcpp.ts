@@ -1,17 +1,16 @@
 import {BuildStep, EmscriptenModule} from "../interfaces";
 import {load} from "../modules";
-import {emglobal, PLATFORM_PARAMS} from "../shared_vars";
+import {emglobal} from "../shared_vars";
 import {populateFiles, setupFS} from "../files";
-import {errorResult, execMain, print_fn, makeErrorMatcher} from "../shared_funcs";
+import {
+    errorResult,
+    execMain,
+    makeErrorMatcher,
+    print_fn
+} from "../shared_funcs";
 
 export function preprocessMCPP(step: BuildStep, filesys: string) {
     load("mcpp");
-
-    const params = PLATFORM_PARAMS['zx'];
-
-    if (!params) {
-        throw Error("Platform not supported: zx");
-    }
 
     // <stdin>:2: error: Can't open include file "foo.h"
     let errors = [];

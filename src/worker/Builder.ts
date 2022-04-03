@@ -1,7 +1,6 @@
 import {BuildStep, WorkerError, WorkerMessage} from "./interfaces";
 import {WorkerResult} from "./types";
 import {fileStore} from "./files";
-import {PLATFORM_PARAMS} from "./shared_vars";
 import {errorResult} from "./shared_funcs";
 import * as sdcc from "./tools/sdcc";
 import * as z80 from "./tools/z80";
@@ -11,7 +10,18 @@ const TOOLS = {
     'sdldz80': sdcc.linkSDLDZ80,
     'sdcc': sdcc.compileSDCC,
     'zmac': z80.assembleZMAC,
-}
+};
+
+const PLATFORM_PARAMS = {
+    arch: 'z80',
+    code_start: 0x5ccb,
+    rom_size: 0xff58 - 0x5ccb,
+    data_start: 0xf000,
+    data_size: 0xfe00 - 0xf000,
+    stack_end: 0xff58,
+    extra_link_args: ['crt0-zx.rel'],
+    extra_link_files: ['crt0-zx.rel', 'crt0-zx.lst']
+};
 
 export class Builder {
     steps: BuildStep[] = [];
@@ -30,7 +40,7 @@ export class Builder {
                 throw Error("no tool named " + step.tool);
             }
 
-            step.params = PLATFORM_PARAMS['zx'];
+            step.params = PLATFORM_PARAMS;
 
             try {
                 step.result = await toolfn(step);
