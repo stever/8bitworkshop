@@ -1,10 +1,9 @@
 import type {WorkerResult} from "./types";
-import {BuildStep, EmscriptenModule, SourceLine, WorkerError, WorkerMessage} from "./interfaces";
+import {BuildStep, SourceLine, WorkerError, WorkerMessage} from "./interfaces";
 import {Builder} from "./Builder";
-import {emglobal, PLATFORM_PARAMS, TOOL_PRELOADFS} from "./global_vars";
+import {TOOL_PRELOADFS} from "./global_vars";
 import {errorResult} from "./util";
-import {load} from "./modules";
-import {fsMeta, loadFilesystem, populateFiles, setupFS, store} from "./files";
+import {fsMeta, loadFilesystem, store} from "./files";
 
 declare function postMessage(msg);
 
@@ -175,78 +174,6 @@ export function setupStdin(fs, code: string) {
             return i < code.length ? code.charCodeAt(i++) : null;
         }
     );
-}
-
-function makeCPPSafe(s: string): string {
-    return s.replace(/[^A-Za-z0-9_]/g, '_');
-}
-
-export function preprocessMCPP(step: BuildStep, filesys: string) {
-    load("mcpp");
-
-    const platform = step.platform;
-    const params = PLATFORM_PARAMS['zx'];
-
-    if (!params) {
-        throw Error("Platform not supported: " + platform);
-    }
-
-    // <stdin>:2: error: Can't open include file "foo.h"
-    let errors = [];
-    const match_fn = makeErrorMatcher(errors, /<stdin>:(\d+): (.+)/, 1, 2, step.path);
-    const MCPP: EmscriptenModule = emglobal.mcpp({
-        noInitialRun: true,
-        noFSInit: true,
-        print: print_fn,
-        printErr: match_fn,
-    });
-
-    const FS = MCPP.FS;
-
-    if (filesys) {
-        setupFS(FS, filesys);
-    }
-
-    populateFiles(step, FS);
-
-    const args = [
-        "-D", "__8BITWORKSHOP__",
-        "-D", "__SDCC_z80",
-        "-D", makeCPPSafe(platform.toUpperCase()),
-        "-I", "/share/include",
-        "-Q",
-        step.path, "main.i"];
-
-    if (step.mainfile) {
-        args.unshift.apply(args, ["-D", "__MAIN__"]);
-    }
-
-    execMain(step, MCPP, args);
-
-    if (errors.length) {
-        return {errors};
-    }
-
-    let iout = FS.readFile("main.i", {encoding: 'utf8'});
-    iout = iout.replace(/^#line /gm, '\n# ');
-
-    try {
-        const errout = FS.readFile("mcpp.err", {encoding: 'utf8'});
-        if (errout.length) {
-
-            // //main.c:2: error: Can't open include file "stdiosd.h"
-            errors = extractErrors(/([^:]+):(\d+): (.+)/, errout.split("\n"), step.path, 2, 3, 1);
-            if (errors.length == 0) {
-                errors = errorResult(errout).errors;
-            }
-
-            return {errors};
-        }
-    } catch (e) {
-        console.error(e);
-    }
-
-    return {code: iout};
 }
 
 async function handleMessage(data: WorkerMessage): Promise<WorkerResult> {
