@@ -27,13 +27,6 @@ export function instantiateWASM(module_id: string) {
     }
 }
 
-export function loadASMJS(modulename: string, debug?: boolean) {
-    if (!loaded[modulename]) {
-        importScripts(WORKER_RELATIVE_PATH + 'asmjs/' + modulename + (debug ? "." + debug + ".js" : ".js"));
-        loaded[modulename] = 1;
-    }
-}
-
 export function loadWASM(modulename: string, debug?: boolean) {
     if (!loaded[modulename]) {
         importScripts(WORKER_RELATIVE_PATH + "wasm/" + modulename + (debug ? "." + debug + ".js" : ".js"));
@@ -50,5 +43,12 @@ export function loadWASM(modulename: string, debug?: boolean) {
         } else {
             throw Error("Could not load WASM file " + modulename + ".wasm");
         }
+    }
+}
+
+export function loadASMJS(modulename: string, debug?: boolean) {
+    if (!loaded[modulename]) {
+        importScripts(WORKER_RELATIVE_PATH + 'asmjs/' + modulename + (debug ? "." + debug + ".js" : ".js"));
+        loaded[modulename] = 1;
     }
 }
