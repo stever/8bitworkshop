@@ -53,7 +53,7 @@ export interface BuildStep extends WorkerBuildStep {
     params?: PlatformParams
     result?: BuildStepResult
     prefix?: string
-    maxts?
+    maxts?: number
 }
 
 export interface WorkerItemUpdate {
