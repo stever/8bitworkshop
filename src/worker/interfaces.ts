@@ -88,7 +88,6 @@ export interface WorkerUnchangedResult {
 
 export interface WorkerErrorResult {
     errors: WorkerError[]
-    listings?: CodeListingMap
 }
 
 export interface WorkerOutputResult<T> {
