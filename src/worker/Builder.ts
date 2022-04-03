@@ -1,7 +1,7 @@
 import {BuildStep, WorkerError, WorkerMessage} from "./interfaces";
 import {WorkerResult} from "./types";
 import {store} from "./files";
-import {PLATFORM_PARAMS} from "./global_vars";
+import {PLATFORM_PARAMS} from "./shared_vars";
 import {errorResult} from "./util";
 import * as sdcc from "./tools/sdcc";
 import * as z80 from "./tools/z80";

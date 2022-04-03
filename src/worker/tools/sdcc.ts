@@ -9,7 +9,7 @@ import {
     staleFiles
 } from "../files";
 import {BuildStep, EmscriptenModule, WorkerError} from "../interfaces";
-import {emglobal} from "../global_vars";
+import {emglobal} from "../shared_vars";
 import {loadNative, moduleInstFn} from "../modules";
 import {setupFS} from "../files";
 import {preprocessMCPP} from "./mcpp";

@@ -1,4 +1,4 @@
-import {PWORKER} from "./global_vars";
+import {PWORKER} from "./shared_vars";
 
 declare function importScripts(path: string);
 

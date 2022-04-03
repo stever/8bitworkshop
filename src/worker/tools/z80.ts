@@ -7,7 +7,7 @@ import {
     staleFiles
 } from "../files";
 import {BuildStep, EmscriptenModule} from "../interfaces";
-import {emglobal} from "../global_vars";
+import {emglobal} from "../shared_vars";
 import {loadNative, moduleInstFn} from "../modules";
 import {makeErrorMatcher} from "../errors";
 import {parseListing} from "../parsing";

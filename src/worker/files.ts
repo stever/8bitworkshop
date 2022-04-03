@@ -1,4 +1,4 @@
-import {PWORKER} from "./global_vars";
+import {PWORKER} from "./shared_vars";
 import {FileWorkingStore} from "./FileWorkingStore";
 import {BuildOptions, FileData, FileEntry} from "./types";
 import {BuildStep} from "./interfaces";
