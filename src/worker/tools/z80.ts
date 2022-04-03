@@ -8,7 +8,7 @@ import {
 } from "../files";
 import {BuildStep, EmscriptenModule} from "../interfaces";
 import {emglobal} from "../shared_vars";
-import {loadWASM, moduleInstFn} from "../modules";
+import {loadWASM, instantiateWASM} from "../modules";
 import {parseListing} from "../parsing";
 import {print_fn, makeErrorMatcher} from "../shared_funcs";
 
@@ -25,7 +25,7 @@ export function assembleZMAC(step: BuildStep): BuildStepResult {
 
     if (staleFiles(step, [binpath, lstpath])) {
         const ZMAC: EmscriptenModule = emglobal.zmac({
-            instantiateWasm: moduleInstFn('zmac'),
+            instantiateWasm: instantiateWASM('zmac'),
             noInitialRun: true,
             //logReadFiles:true,
             print: print_fn,

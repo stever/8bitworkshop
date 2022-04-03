@@ -18,8 +18,7 @@ function getWASMModule(module_id: string) {
     return module;
 }
 
-// function for use with instantiateWasm
-export function moduleInstFn(module_id: string) {
+export function instantiateWASM(module_id: string) {
     return function (imports, ri) {
         const mod = getWASMModule(module_id);
         const inst = new WebAssembly.Instance(mod, imports);

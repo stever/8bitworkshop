@@ -10,7 +10,7 @@ import {
 } from "../files";
 import {BuildStep, EmscriptenModule, WorkerError} from "../interfaces";
 import {emglobal} from "../shared_vars";
-import {loadWASM, moduleInstFn} from "../modules";
+import {loadWASM, instantiateWASM} from "../modules";
 import {setupFS} from "../files";
 import {preprocessMCPP} from "./mcpp";
 import {parseListing, parseSourceLines} from "../parsing";
@@ -99,7 +99,7 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
         }
 
         const ASZ80: EmscriptenModule = emglobal.sdasz80({
-            instantiateWasm: moduleInstFn('sdasz80'),
+            instantiateWasm: instantiateWASM('sdasz80'),
             noInitialRun: true,
             //logReadFiles:true,
             print: match_asm_fn,
@@ -155,7 +155,7 @@ export function linkSDLDZ80(step: BuildStep) {
         const params = step.params;
 
         const LDZ80: EmscriptenModule = emglobal.sdldz80({
-            instantiateWasm: moduleInstFn('sdldz80'),
+            instantiateWasm: instantiateWASM('sdldz80'),
             noInitialRun: true,
             //logReadFiles:true,
             print: match_aslink_fn,
@@ -287,7 +287,7 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
         loadWASM('sdcc');
 
         const SDCC: EmscriptenModule = emglobal.sdcc({
-            instantiateWasm: moduleInstFn('sdcc'),
+            instantiateWasm: instantiateWASM('sdcc'),
             noInitialRun: true,
             noFSInit: true,
             print: print_fn,
