@@ -117,7 +117,7 @@ async function newFilesystem() {
 async function initProject() {
     var filesystem = await newFilesystem();
 
-    current_project = new CodeProject(newWorker(), 'zx', platform, filesystem);
+    current_project = new CodeProject(newWorker(), platform, filesystem);
     projectWindows = new ProjectWindows($("#workspace")[0] as HTMLElement, current_project);
 
     current_project.callbackBuildResult = (result: WorkerResult) => {

@@ -7,11 +7,10 @@ import {errorResult, execMain, print_fn, makeErrorMatcher} from "../shared_funcs
 export function preprocessMCPP(step: BuildStep, filesys: string) {
     load("mcpp");
 
-    const platform = step.platform;
     const params = PLATFORM_PARAMS['zx'];
 
     if (!params) {
-        throw Error("Platform not supported: " + platform);
+        throw Error("Platform not supported: zx");
     }
 
     // <stdin>:2: error: Can't open include file "foo.h"
@@ -35,7 +34,7 @@ export function preprocessMCPP(step: BuildStep, filesys: string) {
     const args = [
         "-D", "__8BITWORKSHOP__",
         "-D", "__SDCC_z80",
-        "-D", makeCPPSafe(platform.toUpperCase()),
+        "-D", "ZX",
         "-I", "/share/include",
         "-Q",
         step.path, "main.i"
@@ -71,10 +70,6 @@ export function preprocessMCPP(step: BuildStep, filesys: string) {
     }
 
     return {code: iout};
-}
-
-function makeCPPSafe(s: string): string {
-    return s.replace(/[^A-Za-z0-9_]/g, '_');
 }
 
 function extractErrors(regex, strings: string[], path: string, iline, imsg, ifilename) {

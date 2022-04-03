@@ -24,7 +24,6 @@ export class Builder {
 
         while (this.steps.length) {
             const step = this.steps.shift(); // get top of array
-            const platform = step.platform;
             const toolfn = TOOLS[step.tool];
 
             if (!toolfn) {
@@ -62,7 +61,6 @@ export class Builder {
                     } else {
                         linkstep = {
                             tool: step.result.linktool,
-                            platform: platform,
                             files: step.result.files,
                             args: step.result.args
                         };
@@ -73,7 +71,6 @@ export class Builder {
                 if ('nexttool' in step.result) {
                     const asmstep: BuildStep = {
                         tool: step.result.nexttool,
-                        platform: platform,
                         ...step.result
                     }
 

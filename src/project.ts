@@ -188,7 +188,6 @@ export class CodeProject {
     pendingWorkerMessages = 0;
     tools_preloaded = {};
     worker: Worker;
-    platform_id: string;
     platform: ZXWASMPlatform;
     isCompiling: boolean = false;
     filename2path = {}; // map stripped paths to full paths
@@ -198,9 +197,8 @@ export class CodeProject {
     callbackBuildResult: BuildResultCallback;
     callbackBuildStatus: BuildStatusCallback;
 
-    constructor(worker, platform_id: string, platform, filesystem: ProjectFilesystem) {
+    constructor(worker, platform, filesystem: ProjectFilesystem) {
         this.worker = worker;
-        this.platform_id = platform_id;
         this.platform = platform;
         this.filesystem = filesystem;
 
@@ -240,8 +238,7 @@ export class CodeProject {
         var tool = this.platform.getToolForFilename(path);
         if (tool && !this.tools_preloaded[tool]) {
             this.worker.postMessage({
-                preload: tool,
-                platform: this.platform_id
+                preload: tool
             });
 
             this.tools_preloaded[tool] = true;
@@ -263,26 +260,17 @@ export class CodeProject {
         let files = [];
         let m;
 
-        if (this.platform_id.startsWith('script')) {
-            let re1 = /\b\w+[.]read\(["'](.+?)["']/gmi;
-            while (m = re1.exec(text)) {
-                if (m[1] && m[1].indexOf(':/') < 0) {
-                    this.pushAllFiles(files, m[1]);
-                }
-            }
-        } else {
-            // for .asm -- [.%]include "file"
-            // for .c -- #include "file"
-            let re2 = /^\s*[.#%]?(include|incbin)\s+"(.+?)"/gmi;
-            while (m = re2.exec(text)) {
-                this.pushAllFiles(files, m[2]);
-            }
+        // for .asm -- [.%]include "file"
+        // for .c -- #include "file"
+        let re2 = /^\s*[.#%]?(include|incbin)\s+"(.+?)"/gmi;
+        while (m = re2.exec(text)) {
+            this.pushAllFiles(files, m[2]);
+        }
 
-            // for .c -- //#resource "file" (or ;resource or #resource)
-            let re3 = /^\s*([;']|[/][/])#resource\s+"(.+?)"/gm;
-            while (m = re3.exec(text)) {
-                this.pushAllFiles(files, m[2]);
-            }
+        // for .c -- //#resource "file" (or ;resource or #resource)
+        let re3 = /^\s*([;']|[/][/])#resource\s+"(.+?)"/gm;
+        while (m = re3.exec(text)) {
+            this.pushAllFiles(files, m[2]);
         }
 
         return files;
@@ -349,7 +337,6 @@ export class CodeProject {
         msg.buildsteps.push({
             path: mainfilename,
             files: [mainfilename].concat(depfiles),
-            platform: this.platform_id,
             tool: this.platform.getToolForFilename(this.mainPath),
             mainfile: true
         });
@@ -361,7 +348,6 @@ export class CodeProject {
                 msg.buildsteps.push({
                     path: dep.filename,
                     files: [dep.filename].concat(depfiles),
-                    platform: this.platform_id,
                     tool: this.platform.getToolForFilename(dep.path)
                 });
             }
