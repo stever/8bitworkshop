@@ -2,8 +2,7 @@ import {BuildStep, EmscriptenModule} from "../interfaces";
 import {load} from "../modules";
 import {emglobal, PLATFORM_PARAMS} from "../shared_vars";
 import {populateFiles, setupFS} from "../files";
-import {errorResult, execMain, print_fn} from "../util";
-import {makeErrorMatcher} from "../errors";
+import {errorResult, execMain, print_fn, makeErrorMatcher} from "../util";
 
 export function preprocessMCPP(step: BuildStep, filesys: string) {
     load("mcpp");
