@@ -53,12 +53,3 @@ export function loadWASM(modulename: string, debug?: boolean) {
         }
     }
 }
-
-export function loadNative(modulename: string) {
-    // detect WASM
-    if (typeof WebAssembly === 'object') {
-        loadWASM(modulename);
-    } else {
-        loadASMJS(modulename);
-    }
-}

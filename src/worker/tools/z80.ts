@@ -8,12 +8,12 @@ import {
 } from "../files";
 import {BuildStep, EmscriptenModule} from "../interfaces";
 import {emglobal} from "../shared_vars";
-import {loadNative, moduleInstFn} from "../modules";
+import {loadWASM, moduleInstFn} from "../modules";
 import {parseListing} from "../parsing";
 import {print_fn, makeErrorMatcher} from "../shared_funcs";
 
 export function assembleZMAC(step: BuildStep): BuildStepResult {
-    loadNative("zmac");
+    loadWASM("zmac");
 
     let lstout, binout;
     const errors = [];

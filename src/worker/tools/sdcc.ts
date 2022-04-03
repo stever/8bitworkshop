@@ -10,7 +10,7 @@ import {
 } from "../files";
 import {BuildStep, EmscriptenModule, WorkerError} from "../interfaces";
 import {emglobal} from "../shared_vars";
-import {loadNative, moduleInstFn} from "../modules";
+import {loadWASM, moduleInstFn} from "../modules";
 import {setupFS} from "../files";
 import {preprocessMCPP} from "./mcpp";
 import {parseListing, parseSourceLines} from "../parsing";
@@ -61,7 +61,7 @@ function parseIHX(ihx, rom_start, rom_size) {
 }
 
 export function assembleSDASZ80(step: BuildStep): BuildStepResult {
-    loadNative("sdasz80");
+    loadWASM("sdasz80");
 
     let objout, lstout;
     const errors = [];
@@ -131,7 +131,7 @@ export function assembleSDASZ80(step: BuildStep): BuildStepResult {
 }
 
 export function linkSDLDZ80(step: BuildStep) {
-    loadNative("sdldz80");
+    loadWASM("sdldz80");
 
     const errors = [];
 
@@ -284,7 +284,7 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
     if (staleFiles(step, [outpath])) {
         const errors = [];
 
-        loadNative('sdcc');
+        loadWASM('sdcc');
 
         const SDCC: EmscriptenModule = emglobal.sdcc({
             instantiateWasm: moduleInstFn('sdcc'),
