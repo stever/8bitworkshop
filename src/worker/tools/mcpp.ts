@@ -39,7 +39,8 @@ export function preprocessMCPP(step: BuildStep, filesys: string) {
         "-D", makeCPPSafe(platform.toUpperCase()),
         "-I", "/share/include",
         "-Q",
-        step.path, "main.i"];
+        step.path, "main.i"
+    ];
 
     if (step.mainfile) {
         args.unshift.apply(args, ["-D", "__MAIN__"]);

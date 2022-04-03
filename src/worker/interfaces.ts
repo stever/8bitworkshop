@@ -34,9 +34,21 @@ export interface WorkerFileUpdate {
 export interface WorkerBuildStep {
     path?: string
     files?: string[]
-    platform: string
-    tool: string
+    platform?: string
+    tool?: string
     mainfile?: boolean
+}
+
+export interface BuildStep extends WorkerBuildStep {
+    files?: string[]
+    args?: string[]
+    nextstep?: BuildStep
+    linkstep?: BuildStep
+    params?
+    result?: BuildStepResult
+    code?
+    prefix?
+    maxts?
 }
 
 export interface WorkerItemUpdate {
@@ -102,16 +114,4 @@ export interface WorkerNextToolResult {
     args: string[]
     files: string[]
     bblines?: boolean
-}
-
-export interface BuildStep extends WorkerBuildStep {
-    files?: string[]
-    args?: string[]
-    nextstep?: BuildStep
-    linkstep?: BuildStep
-    params?
-    result?: BuildStepResult
-    code?
-    prefix?
-    maxts?
 }
