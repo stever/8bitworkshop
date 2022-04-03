@@ -74,7 +74,7 @@ let stateRecorder: StateRecorderImpl;
 let userPaused: boolean; // did user explicitly pause?
 let current_output: any; // current ROM (or other object)
 let current_preset: Preset; // current preset object (if selected)
-let store: LocalForage; // persistent store
+let store: LocalForage; // persistent fileStore
 let lastDebugInfo; // last debug info (CPU text)
 let debugTickPaused = false;
 let recorderActive = false;
@@ -1102,7 +1102,7 @@ async function loadAndStartPlatform() {
 export async function start() {
     setupSplits();
 
-    // create store
+    // create fileStore
     store = createNewPersistentStore('zx');
 
     // load and start platform object

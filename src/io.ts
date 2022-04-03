@@ -36,13 +36,13 @@ var $$cache = new FileDataCache();
 // file read/write interface
 var $$store: WorkingStore;
 
-// backing store for data
+// backing fileStore for data
 var $$data: {} = {};
 
 // module cache
 var $$modules: Map<string, {}> = new Map();
 
-// object that can load state from backing store
+// object that can load state from backing fileStore
 export interface Loadable {
 
     // called during script, from io.data.load()
@@ -136,7 +136,7 @@ export function read(url: string, type?: 'binary' | 'text'): FileData {
     if (type === 'text' && typeof data !== 'string') throw new Error(`Resource "${url}" is not a string`);
     if (type === 'binary' && !(data instanceof Uint8Array)) throw new Error(`Resource "${url}" is not a binary file`);
 
-    // store in cache
+    // fileStore in cache
     $$cache.put(cachekey, data);
     return data;
 }

@@ -1,6 +1,6 @@
 import {BuildStep, WorkerError, WorkerMessage} from "./interfaces";
 import {WorkerResult} from "./types";
-import {store} from "./files";
+import {fileStore} from "./files";
 import {PLATFORM_PARAMS} from "./shared_vars";
 import {errorResult} from "./shared_funcs";
 import * as sdcc from "./tools/sdcc";
@@ -18,7 +18,7 @@ export class Builder {
     startseq: number = 0;
 
     async executeBuildSteps(): Promise<WorkerResult> {
-        this.startseq = store.currentVersion();
+        this.startseq = fileStore.currentVersion();
 
         let linkstep: BuildStep = null;
 
@@ -94,12 +94,12 @@ export class Builder {
 
         // file updates
         if (data.updates) {
-            data.updates.forEach((u) => store.putFile(u.path, u.data));
+            data.updates.forEach((u) => fileStore.putFile(u.path, u.data));
         }
 
         // object update
         if (data.setitems) {
-            data.setitems.forEach((i) => store.setItem(i.key, i.value));
+            data.setitems.forEach((i) => fileStore.setItem(i.key, i.value));
         }
 
         // build steps

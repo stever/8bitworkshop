@@ -395,7 +395,7 @@ export class CodeProject {
             } else {
                 var data = await this.filesystem.getFileData(path);
                 if (data) {
-                    this.filedata[path] = data; // do not update store, just cache
+                    this.filedata[path] = data; // do not update fileStore, just cache
                     addResult(path, data);
                 } else {
                     this.filedata[path] = null; // mark entry as invalid
