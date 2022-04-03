@@ -1,4 +1,4 @@
-import {BuildStepResult, CodeListingMap} from "./types";
+import {BuildStepResult, CodeListingMap} from "../types";
 import {
     execMain,
     msvcErrorMatcher,
@@ -7,7 +7,7 @@ import {
     preprocessMCPP,
     print_fn,
     setupStdin
-} from "./worker";
+} from "../worker";
 import {
     anyTargetChanged,
     gatherFiles,
@@ -16,11 +16,11 @@ import {
     populateFiles,
     putWorkFile,
     staleFiles
-} from "./files";
-import {BuildStep, EmscriptenModule} from "./interfaces";
-import {emglobal} from "./global_vars";
-import {loadNative, moduleInstFn} from "./modules";
-import {setupFS} from "./files";
+} from "../files";
+import {BuildStep, EmscriptenModule} from "../interfaces";
+import {emglobal} from "../global_vars";
+import {loadNative, moduleInstFn} from "../modules";
+import {setupFS} from "../files";
 
 function hexToArray(s, ofs) {
     var buf = new ArrayBuffer(s.length / 2);

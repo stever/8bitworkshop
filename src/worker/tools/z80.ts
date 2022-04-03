@@ -1,20 +1,20 @@
-import {BuildStepResult, CodeListingMap} from "./types";
+import {BuildStepResult, CodeListingMap} from "../types";
 import {
     execMain,
     makeErrorMatcher,
     parseListing,
     print_fn
-} from "./worker";
+} from "../worker";
 import {
     anyTargetChanged,
     gatherFiles,
     populateFiles,
     putWorkFile,
     staleFiles
-} from "./files";
-import {BuildStep, EmscriptenModule} from "./interfaces";
-import {emglobal} from "./global_vars";
-import {loadNative, moduleInstFn} from "./modules";
+} from "../files";
+import {BuildStep, EmscriptenModule} from "../interfaces";
+import {emglobal} from "../global_vars";
+import {loadNative, moduleInstFn} from "../modules";
 
 export function assembleZMAC(step: BuildStep): BuildStepResult {
     loadNative("zmac");

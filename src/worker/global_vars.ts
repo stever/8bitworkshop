@@ -1,5 +1,5 @@
-import * as sdcc from "./sdcc";
-import * as z80 from "./z80";
+import * as sdcc from "./tools/sdcc";
+import * as z80 from "./tools/z80";
 
 export const PLATFORM_PARAMS = {
     'zx': {
