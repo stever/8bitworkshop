@@ -19,8 +19,8 @@ const PLATFORM_PARAMS = {
     data_start: 0xf000,
     data_size: 0xfe00 - 0xf000,
     stack_end: 0xff58,
-    extra_link_args: ['crt0-zx.rel'],
-    extra_link_files: ['crt0-zx.rel', 'crt0-zx.lst']
+    extra_link_args: ['crt0.rel'],
+    extra_link_files: ['crt0.rel', 'crt0.lst']
 };
 
 export class Builder {
