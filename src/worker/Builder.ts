@@ -19,12 +19,13 @@ export class Builder {
 
     async executeBuildSteps(): Promise<WorkerResult> {
         this.startseq = store.currentVersion();
-        var linkstep: BuildStep = null;
+
+        let linkstep: BuildStep = null;
 
         while (this.steps.length) {
-            var step = this.steps.shift(); // get top of array
-            var platform = step.platform;
-            var toolfn = TOOLS[step.tool];
+            const step = this.steps.shift(); // get top of array
+            const platform = step.platform;
+            const toolfn = TOOLS[step.tool];
 
             if (!toolfn) {
                 throw Error("no tool named " + step.tool);
@@ -70,7 +71,7 @@ export class Builder {
 
                 // process with another tool?
                 if ('nexttool' in step.result) {
-                    var asmstep: BuildStep = {
+                    const asmstep: BuildStep = {
                         tool: step.result.nexttool,
                         platform: platform,
                         ...step.result
@@ -113,7 +114,7 @@ export class Builder {
 
         // execute build steps
         if (this.steps.length) {
-            var result = await this.executeBuildSteps();
+            const result = await this.executeBuildSteps();
             return result ? result : {unchanged: true};
         }
 
@@ -127,8 +128,8 @@ function applyDefaultErrorPath(errors: WorkerError[], path: string) {
         return;
     }
 
-    for (var i = 0; i < errors.length; i++) {
-        var err = errors[i];
+    for (let i = 0; i < errors.length; i++) {
+        const err = errors[i];
         if (!err.path && err.line) {
             err.path = path;
         }
