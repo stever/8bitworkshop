@@ -1,4 +1,4 @@
-import {PWORKER} from "./shared_vars";
+import {WORKER_RELATIVE_PATH} from "./shared_vars";
 import {FileWorkingStore} from "./FileWorkingStore";
 import {BuildOptions, FileData, FileEntry} from "./types";
 import {BuildStep} from "./interfaces";
@@ -11,13 +11,13 @@ export var store = new FileWorkingStore();
 export function loadFilesystem(name: string) {
     let xhr = new XMLHttpRequest();
     xhr.responseType = 'blob';
-    xhr.open("GET", PWORKER + "fs/fs" + name + ".data", false);  // synchronous request
+    xhr.open("GET", WORKER_RELATIVE_PATH + "fs/fs" + name + ".data", false);  // synchronous request
     xhr.send(null);
     fsBlob[name] = xhr.response;
 
     xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
-    xhr.open("GET", PWORKER + "fs/fs" + name + ".js.metadata", false);  // synchronous request
+    xhr.open("GET", WORKER_RELATIVE_PATH + "fs/fs" + name + ".js.metadata", false);  // synchronous request
     xhr.send(null);
     fsMeta[name] = xhr.response;
 
@@ -175,7 +175,7 @@ export function populateExtraFiles(step: BuildStep, fs, extrafiles) {
             const xpath = "zx/" + xfn;
             const xhr = new XMLHttpRequest();
             xhr.responseType = 'arraybuffer';
-            xhr.open("GET", PWORKER + xpath, false);  // synchronous request
+            xhr.open("GET", WORKER_RELATIVE_PATH + xpath, false);  // synchronous request
             xhr.send(null);
 
             if (xhr.response && xhr.status == 200) {

@@ -1,4 +1,4 @@
-import {PWORKER} from "./shared_vars";
+import {WORKER_RELATIVE_PATH} from "./shared_vars";
 
 declare function importScripts(path: string);
 
@@ -30,18 +30,18 @@ export function moduleInstFn(module_id: string) {
 
 export function load(modulename: string, debug?: boolean) {
     if (!loaded[modulename]) {
-        importScripts(PWORKER + 'asmjs/' + modulename + (debug ? "." + debug + ".js" : ".js"));
+        importScripts(WORKER_RELATIVE_PATH + 'asmjs/' + modulename + (debug ? "." + debug + ".js" : ".js"));
         loaded[modulename] = 1;
     }
 }
 
 export function loadWASM(modulename: string, debug?: boolean) {
     if (!loaded[modulename]) {
-        importScripts(PWORKER + "wasm/" + modulename + (debug ? "." + debug + ".js" : ".js"));
+        importScripts(WORKER_RELATIVE_PATH + "wasm/" + modulename + (debug ? "." + debug + ".js" : ".js"));
 
         const xhr = new XMLHttpRequest();
         xhr.responseType = 'arraybuffer';
-        xhr.open("GET", PWORKER + "wasm/" + modulename + ".wasm", false);  // synchronous request
+        xhr.open("GET", WORKER_RELATIVE_PATH + "wasm/" + modulename + ".wasm", false);  // synchronous request
         xhr.send(null);
 
         if (xhr.response) {
