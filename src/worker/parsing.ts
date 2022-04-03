@@ -1,7 +1,7 @@
 import {SourceSnippet} from "./interfaces";
 
-export const re_crlf = /\r?\n/;
-export const re_lineoffset = /\s*(\d+)\s+[%]line\s+(\d+)\+(\d+)\s+(.+)/;
+const re_crlf = /\r?\n/;
+const re_lineoffset = /\s*(\d+)\s+[%]line\s+(\d+)\+(\d+)\s+(.+)/;
 
 export function parseListing(code: string,
                              lineMatch,
