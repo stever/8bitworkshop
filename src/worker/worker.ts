@@ -1,7 +1,7 @@
 import type {WorkerResult} from "./types";
 import {WorkerMessage} from "./interfaces";
 import {Builder} from "./Builder";
-import {errorResult} from "./util";
+import {errorResult} from "./shared_funcs";
 import {fsMeta, loadFilesystem, store} from "./files";
 
 declare function postMessage(msg);

@@ -4,7 +4,7 @@ export function errorResult(msg: string): WorkerErrorResult {
     return {errors: [{line: 0, msg: msg}]};
 }
 
-export var print_fn = function (s: string) {
+export function print_fn(s: string) {
     console.log(s);
 }
 

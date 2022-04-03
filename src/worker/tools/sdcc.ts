@@ -14,7 +14,7 @@ import {loadNative, moduleInstFn} from "../modules";
 import {setupFS} from "../files";
 import {preprocessMCPP} from "./mcpp";
 import {parseListing, parseSourceLines} from "../parsing";
-import {print_fn, execMain} from "../util";
+import {print_fn, execMain} from "../shared_funcs";
 
 function hexToArray(s, ofs) {
     const buf = new ArrayBuffer(s.length / 2);

@@ -10,7 +10,7 @@ import {BuildStep, EmscriptenModule} from "../interfaces";
 import {emglobal} from "../shared_vars";
 import {loadNative, moduleInstFn} from "../modules";
 import {parseListing} from "../parsing";
-import {print_fn, execMain, makeErrorMatcher} from "../util";
+import {print_fn, execMain, makeErrorMatcher} from "../shared_funcs";
 
 export function assembleZMAC(step: BuildStep): BuildStepResult {
     loadNative("zmac");
