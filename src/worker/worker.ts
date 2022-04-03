@@ -2,7 +2,7 @@ import type {WorkerResult} from "./types";
 import {WorkerMessage} from "./interfaces";
 import {Builder} from "./Builder";
 import {errorResult} from "./shared_funcs";
-import {fsMeta, loadFilesystem, fileStore} from "./files";
+import {fsLoaded, loadFilesystem, fileStore} from "./files";
 
 declare function postMessage(msg);
 
@@ -19,7 +19,7 @@ async function handleMessage(data: WorkerMessage): Promise<WorkerResult> {
     if (data.preload) {
         let fs = TOOL_PRELOADFS[data.preload];
 
-        if (fs && !fsMeta[fs]) {
+        if (fs && !fsLoaded[fs]) {
             loadFilesystem(fs);
         }
 

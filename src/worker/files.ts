@@ -3,7 +3,7 @@ import {FileWorkingStore} from "./FileWorkingStore";
 import {BuildOptions, FileData, FileEntry} from "./types";
 import {BuildStep} from "./interfaces";
 
-export const fsMeta = {};
+const fsMeta = {};
 const fsBlob = {};
 export var fileStore = new FileWorkingStore();
 
@@ -21,6 +21,10 @@ export function loadFilesystem(name: string) {
     fsMeta[name] = xhr.response;
 
     console.log("Loaded " + name + " filesystem", fsMeta[name].files.length, 'files', fsBlob[name].size, 'bytes');
+}
+
+export function fsLoaded(name: string) {
+    return fsMeta.hasOwnProperty(name);
 }
 
 // mount the filesystem at /share
