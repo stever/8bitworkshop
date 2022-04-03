@@ -28,7 +28,7 @@ export function moduleInstFn(module_id: string) {
     }
 }
 
-export function load(modulename: string, debug?: boolean) {
+export function loadASMJS(modulename: string, debug?: boolean) {
     if (!loaded[modulename]) {
         importScripts(WORKER_RELATIVE_PATH + 'asmjs/' + modulename + (debug ? "." + debug + ".js" : ".js"));
         loaded[modulename] = 1;
@@ -59,6 +59,6 @@ export function loadNative(modulename: string) {
     if (typeof WebAssembly === 'object') {
         loadWASM(modulename);
     } else {
-        load(modulename);
+        loadASMJS(modulename);
     }
 }

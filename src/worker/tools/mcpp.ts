@@ -1,11 +1,11 @@
 import {BuildStep, EmscriptenModule} from "../interfaces";
-import {load} from "../modules";
+import {loadASMJS} from "../modules";
 import {emglobal} from "../shared_vars";
 import {populateFiles, setupFS} from "../files";
 import {errorResult, makeErrorMatcher, print_fn} from "../shared_funcs";
 
 export function preprocessMCPP(step: BuildStep, filesys: string) {
-    load("mcpp");
+    loadASMJS("mcpp");
 
     // <stdin>:2: error: Can't open include file "foo.h"
     let errors = [];
