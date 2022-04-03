@@ -33,7 +33,6 @@ export interface WorkerFileUpdate {
 export interface WorkerBuildStep {
     path?: string
     files?: string[]
-    // platform?: string
     tool?: string
     mainfile?: boolean
 }
@@ -57,8 +56,6 @@ export interface WorkerItemUpdate {
 
 export interface WorkerMessage {
     preload?: string
-    // platform?: string
-    // tool?: string
     updates: WorkerFileUpdate[]
     buildsteps: WorkerBuildStep[]
     reset?: boolean
