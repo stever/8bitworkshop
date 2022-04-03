@@ -3,7 +3,8 @@ import {load} from "../modules";
 import {emglobal, PLATFORM_PARAMS} from "../global_vars";
 import {populateFiles, setupFS} from "../files";
 import {errorResult} from "../util";
-import {execMain, extractErrors, makeErrorMatcher, print_fn} from "../worker";
+import {execMain, print_fn} from "../worker";
+import {makeErrorMatcher} from "../errors";
 
 export function preprocessMCPP(step: BuildStep, filesys: string) {
     load("mcpp");
@@ -75,4 +76,15 @@ export function preprocessMCPP(step: BuildStep, filesys: string) {
 
 function makeCPPSafe(s: string): string {
     return s.replace(/[^A-Za-z0-9_]/g, '_');
+}
+
+function extractErrors(regex, strings: string[], path: string, iline, imsg, ifilename) {
+    const errors = [];
+    const matcher = makeErrorMatcher(errors, regex, iline, imsg, path, ifilename);
+
+    for (let i = 0; i < strings.length; i++) {
+        matcher(strings[i]);
+    }
+
+    return errors;
 }

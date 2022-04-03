@@ -1,12 +1,5 @@
 import {BuildStepResult, CodeListingMap} from "../types";
-import {
-    execMain,
-    msvcErrorMatcher,
-    parseListing,
-    parseSourceLines,
-    print_fn,
-    setupStdin
-} from "../worker";
+import {execMain, print_fn} from "../worker";
 import {
     anyTargetChanged,
     gatherFiles,
@@ -16,11 +9,12 @@ import {
     putWorkFile,
     staleFiles
 } from "../files";
-import {BuildStep, EmscriptenModule} from "../interfaces";
+import {BuildStep, EmscriptenModule, WorkerError} from "../interfaces";
 import {emglobal} from "../global_vars";
 import {loadNative, moduleInstFn} from "../modules";
 import {setupFS} from "../files";
 import {preprocessMCPP} from "./mcpp";
+import {parseListing, parseSourceLines} from "../parsing";
 
 function hexToArray(s, ofs) {
     var buf = new ArrayBuffer(s.length / 2);
@@ -356,4 +350,35 @@ export function compileSDCC(step: BuildStep): BuildStepResult {
         args: [outpath],
         files: [outpath],
     };
+}
+
+function setupStdin(fs, code: string) {
+    let i = 0;
+    fs.init(
+        function () {
+            return i < code.length ? code.charCodeAt(i++) : null;
+        }
+    );
+}
+
+// test.c(6) : warning 85: in function main unreferenced local variable : 'x'
+// main.a (4): error: Unknown Mnemonic 'xxx'.
+// at 2: warning 190: ISO C forbids an empty source file
+const re_msvc = /[/]*([^( ]+)\s*[(](\d+)[)]\s*:\s*(.+?):\s*(.*)/;
+const re_msvc2 = /\s*(at)\s+(\d+)\s*(:)\s*(.*)/;
+
+function msvcErrorMatcher(errors: WorkerError[]) {
+    return function (s: string) {
+        const matches = re_msvc.exec(s) || re_msvc2.exec(s);
+        if (matches) {
+            const errline = parseInt(matches[2]);
+            errors.push({
+                line: errline,
+                path: matches[1],
+                msg: matches[4]
+            });
+        } else {
+            console.log(s);
+        }
+    }
 }
