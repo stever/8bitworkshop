@@ -102,9 +102,9 @@ function newWorker(): Worker {
 
 function getCurrentPresetTitle(): string {
     if (!current_preset) {
-      return current_project.mainPath || "ROM";
+      return current_project.mainFilename || "ROM";
     } else {
-      return current_preset.title || current_preset.name || current_project.mainPath || "ROM";
+      return current_preset.title || current_preset.name || current_project.mainFilename || "ROM";
     }
 }
 
@@ -197,11 +197,11 @@ function refreshWindowList() {
     }
 
     // add main file editor
-    addEditorItem(current_project.mainPath);
+    addEditorItem(current_project.mainFilename);
 
     // add other source files
     current_project.iterateFiles((id, text) => {
-        if (text && id != current_project.mainPath) {
+        if (text && id != current_project.mainFilename) {
             addEditorItem(id);
         }
     });
@@ -280,7 +280,7 @@ function loadMainWindow(filename: string) {
 async function loadProject(filename: string) {
 
     // set current file ID
-    current_project.mainPath = filename;
+    current_project.mainFilename = filename;
 
     // load files from storage or web URLs
     var result = await current_project.loadFiles([filename]);
@@ -295,7 +295,7 @@ function reloadProject(id: string) {
 }
 
 function getCurrentMainFilename(): string {
-    return getFilenameForPath(current_project.mainPath);
+    return getFilenameForPath(current_project.mainFilename);
 }
 
 function _downloadROMImage(e) {
@@ -320,7 +320,7 @@ function populateExamples(sel) {
     for (var i = 0; i < PRESETS.length; i++) {
         var preset = PRESETS[i];
         var name = preset.chapter ? (preset.chapter + ". " + preset.name) : preset.name;
-        var isCurrentPreset = preset.id == current_project.mainPath;
+        var isCurrentPreset = preset.id == current_project.mainFilename;
 
         sel.append($("<option />").val(preset.id).text(name).attr('selected', isCurrentPreset ? 'selected' : null));
 
@@ -351,7 +351,7 @@ async function populateFiles(sel: JQuery, category: string, prefix: string, foun
             }
 
             var name = key.substring(prefix.length);
-            sel.append($("<option />").val(key).text(name).attr('selected', (key == current_project.mainPath) ? 'selected' : null));
+            sel.append($("<option />").val(key).text(name).attr('selected', (key == current_project.mainFilename) ? 'selected' : null));
         }
     }
 }
@@ -360,7 +360,7 @@ function finishSelector(sel) {
     sel.css('visibility', 'visible');
 
     // create option if not selected
-    var main = current_project.mainPath;
+    var main = current_project.mainFilename;
     if (sel.val() != main) {
         sel.append($("<option />").val(main).text(main).attr('selected', 'selected'));
     }
@@ -390,7 +390,7 @@ function getErrorElement(err: WorkerError) {
         var path = err.path;
 
         if (path == getCurrentMainFilename()) {
-            path = current_project.mainPath;
+            path = current_project.mainFilename;
         }
 
         // click link to open file, if it's available...
@@ -1089,7 +1089,7 @@ async function startPlatform() {
 async function loadAndStartPlatform() {
     try {
         await startPlatform();
-        document.title = document.title + " - " + current_project.mainPath;
+        document.title = document.title + " - " + current_project.mainFilename;
     } catch (e) {
         console.log(e);
         alertError('Platform zx failed to load.');

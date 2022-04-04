@@ -190,7 +190,7 @@ export class CodeProject {
     filedata: { [path: string]: FileData } = {};
     listings: CodeListingMap;
     segments: Segment[];
-    mainPath: string;
+    mainFilename: string;
     pendingWorkerMessages = 0;
     tools_preloaded = {};
     worker: Worker;
@@ -256,7 +256,7 @@ export class CodeProject {
         files.push(fn);
 
         // look for files in current (main file) folder
-        var dir = getFolderForPath(this.mainPath);
+        var dir = getFolderForPath(this.mainFilename);
         if (dir.length > 0 && dir != 'local') {
             files.push(dir + '/' + fn);
         }
@@ -313,7 +313,7 @@ export class CodeProject {
     }
 
     okToSend(): boolean {
-        return this.pendingWorkerMessages++ == 0 && this.mainPath != null;
+        return this.pendingWorkerMessages++ == 0 && this.mainFilename != null;
     }
 
     updateFileInStore(path: string, text: FileData) {
@@ -321,15 +321,15 @@ export class CodeProject {
     }
 
     buildWorkerMessage(depends: Dependency[]): WorkerMessage {
-        this.preloadWorker(this.mainPath);
+        this.preloadWorker(this.mainFilename);
 
         var msg: WorkerMessage = {updates: [], buildsteps: []};
-        var mainfilename = this.stripLocalPath(this.mainPath);
-        var maintext = this.getFile(this.mainPath);
+        var mainfilename = this.stripLocalPath(this.mainFilename);
+        var maintext = this.getFile(this.mainFilename);
         var depfiles = [];
 
         msg.updates.push({path: mainfilename, data: maintext});
-        this.filename2path[mainfilename] = this.mainPath;
+        this.filename2path[mainfilename] = this.mainFilename;
 
         for (var dep of depends) {
             if (!dep.link) {
@@ -343,7 +343,7 @@ export class CodeProject {
         msg.buildsteps.push({
             path: mainfilename,
             files: [mainfilename].concat(depfiles),
-            tool: this.platform.getToolForFilename(this.mainPath),
+            tool: this.platform.getToolForFilename(this.mainFilename),
             mainfile: true
         } as WorkerBuildStep);
 
@@ -409,11 +409,11 @@ export class CodeProject {
     }
 
     sendBuild() {
-        if (!this.mainPath) {
+        if (!this.mainFilename) {
             throw Error("need to call setMainFilename first");
         }
 
-        var maindata = this.getFile(this.mainPath);
+        var maindata = this.getFile(this.mainFilename);
 
         // if binary blob, just return it as ROM
         if (maindata instanceof Uint8Array) {
@@ -461,7 +461,7 @@ export class CodeProject {
     };
 
     setMainFilename(filename: string) {
-        this.mainPath = filename;
+        this.mainFilename = filename;
 
         if (this.callbackBuildStatus) {
             this.callbackBuildStatus(true);
@@ -519,8 +519,8 @@ export class CodeProject {
     }
 
     stripLocalPath(path: string): string {
-        if (this.mainPath) {
-            var folder = getFolderForPath(this.mainPath);
+        if (this.mainFilename) {
+            var folder = getFolderForPath(this.mainFilename);
 
             if (folder != '' && path.startsWith(folder)) {
                 path = path.substring(folder.length + 1);
