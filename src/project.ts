@@ -1,7 +1,8 @@
 import {getFilenamePrefix, getFolderForPath} from "./util";
 import localforage from "localforage";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
-import {Dependency, FileData} from "./worker/defs_misc";
+import {Dependency} from "./worker/defs_misc";
+import {FileData} from "./worker/defs_files";
 import {SourceFile} from "./worker/SourceFile";
 import {
     CodeListing,

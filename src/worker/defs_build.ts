@@ -1,5 +1,5 @@
 import {BuildStepResult} from "./defs_build_result";
-import {FileData} from "./defs_misc";
+import {FileData} from "./defs_files";
 
 export interface PlatformParams {
     arch: string

@@ -2,7 +2,7 @@ import $ = require("jquery");
 import {CodeProject} from "./project";
 import {getFilenamePrefix, getFilenameForPath} from "./util";
 import {ProjectView} from "./baseviews";
-import {FileData} from "./worker/defs_misc";
+import {FileData} from "./worker/defs_files";
 import {WorkerError} from "./worker/defs_build_result";
 
 type WindowCreateFunction = (id: string) => ProjectView;
