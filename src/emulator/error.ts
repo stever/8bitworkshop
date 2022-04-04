@@ -1,4 +1,4 @@
-import {SourceLocation} from "../worker/misc_interfaces";
+import {SourceLocation} from "../worker/defs_interfaces";
 
 export class EmuHalt extends Error {
     $loc: SourceLocation;
