@@ -7,9 +7,8 @@ import {
     putWorkFile,
     staleFiles
 } from "../files";
-import {EmscriptenModule} from "../defs_misc";
 import {emglobal} from "../shared_vars";
-import {loadWASM, instantiateWASM} from "../modules";
+import {EmscriptenModule, loadWASM, instantiateWASM} from "../modules";
 import {setupFS} from "../files";
 import {preprocessMCPP} from "./mcpp";
 import {parseListing, parseSourceLines} from "../parsing";

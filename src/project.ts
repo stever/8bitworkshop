@@ -1,7 +1,6 @@
 import {getFilenamePrefix, getFolderForPath} from "./util";
 import localforage from "localforage";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
-import {Dependency} from "./worker/defs_misc";
 import {FileData} from "./worker/defs_files";
 import {SourceFile} from "./worker/SourceFile";
 import {
@@ -11,6 +10,13 @@ import {
     WorkerResult
 } from "./worker/defs_build_result";
 import {WorkerItemUpdate, WorkerMessage} from "./worker/defs_build";
+
+interface Dependency {
+    path: string
+    filename: string
+    link: boolean
+    data: FileData
+}
 
 function isProbablyBinary(path: string, data?: number[] | Uint8Array): boolean {
     var score = 0;

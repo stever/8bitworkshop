@@ -5,9 +5,8 @@ import {
     putWorkFile,
     staleFiles
 } from "../files";
-import {EmscriptenModule} from "../defs_misc";
 import {emglobal} from "../shared_vars";
-import {loadWASM, instantiateWASM} from "../modules";
+import {EmscriptenModule, loadWASM, instantiateWASM} from "../modules";
 import {parseListing} from "../parsing";
 import {print_fn, makeErrorMatcher} from "../shared_funcs";
 import {BuildStep} from "../defs_build";
