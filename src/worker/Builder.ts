@@ -1,9 +1,8 @@
-import {PlatformParams} from "./defs_misc";
 import {fileStore} from "./files";
 import {errorResult} from "./shared_funcs";
 import * as sdcc from "./tools/sdcc";
 import * as z80 from "./tools/z80";
-import {BuildStep, WorkerMessage} from "./defs_build";
+import {BuildStep, PlatformParams, WorkerMessage} from "./defs_build";
 import {WorkerError, WorkerResult} from "./defs_build_result";
 
 const TOOLS = {

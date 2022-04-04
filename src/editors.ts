@@ -2,9 +2,8 @@ import {isMobileDevice, ProjectView} from "./baseviews";
 import {platform, current_project, lastDebugState, runToPC} from "./ui";
 import {hex} from "./util";
 import {DisassemblerView} from "./views/disassembly";
-import {SourceLocation} from "./worker/defs_misc";
 import {SourceFile} from "./worker/SourceFile";
-import {WorkerError} from "./worker/defs_build_result";
+import {SourceLocation, WorkerError} from "./worker/defs_build_result";
 
 declare var CodeMirror;
 

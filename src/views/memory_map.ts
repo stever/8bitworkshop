@@ -1,5 +1,5 @@
 import {newDiv, ProjectView} from "../baseviews";
-import {Segment} from "../worker/defs_misc";
+import {Segment} from "../worker/defs_build_result";
 import {hex} from "../util";
 import {current_project, projectWindows} from "../ui";
 import {MemoryView} from "./memory_browser";

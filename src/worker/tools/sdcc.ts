@@ -7,7 +7,7 @@ import {
     putWorkFile,
     staleFiles
 } from "../files";
-import {CodeListingMap, EmscriptenModule} from "../defs_misc";
+import {EmscriptenModule} from "../defs_misc";
 import {emglobal} from "../shared_vars";
 import {loadWASM, instantiateWASM} from "../modules";
 import {setupFS} from "../files";
@@ -15,7 +15,7 @@ import {preprocessMCPP} from "./mcpp";
 import {parseListing, parseSourceLines} from "../parsing";
 import {print_fn} from "../shared_funcs";
 import {BuildStep} from "../defs_build";
-import {BuildStepResult, WorkerError} from "../defs_build_result";
+import {BuildStepResult, CodeListingMap, WorkerError} from "../defs_build_result";
 
 function hexToArray(s, ofs) {
     const buf = new ArrayBuffer(s.length / 2);

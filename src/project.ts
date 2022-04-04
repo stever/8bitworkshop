@@ -1,17 +1,15 @@
 import {getFilenamePrefix, getFolderForPath} from "./util";
 import localforage from "localforage";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
+import {Dependency, FileData} from "./worker/defs_misc";
+import {SourceFile} from "./worker/SourceFile";
 import {
     CodeListing,
-    CodeListingMap,
-    Dependency,
-    FileData,
-    Segment,
-    WorkerItemUpdate
-} from "./worker/defs_misc";
-import {SourceFile} from "./worker/SourceFile";
-import {WorkerOutputResult, WorkerResult} from "./worker/defs_build_result";
-import {WorkerMessage} from "./worker/defs_build";
+    CodeListingMap, Segment,
+    WorkerOutputResult,
+    WorkerResult
+} from "./worker/defs_build_result";
+import {WorkerItemUpdate, WorkerMessage} from "./worker/defs_build";
 
 function isProbablyBinary(path: string, data?: number[] | Uint8Array): boolean {
     var score = 0;
