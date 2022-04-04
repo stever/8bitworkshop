@@ -5,16 +5,13 @@ import {
     putWorkFile,
     staleFiles
 } from "../files";
-import {
-    BuildStep,
-    BuildStepResult,
-    CodeListingMap,
-    EmscriptenModule
-} from "../defs_misc";
+import {CodeListingMap, EmscriptenModule} from "../defs_misc";
 import {emglobal} from "../shared_vars";
 import {loadWASM, instantiateWASM} from "../modules";
 import {parseListing} from "../parsing";
 import {print_fn, makeErrorMatcher} from "../shared_funcs";
+import {BuildStep} from "../defs_build";
+import {BuildStepResult} from "../defs_build_result";
 
 export function assembleZMAC(step: BuildStep): BuildStepResult {
     loadWASM("zmac");

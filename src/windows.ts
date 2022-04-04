@@ -2,7 +2,8 @@ import $ = require("jquery");
 import {CodeProject} from "./project";
 import {getFilenamePrefix, getFilenameForPath} from "./util";
 import {ProjectView} from "./baseviews";
-import {FileData, WorkerError} from "./worker/defs_misc";
+import {FileData} from "./worker/defs_misc";
+import {WorkerError} from "./worker/defs_build_result";
 
 type WindowCreateFunction = (id: string) => ProjectView;
 type WindowShowFunction = (id: string, view: ProjectView) => void;

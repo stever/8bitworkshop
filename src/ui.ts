@@ -27,7 +27,7 @@ import {FrameCallsView} from "./views/frame_profiler";
 import {DebugBrowserView} from "./views/debug_tree";
 import {saveAs} from "file-saver";
 import {DebugSymbols, DebugEvalCondition} from "./emulator/debug";
-import {WorkerError, WorkerResult} from "./worker/defs_misc";
+import {WorkerError, WorkerResult} from "./worker/defs_build_result";
 
 declare var $: JQueryStatic;
 

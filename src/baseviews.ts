@@ -1,4 +1,4 @@
-import {WorkerError} from "./worker/defs_misc";
+import {WorkerError} from "./worker/defs_build_result";
 import {SourceFile} from "./worker/SourceFile";
 
 export interface ProjectView {

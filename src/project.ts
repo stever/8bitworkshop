@@ -7,12 +7,11 @@ import {
     Dependency,
     FileData,
     Segment,
-    WorkerItemUpdate,
-    WorkerMessage,
-    WorkerOutputResult,
-    WorkerResult
+    WorkerItemUpdate
 } from "./worker/defs_misc";
 import {SourceFile} from "./worker/SourceFile";
+import {WorkerOutputResult, WorkerResult} from "./worker/defs_build_result";
+import {WorkerMessage} from "./worker/defs_build";
 
 function isProbablyBinary(path: string, data?: number[] | Uint8Array): boolean {
     var score = 0;

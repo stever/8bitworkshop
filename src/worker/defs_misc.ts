@@ -6,16 +6,12 @@ export type CodeListingMap = { [path: string]: CodeListing };
 
 export type Segment = { name: string, start: number, size: number, last?: number, type?: string };
 
-export type WorkerResult = WorkerErrorResult | WorkerOutputResult<any> | WorkerUnchangedResult;
-
 export type FileEntry = {
     path: string
     encoding: string
     data: FileData
     ts: number
 };
-
-export type BuildStepResult = WorkerResult | WorkerNextToolResult;
 
 export interface SourceLocation {
     line: number
@@ -46,13 +42,6 @@ export interface WorkerFileUpdate {
     data: FileData
 }
 
-export interface WorkerBuildStep {
-    path?: string
-    files?: string[]
-    tool?: string
-    mainfile?: boolean
-}
-
 export interface PlatformParams {
     arch: string
     code_start: number
@@ -64,30 +53,9 @@ export interface PlatformParams {
     extra_link_files: string[]
 }
 
-export interface BuildStep extends WorkerBuildStep {
-    args?: string[]
-    params?: PlatformParams
-    result?: BuildStepResult
-    prefix?: string
-    maxts?: number
-}
-
 export interface WorkerItemUpdate {
     key: string
     value: object
-}
-
-export interface WorkerMessage {
-    preload?: string
-    updates: WorkerFileUpdate[]
-    buildsteps: WorkerBuildStep[]
-    reset?: boolean
-    code?: string
-    setitems?: WorkerItemUpdate[]
-}
-
-export interface WorkerError extends SourceLocation {
-    msg: string
 }
 
 export interface CodeListing {
@@ -98,23 +66,6 @@ export interface CodeListing {
     assemblyfile?: SourceFile // not returned by worker
 }
 
-export interface WorkerUnchangedResult {
-    unchanged: true
-}
-
-export interface WorkerErrorResult {
-    errors: WorkerError[]
-}
-
-export interface WorkerOutputResult<T> {
-    output: T
-    listings?: CodeListingMap
-    symbolmap?: { [sym: string]: number }
-    params?: {}
-    segments?: Segment[]
-    debuginfo?: {} // optional info
-}
-
 export interface WorkingStore {
     getFileData(path: string): FileData
 }
@@ -123,12 +74,4 @@ export interface WorkingStore {
 export interface EmscriptenModule {
     callMain?: (args: string[]) => void
     FS: any
-}
-
-export interface WorkerNextToolResult {
-    nexttool?: string
-    linktool?: string
-    path?: string
-    args: string[]
-    files: string[]
 }
