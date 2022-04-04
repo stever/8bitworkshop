@@ -4,7 +4,7 @@ import {
     WorkerError,
     WorkerMessage
 } from "./defs_interfaces";
-import {WorkerResult} from "./def_types";
+import {WorkerResult} from "./defs_types";
 import {fileStore} from "./files";
 import {errorResult} from "./shared_funcs";
 import * as sdcc from "./tools/sdcc";

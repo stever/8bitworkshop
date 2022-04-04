@@ -6,7 +6,7 @@ import {
     ProjectFilesystem,
     WebPresetsFileSystem
 } from "./project";
-import {WorkerResult} from "./worker/def_types";
+import {WorkerResult} from "./worker/defs_types";
 import {ProjectWindows} from "./windows";
 import {Preset, EmuState} from "./emulator/debug";
 import {ZXWASMPlatform} from "./emulator/zx_platform";

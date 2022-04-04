@@ -1,4 +1,4 @@
-import type {WorkerResult} from "./def_types";
+import type {WorkerResult} from "./defs_types";
 import {WorkerMessage} from "./defs_interfaces";
 import {Builder} from "./Builder";
 import {errorResult} from "./shared_funcs";

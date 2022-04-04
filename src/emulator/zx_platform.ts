@@ -1,6 +1,6 @@
 import {CpuState, EmuRecorder, EmuState} from "./debug";
 import {BreakpointList, DebugSymbols} from "./debug";
-import {FileData} from "../worker/def_types";
+import {FileData} from "../worker/defs_types";
 import {
     BreakpointCallback,
     DebugCondition,

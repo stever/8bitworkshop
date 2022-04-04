@@ -1,4 +1,4 @@
-import {FileData} from "./worker/def_types";
+import {FileData} from "./worker/defs_types";
 import {WorkingStore} from "./worker/defs_interfaces";
 
 class FileDataCache {

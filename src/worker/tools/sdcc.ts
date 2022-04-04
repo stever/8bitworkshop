@@ -1,4 +1,4 @@
-import {BuildStepResult, CodeListingMap} from "../def_types";
+import {BuildStepResult, CodeListingMap} from "../defs_types";
 import {
     anyTargetChanged,
     gatherFiles,

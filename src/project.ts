@@ -3,7 +3,7 @@ import {
     CodeListingMap,
     Segment,
     WorkerResult
-} from "./worker/def_types";
+} from "./worker/defs_types";
 import {getFilenamePrefix, getFolderForPath} from "./util";
 import localforage from "localforage";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
