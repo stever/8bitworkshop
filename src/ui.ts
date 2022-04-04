@@ -6,7 +6,6 @@ import {
     ProjectFilesystem,
     WebPresetsFileSystem
 } from "./project";
-import {WorkerResult} from "./worker/defs_types";
 import {ProjectWindows} from "./windows";
 import {Preset, EmuState} from "./emulator/debug";
 import {ZXWASMPlatform} from "./emulator/zx_platform";
@@ -28,7 +27,7 @@ import {FrameCallsView} from "./views/frame_profiler";
 import {DebugBrowserView} from "./views/debug_tree";
 import {saveAs} from "file-saver";
 import {DebugSymbols, DebugEvalCondition} from "./emulator/debug";
-import {WorkerError} from "./worker/defs_interfaces";
+import {WorkerError, WorkerResult} from "./worker/defs_misc";
 
 declare var $: JQueryStatic;
 

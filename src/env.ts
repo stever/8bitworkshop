@@ -3,7 +3,7 @@ import yufka from 'yufka';
 import * as io from "./io";
 import * as output from "./output";
 import * as scriptui from "./scriptui";
-import {WorkerError} from "./worker/defs_interfaces";
+import {WorkerError} from "./worker/defs_misc";
 
 export const PROP_CONSTRUCTOR_NAME = "$$consname";
 

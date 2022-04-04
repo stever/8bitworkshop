@@ -2,9 +2,9 @@ import {
     BuildStep,
     PlatformParams,
     WorkerError,
-    WorkerMessage
-} from "./defs_interfaces";
-import {WorkerResult} from "./defs_types";
+    WorkerMessage,
+    WorkerResult
+} from "./defs_misc";
 import {fileStore} from "./files";
 import {errorResult} from "./shared_funcs";
 import * as sdcc from "./tools/sdcc";
