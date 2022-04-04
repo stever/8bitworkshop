@@ -265,28 +265,28 @@ function refreshWindowList() {
     });
 }
 
-function loadMainWindow(preset_id: string) {
+function loadMainWindow(filename: string) {
 
     // we need this to build create functions for the editor
     refreshWindowList();
 
     // show main file
-    projectWindows.createOrShow(preset_id);
+    projectWindows.createOrShow(filename);
 
     // build project
-    current_project.setMainFile(preset_id);
+    current_project.setMainFilename(filename);
 }
 
-async function loadProject(preset_id: string) {
+async function loadProject(filename: string) {
 
     // set current file ID
-    current_project.mainPath = preset_id;
+    current_project.mainPath = filename;
 
     // load files from storage or web URLs
-    var result = await current_project.loadFiles([preset_id]);
+    var result = await current_project.loadFiles([filename]);
     console.assert(result && result.length);
     measureTimeLoad = new Date(); // for timing calc.
-    loadMainWindow(preset_id);
+    loadMainWindow(filename);
 }
 
 function reloadProject(id: string) {

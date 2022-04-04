@@ -9,7 +9,11 @@ import {
     WorkerOutputResult,
     WorkerResult
 } from "./worker/defs_build_result";
-import {WorkerItemUpdate, WorkerMessage} from "./worker/defs_build";
+import {
+    WorkerBuildStep,
+    WorkerItemUpdate,
+    WorkerMessage
+} from "./worker/defs_build";
 
 interface Dependency {
     path: string
@@ -341,7 +345,7 @@ export class CodeProject {
             files: [mainfilename].concat(depfiles),
             tool: this.platform.getToolForFilename(this.mainPath),
             mainfile: true
-        });
+        } as WorkerBuildStep);
 
         for (var dep of depends) {
             if (dep.data && dep.link) {
@@ -406,7 +410,7 @@ export class CodeProject {
 
     sendBuild() {
         if (!this.mainPath) {
-            throw Error("need to call setMainFile first");
+            throw Error("need to call setMainFilename first");
         }
 
         var maindata = this.getFile(this.mainPath);
@@ -456,8 +460,8 @@ export class CodeProject {
         }
     };
 
-    setMainFile(path: string) {
-        this.mainPath = path;
+    setMainFilename(filename: string) {
+        this.mainPath = filename;
 
         if (this.callbackBuildStatus) {
             this.callbackBuildStatus(true);
