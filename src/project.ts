@@ -323,37 +323,39 @@ export class CodeProject {
     buildWorkerMessage(depends: Dependency[]): WorkerMessage {
         this.preloadWorker(this.mainFilename);
 
-        var msg: WorkerMessage = {updates: [], buildsteps: []};
-        var mainfilename = this.stripLocalPath(this.mainFilename);
-        var maintext = this.getFile(this.mainFilename);
-        var depfiles = [];
+        const msg: WorkerMessage = {updates: [], buildsteps: []};
 
-        msg.updates.push({path: mainfilename, data: maintext});
-        this.filename2path[mainfilename] = this.mainFilename;
+        // Add main source file.
+        const mainFilename = this.stripLocalPath(this.mainFilename);
+        const mainSource = this.getFile(this.mainFilename);
+        msg.updates.push({path: mainFilename, data: mainSource});
 
-        for (var dep of depends) {
+        this.filename2path[mainFilename] = this.mainFilename;
+
+        const depFiles = [];
+        for (const dep of depends) {
             if (!dep.link) {
                 msg.updates.push({path: dep.filename, data: dep.data});
-                depfiles.push(dep.filename);
+                depFiles.push(dep.filename);
             }
 
             this.filename2path[dep.filename] = dep.path;
         }
 
         msg.buildsteps.push({
-            path: mainfilename,
-            files: [mainfilename].concat(depfiles),
+            path: mainFilename,
+            files: [mainFilename].concat(depFiles),
             tool: this.platform.getToolForFilename(this.mainFilename),
             mainfile: true
         } as WorkerBuildStep);
 
-        for (var dep of depends) {
+        for (const dep of depends) {
             if (dep.data && dep.link) {
                 this.preloadWorker(dep.filename);
                 msg.updates.push({path: dep.filename, data: dep.data});
                 msg.buildsteps.push({
                     path: dep.filename,
-                    files: [dep.filename].concat(depfiles),
+                    files: [dep.filename].concat(depFiles),
                     tool: this.platform.getToolForFilename(dep.path)
                 });
             }
@@ -520,7 +522,7 @@ export class CodeProject {
 
     stripLocalPath(path: string): string {
         if (this.mainFilename) {
-            var folder = getFolderForPath(this.mainFilename);
+            const folder = getFolderForPath(this.mainFilename);
 
             if (folder != '' && path.startsWith(folder)) {
                 path = path.substring(folder.length + 1);
