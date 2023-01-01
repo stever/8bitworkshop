@@ -418,9 +418,9 @@ export class ZXWASMPlatform {
 
     getPresets() {
         return [
-            {id: 'hello.asm', name: 'Hello World (ASM)'},
             {id: 'bios.c', name: 'BIOS Routines (C)'},
             {id: 'cosmic.c', name: 'Cosmic Impalas (C)'},
+            {id: 'hello.asm', name: 'Hello World (ASM)'},
         ];
     }
 
