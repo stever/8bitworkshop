@@ -1,4 +1,6 @@
-# 8bitworkshop
+# 8bitworkshop-zx
+
+This is an experimental modification of 8bitworkshop focussed on a debugger for the ZX Spectrum.
 
 ## Install Locally
 
@@ -9,6 +11,7 @@ git submodule init
 git submodule update
 npm install
 npm run build
+npm run cp
 ```
 
 ## License
