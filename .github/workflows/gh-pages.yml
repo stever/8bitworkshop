@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - zx
 
 jobs:
   build-and-deploy:
